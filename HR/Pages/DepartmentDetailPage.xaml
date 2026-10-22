@@ -169,25 +169,13 @@ TargetType="{x:Type TextBlock}">
                    Style="{StaticResource LightSeaGreenNeonText}"
                    FontSize="16" FontWeight="Bold" Margin="10,0,0,0"/>
                     </StackPanel>
+                    <Button Content="بازگشت" Click="Back_Click"
+        Height="34" Padding="14,0" Margin="18,0,0,0"
+        Background="#1E293B" Foreground="White" BorderThickness="0"
+        materialDesign:ButtonAssist.CornerRadius="8"
+        VerticalAlignment="Center"/>
                 </StackPanel>
                 <!-- عنوان -->
-                    <DockPanel Margin="0,0,0,5">
-                        <StackPanel>
-
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="منابع انسانی" FontSize="20" FontWeight="Bold" Foreground="White"/>
-                                <StackPanel DockPanel.Dock="Left" Margin="15,0,0,0" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <materialDesign:PackIcon Kind="Circle" Style="{StaticResource LightSeaGreenNeonIcon}" Width="10" Height="10" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                                    <TextBlock Text="عملکرد دپارتمان:" Foreground="White" FontSize="16" VerticalAlignment="Center"/>
-                                    <TextBlock Text="عالی" Style="{StaticResource LightSeaGreenNeonText}" FontSize="16" FontWeight="Bold" Margin="10,0"/>
-                                </StackPanel>
-                        </StackPanel>
-                        <TextBlock Text="وضعیت کلی، شاخص‌ها و فعالیت‌های دپارتمان در یک نگاه"
-                       FontSize="14" Foreground="#64748B" Margin="0,4,0,0"/>
-                        </StackPanel>
-                        
-
-                    </DockPanel>
 
                     <!-- تب‌ها زیر عنوان -->
                     <TabControl x:Name="DeptTabs"
