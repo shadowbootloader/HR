@@ -1,0 +1,82 @@
+﻿<UserControl x:Class="HR.Controls.EvaluationItem"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             FlowDirection="RightToLeft"
+             FontFamily="pack://application:,,,/Fonts/#B Nazanin"
+             Margin="0,0,0,0">
+    <UserControl.Resources>
+
+        <Style x:Key="EvaluationNeonIcon"
+           TargetType="{x:Type materialDesign:PackIcon}">
+
+            <Setter Property="Foreground"
+                Value="#B388FF"/>
+
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect
+                    Color="#7C4DFF"
+                    BlurRadius="18"
+                    ShadowDepth="0"
+                    Opacity="0.9"/>
+                </Setter.Value>
+            </Setter>
+
+        </Style>
+
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- آیکون دایره‌ای -->
+        <Border x:Name="IconBorder"
+        Width="36"
+        Height="36"
+        CornerRadius="18"
+        Background="#1E1630"
+        Margin="0,0,12,0">
+
+            <materialDesign:PackIcon x:Name="IconText"
+        Kind="ClipboardCheckMultipleOutline"
+        Style="{StaticResource EvaluationNeonIcon}"
+        HorizontalAlignment="Center"
+        Width="25"
+        Height="25"
+        VerticalAlignment="Center"/>
+
+        </Border>
+
+        <!-- عنوان + تاریخ -->
+        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+            <TextBlock x:Name="TitleText"
+                       Text="عنوان ارزیابی"
+                       FontSize="13.5"
+                       FontWeight="SemiBold"
+                       Foreground="White"/>
+
+            <TextBlock x:Name="DateText"
+                       Text="تاریخ"
+                       FontSize="12"
+                       Foreground="#A0B0C8"
+                       Margin="0,2,0,0"/>
+        </StackPanel>
+
+        <!-- وضعیت -->
+        <Border x:Name="StatusBorder"
+                Grid.Column="2"
+                Background="#1E3A2F"
+                CornerRadius="12"
+                Padding="10,4"
+                VerticalAlignment="Center">
+            <TextBlock x:Name="StatusText"
+                       Text="تکمیل شده"
+                       FontSize="11"
+                       Foreground="#4ADE80"/>
+        </Border>
+    </Grid>
+</UserControl>

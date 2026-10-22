@@ -1,0 +1,37 @@
+﻿<UserControl x:Class="HR.Controls.QuickInsightsCard"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             FlowDirection="RightToLeft"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             FontFamily="pack://application:,,,/Fonts/#B Nazanin"
+             >
+
+    <Border Background="#0F172A"
+            CornerRadius="16"
+            Padding="10"
+            BorderBrush="#2A3548"
+            BorderThickness="1">
+
+        <StackPanel>
+            <!-- عنوان -->
+            <DockPanel  Margin="0,0,0,16">
+                <materialDesign:PackIcon Kind="StarFourPoints" DockPanel.Dock="Left"   Foreground="#4FC3F7" VerticalAlignment="Center" Margin="0,3,8,0"/>
+                <TextBlock DockPanel.Dock="Left" Text="بینش‌های سریع"
+                           FontSize="18"
+                           FontWeight="Bold"
+                           Foreground="White"
+                           VerticalAlignment="Center"/>
+                <TextBlock DockPanel.Dock="Right" Text="مشاهده بیشتر  ›"
+Foreground="#4FC3F7"
+FontFamily="pack://application:,,,/Fonts/#B Nazanin"
+FontSize="13"
+Margin="0,5,18,0"
+Cursor="Hand"
+HorizontalAlignment="Right" />
+            </DockPanel>
+
+            <!-- اینجا آیتم‌ها اضافه می‌شوند -->
+            <StackPanel x:Name="ItemsPanel"/>
+        </StackPanel>
+    </Border>
+</UserControl>

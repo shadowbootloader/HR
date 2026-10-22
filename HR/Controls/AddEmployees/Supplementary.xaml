@@ -1,0 +1,86 @@
+﻿<UserControl x:Class="HR.Controls.AddEmployees.Supplementary"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:HR.Controls.AddEmployees" xmlns:materialDesign="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <StackPanel>
+        <!-- عنوان -->
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,14" FlowDirection="RightToLeft">
+            <materialDesign:PackIcon Kind="FileDocumentOutline" Width="35" Height="35"
+                         Style="{StaticResource NeonIcon}"
+                         VerticalAlignment="Center"
+                         Margin="0,0,10,0"/>
+            <StackPanel Margin="10,0,0,0">
+                <TextBlock Text="اطلاعات تکمیلی" FontSize="18" FontWeight="SemiBold" Foreground="White"/>
+                <TextBlock Text="سمت، بیمه، نوع همکاری و رزومه" FontSize="14" Foreground="#64748B"/>
+            </StackPanel>
+        </StackPanel>
+
+        <!-- فرم -->
+        <WrapPanel FlowDirection="RightToLeft">
+
+            <TextBox x:Name="SelectedPostTB"
+         Style="{StaticResource DarkOutlinedTextBox}"
+         Width="180"
+         materialDesign:HintAssist.Hint="سمت"/>
+            <ComboBox x:Name="OragPlaceCombo"
+                Style="{StaticResource DarkOutlinedComboBox}"
+                Width="150"
+                materialDesign:HintAssist.Hint="جایگاه"
+                >
+
+            </ComboBox>
+            <ComboBox x:Name="InsuranceTypeCombo"
+          Style="{StaticResource DarkOutlinedComboBox}"
+          Width="150"
+          materialDesign:HintAssist.Hint="بیمه"
+          SelectedIndex="0">
+
+            </ComboBox>
+
+            <ComboBox x:Name="CooperationTypeCombo"
+          Style="{StaticResource DarkOutlinedComboBox}"
+          Width="150"
+          materialDesign:HintAssist.Hint="نوع همکاری"
+          SelectedIndex="0">
+
+            </ComboBox>
+
+            <DatePicker x:Name="CooprationStartDateDP"
+            Style="{StaticResource DarkOutlinedDatePicker}"
+            Width="150"
+            materialDesign:HintAssist.Hint="تاریخ شروع"/>
+
+            <DatePicker x:Name="CooprationEndDateDP"
+            Style="{StaticResource DarkOutlinedDatePicker}"
+            Width="150"
+            materialDesign:HintAssist.Hint="تاریخ پایان همکاری"/>
+
+            <TextBox x:Name="SalaryTB"
+         Style="{StaticResource DarkOutlinedTextBox}"
+         Width="160"
+         materialDesign:HintAssist.Hint="حقوق (ریال)"/>
+
+        </WrapPanel>
+
+        <!-- رزومه -->
+        <StackPanel Orientation="Horizontal" Margin="10,12,10,0" FlowDirection="RightToLeft">
+            <TextBlock Text="فایل رزومه :" Foreground="White" FontSize="18" VerticalAlignment="Center" Margin="0,0,12,0"/>
+            <Button x:Name="CVImageBtn"
+        Content="انتخاب فایل"
+        Height="36" Padding="14,0"
+        Background="#3B82F6" Foreground="White" BorderThickness="0"
+        materialDesign:ButtonAssist.CornerRadius="8"
+        Click="CVImageBtn_Click"/>
+            <Image x:Name="CVImage"
+       Width="80" Height="100"
+       Margin="16,0,0,0"
+       Stretch="UniformToFill"/>
+        </StackPanel>
+
+
+    </StackPanel>
+</UserControl>

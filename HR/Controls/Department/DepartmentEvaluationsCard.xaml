@@ -1,0 +1,161 @@
+﻿<UserControl x:Class="HR.Controls.Department.DepartmentEvaluationsCard"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
+             x:Name="Root">
+
+    <Border Background="#0F172A"
+            BorderBrush="#FF005689"
+            BorderThickness="1"
+            CornerRadius="14"
+            Padding="8" Margin="0,0,0,5">
+
+        <DockPanel>
+            <!-- هدر -->
+            <DockPanel DockPanel.Dock="Top" Margin="0,0,0,3" FlowDirection="RightToLeft">
+                <StackPanel Orientation="Horizontal">
+                    <materialDesign:PackIcon Kind="ClipboardAccountOutline"
+                         Width="30" Height="30"
+                         Foreground="#22D3EE"
+                         HorizontalAlignment="Center"
+                         VerticalAlignment="Center"/>
+                    <TextBlock Text="وضعیت ارزیابی‌ها"
+                               Foreground="White" FontSize="16" FontWeight="SemiBold" Margin="5,0,0,0"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+                <TextBlock DockPanel.Dock="Right" HorizontalAlignment="Right" Text="مشاهده همه"
+                           Foreground="#22D3EE" FontSize="14"
+                           VerticalAlignment="Center" Cursor="Hand"/>
+                
+            </DockPanel>
+            <Line Margin="0,0,0,5" DockPanel.Dock="Top"
+Stretch="Fill"
+X1="0" Y1="0"
+X2="1" Y2="0"
+StrokeThickness="1" Stroke="#FF005689"
+HorizontalAlignment="Stretch"
+VerticalAlignment="Top">
+
+            </Line>
+
+            <!-- چارت + لیست -->
+            <Grid DockPanel.Dock="Top" Margin="0,0,0,5" FlowDirection="RightToLeft">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- دونات -->
+                <Grid Width="120" Height="120">
+                    <lvc:PieChart Series="{Binding Series, ElementName=Root}"
+                                  InitialRotation="-90"
+                                  LegendPosition="Hidden"
+                                  TooltipPosition="Hidden" FlowDirection="LeftToRight"
+                                  AnimationsSpeed="0:0:0.35"
+                                  Background="Transparent"/>
+
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                                IsHitTestVisible="False">
+                        <TextBlock Text="{Binding TotalCount, ElementName=Root}"
+                                   Foreground="White" FontSize="26" FontWeight="Bold"
+                                   HorizontalAlignment="Center"/>
+                        <TextBlock Text="کل ارزیابی‌ها"
+                                   Foreground="#64748B" FontSize="11"
+                                   HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Legend -->
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="16,0,0,0">
+                    <DockPanel Margin="0,0,0,10">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="8" Height="8" Fill="Lime" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="تکمیل شده" Foreground="#94A3B8" FontSize="13" VerticalAlignment="Center" Width="70"/>
+                        </StackPanel>
+                        <TextBlock DockPanel.Dock="Left"
+                                   Text="{Binding CompletedCount, ElementName=Root}"
+                                   Foreground="White" FontSize="15" FontWeight="SemiBold"/>
+                    </DockPanel>
+                    <DockPanel Margin="0,0,0,10">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="8" Height="8" Fill="#22D3EE" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="در حال انجام" Foreground="#94A3B8" FontSize="13" VerticalAlignment="Center" Width="70"/>
+                        </StackPanel>
+                        <TextBlock DockPanel.Dock="Left"
+                                   Text="{Binding InProgressCount, ElementName=Root}"
+                                   Foreground="White" FontSize="15" FontWeight="SemiBold"/>
+                    </DockPanel>
+                    <DockPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="8" Height="8" Fill="Yellow" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="در انتظار" Foreground="#94A3B8" FontSize="13" VerticalAlignment="Center" Width="70"/>
+                        </StackPanel>
+                        <TextBlock DockPanel.Dock="Left"
+                                   Text="{Binding WaitingCount, ElementName=Root}"
+                                   Foreground="White" FontSize="15" FontWeight="SemiBold"/>
+                    </DockPanel>
+                </StackPanel>
+            </Grid>
+
+            <!-- سه کارت پایین -->
+            <UniformGrid Columns="3">
+                <!-- تکمیل شده -->
+                <Border Background="#111827" CornerRadius="12" Padding="10" Margin="0,0,6,0"
+                        BorderBrush="#FF005689" BorderThickness="1">
+                    <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="تکمیل شده" Foreground="#94A3B8" FontSize="11"
+                                   HorizontalAlignment="Center"/>
+                        <DockPanel Margin="0,8,0,0" HorizontalAlignment="Center">
+                            <TextBlock Text="{Binding CompletedCount, ElementName=Root}"
+                                       Foreground="White" DockPanel.Dock="Left" FontSize="20" FontWeight="Bold"
+                                       VerticalAlignment="Center"/>
+                            <Border DockPanel.Dock="Right" Width="28" Height="28" CornerRadius="14"
+                                    BorderBrush="#2DD4BF" BorderThickness="1.2"
+                                    Background="Transparent" Margin="8,0,0,0"
+                                    VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="Check" Width="20" Height="20"
+                                                         Foreground="#2DD4BF"
+                                                         HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </DockPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- در حال انجام -->
+                <Border Background="#111827" CornerRadius="12" Padding="10" Margin="3,0"
+                        BorderBrush="#FF005689" BorderThickness="1">
+                    <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="در حال انجام" Foreground="#94A3B8" FontSize="11"
+                                   HorizontalAlignment="Center"/>
+                        <DockPanel Margin="0,8,0,0" HorizontalAlignment="Center">
+                            <TextBlock Text="{Binding InProgressCount, ElementName=Root}" DockPanel.Dock="Left"
+                                       Foreground="White" FontSize="20" FontWeight="Bold"
+                                       VerticalAlignment="Center"/>
+                            <materialDesign:PackIcon Kind="ClockOutline" DockPanel.Dock="Right" Width="30" Height="30"
+                         Foreground="#38BDF8"
+                         HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </DockPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- در انتظار -->
+                <Border Background="#111827" CornerRadius="12" Padding="10" Margin="6,0,0,2"
+                        BorderBrush="#FF005689" BorderThickness="1">
+                    <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="در انتظار" Foreground="#94A3B8" FontSize="11"
+                                   HorizontalAlignment="Center"/>
+                        <DockPanel Margin="0,8,0,0" HorizontalAlignment="Center">
+                            <TextBlock Text="{Binding WaitingCount, ElementName=Root}" DockPanel.Dock="Left"
+                                       Foreground="White" FontSize="20" FontWeight="Bold"
+                                       VerticalAlignment="Center"/>
+                            <materialDesign:PackIcon DockPanel.Dock="Right" Kind="TimerSand" Width="30" Height="30"
+                         Foreground="#94A3B8"
+                         HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </DockPanel>
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+        </DockPanel>
+    </Border>
+</UserControl>

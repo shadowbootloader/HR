@@ -1,0 +1,186 @@
+﻿<UserControl x:Class="HR.Controls.SkillItem"
+             x:Name="root"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:materialDesign="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
+             FontFamily="pack://application:,,,/Fonts/#B Nazanin"
+             FlowDirection="RightToLeft"
+             Margin="0,0,0,0">
+
+    <UserControl.Resources>
+        <Style x:Key="RedNeonIcon"
+TargetType="{x:Type materialDesign:PackIcon}">
+
+            <Setter Property="Foreground"
+     Value="Red"/>
+
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect
+         Color="OrangeRed"
+         BlurRadius="18"
+         ShadowDepth="0"
+         Opacity="0.9"/>
+                </Setter.Value>
+            </Setter>
+
+        </Style>
+
+        <!-- ========================================================= -->
+        <!-- ProgressBar Style                                         -->
+        <!-- ========================================================= -->
+
+        <Style x:Key="SkillProgressBarStyle"
+               TargetType="{x:Type ProgressBar}">
+
+            <Setter Property="Height"
+                    Value="8"/>
+
+            <Setter Property="Minimum"
+                    Value="0"/>
+
+            <Setter Property="Maximum"
+                    Value="100"/>
+
+            <!-- قسمت خالی -->
+            <Setter Property="Background"
+                    Value="#2A3548"/>
+
+            <!-- قسمت پر شده -->
+            <Setter Property="Foreground">
+                <Setter.Value>
+
+                    <LinearGradientBrush
+                        StartPoint="1,0"
+                        EndPoint="0,0">
+
+                        <GradientStop
+                            Color="#00E5C3"
+                            Offset="0"/>
+
+                        <GradientStop
+                            Color="#3B82F6"
+                            Offset="1"/>
+
+                    </LinearGradientBrush>
+
+                </Setter.Value>
+            </Setter>
+
+            <Setter Property="BorderThickness"
+                    Value="0"/>
+
+
+            <!-- ===================================================== -->
+            <!-- ProgressBar Template                                  -->
+            <!-- ===================================================== -->
+
+            <Setter Property="Template">
+
+                <Setter.Value>
+
+                    <ControlTemplate TargetType="{x:Type ProgressBar}">
+
+                        <Grid
+                            x:Name="PART_Track"
+                            ClipToBounds="True">
+
+                            <!-- ===================================== -->
+                            <!-- Track / قسمت خالی                    -->
+                            <!-- ===================================== -->
+
+                            <Border
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="4"
+                                SnapsToDevicePixels="True"/>
+
+
+                            <!-- ===================================== -->
+                            <!-- Indicator / قسمت پر شده              -->
+                            <!-- ===================================== -->
+
+                            <Grid
+                                x:Name="PART_Indicator"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Stretch"
+                                ClipToBounds="True">
+
+                                <Border
+                                    Background="{TemplateBinding Foreground}"
+                                    CornerRadius="4"
+                                    SnapsToDevicePixels="True"/>
+
+                            </Grid>
+
+                        </Grid>
+
+                    </ControlTemplate>
+
+                </Setter.Value>
+
+            </Setter>
+
+        </Style>
+
+    </UserControl.Resources>
+
+
+    <DockPanel LastChildFill="True">
+
+        
+
+
+        <!-- ================================================= -->
+        <!-- درصد -->
+        <!-- ================================================= -->
+
+        <TextBlock x:Name="PercentageText"
+                   DockPanel.Dock="Right"
+                   Text="90%"
+                   FontSize="13"
+                   FontWeight="SemiBold"
+                   Foreground="White"
+                   VerticalAlignment="Center"
+                   Margin="10,0,8,0"
+                   FontFamily="pack://application:,,,/Fonts/#B Nazanin"
+                   TextAlignment="Left"/>
+
+
+        
+
+        <!-- ================================================= -->
+        <!-- عنوان + آیکون -->
+        <!-- ================================================= -->
+
+        <StackPanel DockPanel.Dock="Left"
+                    Orientation="Horizontal"
+                    VerticalAlignment="Center"
+                    Margin="5,0,0,0" Width="140">
+            <materialDesign:PackIcon x:Name="IconText" Kind="{Binding Icon,  ElementName=root}" VerticalAlignment="Center" Style="{StaticResource RedNeonIcon}"/>
+            
+           
+            <TextBlock x:Name="TitleText" FontFamily="pack://application:,,,/Fonts/#B Nazanin"
+                       Text="{Binding Title,
+                                      ElementName=root}"
+                       FontSize="13.5"
+                       Foreground="White"
+                       VerticalAlignment="Center"
+                       Margin="10,0,0,0" FontWeight="Bold" />
+
+            
+
+        </StackPanel>
+        <!-- ================================================= -->
+        <!-- ProgressBar -->
+        <!-- ================================================= -->
+
+        <ProgressBar x:Name="SkillProgressBar"
+             
+             Style="{StaticResource SkillProgressBarStyle}"
+             Value="{Binding Percentage,
+                             ElementName=root}"
+             VerticalAlignment="Center"/>
+
+
+    </DockPanel>
+
+</UserControl>

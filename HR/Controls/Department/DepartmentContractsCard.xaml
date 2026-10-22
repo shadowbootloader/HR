@@ -1,0 +1,172 @@
+﻿<UserControl x:Class="HR.Controls.Department.DepartmentContractsCard"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
+             x:Name="Root">
+
+    <Border Background="#0F172A"
+            BorderBrush="#FF005689"
+            BorderThickness="1"
+            CornerRadius="14"
+            Padding="8">
+
+        <DockPanel>
+            <!-- هدر -->
+            <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8" FlowDirection="RightToLeft">
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                    <materialDesign:PackIcon Kind="FileDocumentOutline"
+                         Width="30" Height="30"
+                         Foreground="#22D3EE"
+                         HorizontalAlignment="Center"
+                         VerticalAlignment="Center"/>
+                    
+                    <TextBlock Text="خلاصه قراردادها"
+                               Foreground="White" FontSize="16" Margin="5,0,0,0" FontWeight="SemiBold"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+                <TextBlock DockPanel.Dock="Right" Text="مشاهده همه" HorizontalAlignment="Right"
+                           Foreground="#22D3EE" FontSize="14"
+                           VerticalAlignment="Center" Cursor="Hand"/>
+            </DockPanel>
+            <Line Margin="0,0,0,5" DockPanel.Dock="Top"
+Stretch="Fill"
+X1="0" Y1="0"
+X2="1" Y2="0"
+StrokeThickness="1" Stroke="#FF005689"
+HorizontalAlignment="Stretch"
+VerticalAlignment="Top">
+
+            </Line>
+
+            <!-- چارت + راهنما -->
+            <Grid DockPanel.Dock="Top" Margin="0,0,0,8" FlowDirection="RightToLeft">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- دونات -->
+                <Grid Width="140" Height="140">
+                    <lvc:PieChart x:Name="Chart"
+                                  Series="{Binding Series, ElementName=Root}"
+                                  InitialRotation="-90"
+                                  MaxAngle="360"
+                                  MinValue="0"
+                                  AnimationsSpeed="0:0:0.7"
+                                  LegendPosition="Hidden"
+                                  TooltipPosition="Hidden"
+                                  Background="Transparent"/>
+
+                    <!-- عدد وسط -->
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                                IsHitTestVisible="False">
+                        <TextBlock Text="{Binding TotalCount, ElementName=Root}"
+                                   Foreground="White" FontSize="26" FontWeight="Bold"
+                                   HorizontalAlignment="Center"/>
+                        <TextBlock Text="مجموع قراردادها"
+                                   Foreground="#64748B" FontSize="14"
+                                   HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Legend -->
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10,0,0,0">
+                    <DockPanel Margin="0,0,0,5">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="8" Height="8" Fill="Lime" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="تکمیل شده" FontWeight="Bold" Foreground="#94A3B8" FontSize="14" VerticalAlignment="Center" Width="58"/>
+                        </StackPanel>
+                        <TextBlock DockPanel.Dock="Left"
+                                   Text="{Binding CompletedCount, ElementName=Root}" HorizontalAlignment="Center"
+                                   Foreground="White" FontSize="16" FontWeight="SemiBold"/>
+                    </DockPanel>
+                    <DockPanel Margin="0,0,0,5">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="8" Height="8" Fill="Yellow" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="در حال اتمام" FontWeight="Bold" Width="58" Foreground="#94A3B8" FontSize="13" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <TextBlock DockPanel.Dock="Left"
+                                   Text="{Binding ExpiringCount, ElementName=Root}" HorizontalAlignment="Center"
+                                   Foreground="White" FontSize="16" FontWeight="SemiBold"/>
+                    </DockPanel>
+                    <DockPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="8" Height="8" Fill="Red" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="لغو شده" FontWeight="Bold" Width="58" Foreground="#94A3B8" FontSize="13" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <TextBlock DockPanel.Dock="Left" HorizontalAlignment="Center"
+                                   Text="{Binding CancelledCount, ElementName=Root}"
+                                   Foreground="White" FontSize="16" FontWeight="SemiBold"/>
+                    </DockPanel>
+                    <DockPanel Margin="0,0,0,5">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="8" Height="8" Fill="HotPink" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="در حال بررسی" FontWeight="Bold" Width="58" Foreground="#94A3B8" FontSize="13" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <TextBlock DockPanel.Dock="Left"
+               Text="{Binding ReviewingCount, ElementName=Root}" HorizontalAlignment="Center"
+               Foreground="White" FontSize="16" FontWeight="SemiBold"/>
+                    </DockPanel>
+                    <DockPanel Margin="0,0,0,5">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="8" Height="8" Fill="LightGreen" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="تایید اولیه" FontWeight="Bold" Width="58" Foreground="#94A3B8" FontSize="13" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <TextBlock DockPanel.Dock="Left"
+Text="{Binding InitialApprovalCount, ElementName=Root}" HorizontalAlignment="Center"
+Foreground="White" FontSize="16" FontWeight="SemiBold"/>
+                    </DockPanel>
+                    <DockPanel Margin="0,0,0,5">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="8" Height="8" Fill="OrangeRed" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="دارای مشکل" Width="58" Foreground="#94A3B8" FontWeight="Bold" FontSize="13" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <TextBlock DockPanel.Dock="Left"
+Text="{Binding ProblemCount, ElementName=Root}" HorizontalAlignment="Center"
+Foreground="White" FontSize="16" FontWeight="SemiBold"/>
+                    </DockPanel>
+                </StackPanel>
+            </Grid>
+
+            <!-- دو کارت پایین -->
+            <!--<UniformGrid Columns="2" DockPanel.Dock="Bottom">
+                <Border Background="#111827" CornerRadius="12" Padding="12" Margin="0,0,6,0"
+                        BorderBrush="#FF005689" BorderThickness="1">
+                    <DockPanel>
+                        <StackPanel>
+                            <TextBlock Text="در حال اتمام" Foreground="#94A3B8" FontSize="11"/>
+                            <TextBlock Text="{Binding PendingCount, ElementName=Root}"
+                                       Foreground="White" FontSize="20" FontWeight="Bold" Margin="0,4,0,0"/>
+                        </StackPanel>
+                        <Border DockPanel.Dock="Left" Width="32" Height="32" CornerRadius="16"
+                                BorderBrush="#FBBF24" BorderThickness="1.2" Background="Transparent"
+                                VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="ClockOutline" Width="16" Height="16"
+                                                     Foreground="#FBBF24"
+                                                     HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </DockPanel>
+                </Border>
+
+                <Border Background="#111827" CornerRadius="12" Padding="12" Margin="6,0,0,0"
+                        BorderBrush="#FF005689" BorderThickness="1">
+                    <DockPanel>
+                        <StackPanel>
+                            <TextBlock Text="منقضی شده" Foreground="#94A3B8" FontSize="11"/>
+                            <TextBlock Text="{Binding ExpiredCount, ElementName=Root}"
+                                       Foreground="White" FontSize="20" FontWeight="Bold" Margin="0,4,0,0"/>
+                        </StackPanel>
+                        <Border DockPanel.Dock="Left" Width="32" Height="32" CornerRadius="16"
+                                BorderBrush="#F87171" BorderThickness="1.2" Background="Transparent"
+                                VerticalAlignment="Center">
+                            <materialDesign:PackIcon Kind="AlertOutline" Width="16" Height="16"
+                                                     Foreground="#F87171"
+                                                     HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </DockPanel>
+                </Border>
+            </UniformGrid>-->
+        </DockPanel>
+    </Border>
+</UserControl>

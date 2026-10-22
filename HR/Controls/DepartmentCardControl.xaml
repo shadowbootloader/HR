@@ -1,0 +1,224 @@
+﻿<UserControl x:Class="HR.Controls.DepartmentCardControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             x:Name="Root"
+             Width="300"
+             MinHeight="180" Margin="10,0,10,10"
+             Cursor="Hand" Loaded="Root_Loaded">
+    <UserControl.Resources>
+        <Style x:Key="LawnGreenNeonIcon"
+   TargetType="{x:Type materialDesign:PackIcon}">
+
+            <Setter Property="Foreground"
+        Value="LawnGreen"/>
+
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect
+            Color="Yellow"
+            BlurRadius="18"
+            ShadowDepth="0"
+            Opacity="0.9"/>
+                </Setter.Value>
+            </Setter>
+
+        </Style>
+        <Style x:Key="RedNeonIcon"
+   TargetType="{x:Type materialDesign:PackIcon}">
+
+            <Setter Property="Foreground"
+        Value="Red"/>
+
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect
+            Color="Yellow"
+            BlurRadius="18"
+            ShadowDepth="0"
+            Opacity="0.9"/>
+                </Setter.Value>
+            </Setter>
+
+        </Style>
+        <Style x:Key="BlueNeonIcon"
+TargetType="{x:Type materialDesign:PackIcon}">
+
+            <Setter Property="Foreground"
+     Value="SkyBlue"/>
+
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect
+         Color="Yellow"
+         BlurRadius="18"
+         ShadowDepth="0"
+         Opacity="0.9"/>
+                </Setter.Value>
+            </Setter>
+
+        </Style>
+    </UserControl.Resources>
+
+    <Grid  Background="#0F172A">
+
+        
+
+
+        <!-- Neon Core -->
+        <Border
+        CornerRadius="10"
+        Background="Transparent"
+        BorderBrush="#2A3548"
+        BorderThickness="1" Padding="20,10">
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- هدر: آیکون + نام دپارتمان + وضعیت -->
+                <DockPanel Grid.Row="0" Margin="0,0,0,12" LastChildFill="True">
+                    <materialDesign:PackIcon DockPanel.Dock="Right" Kind="{Binding IconKind, ElementName=Root}" Style="{StaticResource NeonIcon}"
+                     Width="40" Height="40"
+                     Foreground="#7DD3FC"
+                     HorizontalAlignment="Center"
+                     VerticalAlignment="Center"/>
+
+                    <Border DockPanel.Dock="Left" Margin="0,10,10,10"
+                        CornerRadius="10"
+                        Padding="8,3"
+                        VerticalAlignment="Top"
+                        Background="{Binding StatusBackground, ElementName=Root}">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon x:Name="LiteCircle" 
+                         Kind="Circle" 
+                         Padding="0" 
+                         Width="8" 
+                         Height="8" 
+                         VerticalAlignment="Center" 
+                         Margin="0,0,10,0"/>
+                            <TextBlock Text="{Binding StatusText, ElementName=Root}" Margin="0,0,10,0"
+                                FontSize="14"
+                                    Foreground="{Binding StatusForeground, ElementName=Root}"/>
+                        </StackPanel>
+                        
+                    </Border>
+
+                    <StackPanel VerticalAlignment="Center" Margin="10,0,0,0">
+                        <TextBlock Text="{Binding DepartmentName, ElementName=Root}"
+                               FontSize="18" FontWeight="SemiBold"
+                               Foreground="White"
+                               TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Text="{Binding ManagerName, ElementName=Root, StringFormat=مدیر: {0}}"
+                               FontSize="16"
+                               Foreground="#94A3B8"
+                               Margin="0,2,0,0"/>
+                    </StackPanel>
+                </DockPanel>
+
+                <!-- عملکرد -->
+                <Grid Grid.Row="1" Margin="0,0,0,14">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- سمت چپ: عنوان + تعداد ارزیابی‌ها -->
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="میانگین عملکرد"
+                   FontSize="15"
+                   Foreground="White"/>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                            <TextBlock Text="{Binding CompletedEvaluations, ElementName=Root}"
+                       FontSize="22"
+                       FontWeight="Bold"
+                       Foreground="White"/>
+                            <TextBlock Text=" از "
+                       FontSize="16"
+                       Foreground="White"
+                       VerticalAlignment="Bottom"
+                       Margin="4,0,4,2"/>
+                            <TextBlock Text="{Binding TotalEvaluations, ElementName=Root}"
+                       FontSize="18"
+                       FontWeight="SemiBold"
+                       Foreground="White"
+                       VerticalAlignment="Bottom"
+                       Margin="0,0,0,1"/>
+                            <TextBlock Text=" ارزیابی"
+                       FontSize="14"
+                       Foreground="White"
+                       VerticalAlignment="Bottom"
+                       Margin="4,0,0,2"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- حلقه Progressive -->
+                    <Grid Grid.Column="1" Width="72" Height="72" Margin="0,0,10,0">
+                        <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}"
+                     Value="{Binding PerformanceValue, ElementName=Root}"
+                     Minimum="0"
+                     Maximum="100"
+                     Foreground="#00E5FF"
+                     Width="72"
+                     Height="72"
+                     IsIndeterminate="False"
+                     BorderThickness="8"/>
+
+                        <TextBlock Text="{Binding PerformanceValue, ElementName=Root, StringFormat={}{0:0}}"
+                   FontSize="17"
+                   FontWeight="Bold"
+                   Foreground="White"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"/>
+                    </Grid>
+                </Grid>
+                <!-- آمار -->
+                <UniformGrid Grid.Row="2" Columns="2" Margin="0,0,0,12">
+                    <StackPanel Margin="0,0,8,0">
+                        <TextBlock Text="اعضا" FontSize="16" HorizontalAlignment="Center" Foreground="White"/>
+                        <TextBlock Text="{Binding MembersCount, ElementName=Root}" HorizontalAlignment="Center"
+                   FontSize="18" FontWeight="Bold" Foreground="White"/>
+                    </StackPanel>
+                    <StackPanel>
+                        <TextBlock Text="پروژه‌ها" FontSize="16" HorizontalAlignment="Center" Foreground="White"/>
+                        <TextBlock Text="{Binding ProjectsCount, ElementName=Root}" HorizontalAlignment="Center"
+                   FontSize="18" FontWeight="Bold" Foreground="White"/>
+                    </StackPanel>
+                </UniformGrid>
+
+                <!-- دو نوار پیشرفت -->
+                <StackPanel Grid.Row="3" FlowDirection="RightToLeft">
+                    <DockPanel Margin="0,0,0,4">
+                        <TextBlock Text="تکمیل ارزیابی" FontSize="14" Foreground="White"/>
+                        <TextBlock DockPanel.Dock="Left" Margin="10,0" Padding="0"
+                   Text="{Binding EvaluationProgress, ElementName=Root, StringFormat={}{0:0}%}"
+                   FontSize="16" Foreground="#00E5D4"/>
+                    </DockPanel>
+                    <ProgressBar Height="7" Minimum="0" Maximum="100"
+                 Value="{Binding EvaluationProgress, ElementName=Root}"
+                 Foreground="#00E5D4" Background="#164E63"
+                 BorderThickness="0" Margin="0,0,0,10"/>
+
+                    <DockPanel Margin="0,0,0,4">
+                        <TextBlock Text="پیشرفت پروژه‌ها" FontSize="14" Foreground="White"/>
+                        <TextBlock DockPanel.Dock="Left" Padding="0" Margin="10,0"
+                   Text="{Binding ProjectProgress, ElementName=Root, StringFormat={}{0:0}%}"
+                   FontSize="16" Foreground="#A78BFA"/>
+                    </DockPanel>
+                    <ProgressBar Height="7" Minimum="0" Maximum="100"
+                 Value="{Binding ProjectProgress, ElementName=Root}"
+                 Foreground="#A78BFA" Background="#2E1065"
+                 BorderThickness="0"/>
+                </StackPanel>
+            </Grid>
+
+        </Border>
+
+    </Grid>
+    
+</UserControl>

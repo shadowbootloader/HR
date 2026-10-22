@@ -1,0 +1,90 @@
+﻿<Page x:Class="HR.Pages.AddEmployeePage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+      xmlns:materialDesignConverters="clr-namespace:MaterialDesignThemes.Wpf.Converters;assembly=MaterialDesignThemes.Wpf" xmlns:pdtt="https://github.com/Behnam2064/PersianDateTimeWPFTools" xmlns:addemployees="clr-namespace:HR.Controls.AddEmployees"
+      Background="#0B1220"
+      FontFamily="pack://application:,,,/Fonts/#B Nazanin"
+      FlowDirection="LeftToRight">
+    <Page.Resources>
+        
+    </Page.Resources>
+    <ScrollViewer VerticalScrollBarVisibility="Auto" ScrollChanged="ScrollViewer_ScrollChanged" Padding="28">
+        <ScrollViewer.Resources>
+
+            <Style TargetType="ScrollBar"
+               BasedOn="{StaticResource NeonScrollBar}"/>
+
+        </ScrollViewer.Resources>
+
+        <StackPanel  HorizontalAlignment="Stretch" >
+
+            <!-- ================= کارت اصلی: Personal + Job ================= -->
+            <Border Background="#111827" CornerRadius="18" Padding="22"
+                    BorderBrush="#1F2A44" BorderThickness="1" Margin="0,0,0,14">
+                
+                <StackPanel x:Name="DataContainerST" >
+
+                    <!-- ======= Personal Information header ====== -->
+                    <addemployees:BasicInfo>
+                        
+                    </addemployees:BasicInfo>
+                    <addemployees:PhoneInfo>
+                        
+                    </addemployees:PhoneInfo>
+                    <addemployees:EducationInfo>
+                        
+                    </addemployees:EducationInfo>
+                    <addemployees:TrainingCourse>
+                        
+                    </addemployees:TrainingCourse>
+                    <addemployees:JobHistory>
+                        
+                    </addemployees:JobHistory>
+                    <!-- ========= Job Information header =========== -->
+                    
+                    <!-- ========== دوره‌های آموزشی ========== -->
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                </StackPanel>
+
+            </Border>
+
+            
+            
+            <!-- دکمه‌ها پایین راست -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,20">
+                <Button Height="40" Padding="16,0" Margin="0,0,10,0" x:Name="CancelBtn" Click="CancelBtn_Click"
+                        Background="Red" BorderBrush="#334155" BorderThickness="1"
+                        Foreground="#E2E8F0" materialDesign:ButtonAssist.CornerRadius="10">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="Close" Width="16" Height="16" Margin="0,0,6,0"/>
+                        <TextBlock Text="انصراف" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+                <Button Height="40" Padding="16,0" x:Name="SaveBtn" Click="SaveBtn_Click"
+                        Background="#2563EB" BorderThickness="0" Foreground="White"
+                        materialDesign:ButtonAssist.CornerRadius="10">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="ContentSave" Width="16" Height="16" Margin="0,0,6,0"/>
+                        <TextBlock Text="ذخیره" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+
+        </StackPanel>
+    </ScrollViewer>
+</Page>

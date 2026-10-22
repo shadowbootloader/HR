@@ -1,0 +1,67 @@
+﻿<UserControl x:Class="HR.Controls.KeyCompetenciesCard"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF" xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             FlowDirection="RightToLeft"
+             FontFamily="pack://application:,,,/Fonts/#B Nazanin"
+             >
+
+    <Border Background="#0F172A"
+            CornerRadius="16"
+            Padding="5"
+            BorderBrush="#2A3548"
+            BorderThickness="1">
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- هدر -->
+            <Grid Margin="8,6,8,4" Grid.Column="0">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Top">
+                    <materialDesign:PackIcon Kind="StarFourPoints" DockPanel.Dock="Left"   Foreground="#4FC3F7" VerticalAlignment="Center" Margin="0,3,8,0"/>
+                    <TextBlock Text="شایستگی‌های کلیدی"
+                               FontSize="16"
+                               FontWeight="Bold"
+                               Foreground="White"
+                               VerticalAlignment="Center"/>
+                    
+                </StackPanel>
+
+                <ComboBox x:Name="SourceComboBox"
+                          HorizontalAlignment="Left"
+                          VerticalAlignment="Top"
+                          Width="145"
+                          Height="30"
+                          FontSize="12"
+                          Background="#2A3548"
+                          Foreground="#E2E8F0"
+                          BorderBrush="#3A4A5E"
+                          BorderThickness="1"
+                          Margin="0,50,4,0">
+                    <ComboBoxItem Content="بازخورد ۳۶۰ درجه" IsSelected="True"/>
+                    <ComboBoxItem Content="خودارزیابی"/>
+                    <ComboBoxItem Content="مدیر مستقیم"/>
+                    <ComboBoxItem Content="همکاران"/>
+                </ComboBox>
+            </Grid>
+
+            <!-- رادار چارت - فضای بیشتر و بدون حاشیه اضافی -->
+            <lvc:PolarChart x:Name="RadarChart"
+                            Grid.Column="1"
+                            FlowDirection="LeftToRight"
+                            Background="Transparent"
+                            InitialRotation="-90"
+                
+                TooltipPosition="Hidden"
+                Height="270"
+                Width="270"
+                Margin="5,0,30,5"
+                            LegendPosition="Hidden"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Center"/>
+        </Grid>
+    </Border>
+</UserControl>

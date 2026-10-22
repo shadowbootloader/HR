@@ -1,0 +1,220 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>چارت سازمانی</title>
+
+    <!-- اگر فایل لایسنس محلی داری از این استفاده کن -->
+    <script src="orgchart.js"></script>
+    <!-- در غیر این صورت از CDN -->
+    <!-- <script src="https://balkan.app/js/orgchart.js"></script> -->
+
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            overflow: hidden;
+            font-family: 'B Nazanin', Tahoma, sans-serif;
+            direction: rtl;
+        }
+
+        #tree {
+            width: 100%;
+            height: 100%;
+            background: transparent;
+        }
+    </style>
+</head>
+<body>
+    <div id="tree"></div>
+
+    <script>
+        // ===================== قالب Executive =====================
+        OrgChart.templates.executive = Object.assign({}, OrgChart.templates.ana);
+        OrgChart.templates.executive.size = [315, 110];
+
+        OrgChart.templates.executive.node = function (node, data) {
+            // رنگ از داده می‌آید (اگر نبود آبی پیش‌فرض)
+            const color = data.color || "#5C6BC0";
+
+            const avatarColors = [
+                "#5C6BC0", "#26A69A", "#AB47BC", "#EF5350", "#42A5F5",
+                "#66BB6A", "#FFA726", "#EC407A", "#8D6E63", "#7E57C2"
+            ];
+            const avatarColor = avatarColors[(Number(data.id) || 0) % avatarColors.length];
+
+            // حروف اول اسم
+            const initials = (data.name || "")
+                .split(" ")
+                .filter(Boolean)
+                .map(p => p[0])
+                .join("")
+                .substring(0, 2)
+                .toUpperCase();
+
+            const role = data.role || "";
+            const badgeWidth = Math.max(40, role.length * 8 + 18);
+            const badgeX = node.w - badgeWidth - 14;
+
+            const shadowId = `shadow-${data.id}`;
+            const clipId = `clip-${data.id}`;
+            const avatarClipId = `avatar-clip-${data.id}`;
+            const textStartX = 110;
+            const textEndX = role ? (node.w - badgeWidth - 30) : (node.w - 20);
+            const textCenterX = (textStartX + textEndX) / 2;
+
+            return `
+                    <defs>
+                        <filter id="${shadowId}" x="-25%" y="-25%" width="150%" height="150%">
+                            <feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#64748B" flood-opacity="0.14"/>
+                        </filter>
+                        <clipPath id="${clipId}">
+                            <rect x="0" y="0" width="${node.w}" height="${node.h}" rx="14" ry="14"/>
+                        </clipPath>
+                        <clipPath id="${avatarClipId}">
+                            <circle cx="55" cy="${node.h / 2}" r="36"/>
+                        </clipPath>
+                    </defs>
+
+                    <!-- پس‌زمینه کارت -->
+                    <rect x="0" y="0" width="${node.w}" height="${node.h}"
+                          rx="14" ry="14"
+                          fill="#ffffff"
+                          stroke="#E5E7EB"
+                          stroke-width="1"
+                          filter="url(#${shadowId})"/>
+
+                    <!-- نوار رنگی کناری -->
+                    <rect x="0" y="0" width="7" height="${node.h}"
+                          fill="${color}"
+                          clip-path="url(#${clipId})"/>
+
+                    <!-- آواتار: عکس یا حروف اول -->
+                    ${data.img ? `
+                        <image href="${data.img}"
+                               x="19" y="${node.h / 2 - 36}"
+                               width="72" height="72"
+                               clip-path="url(#${avatarClipId})"
+                               preserveAspectRatio="xMidYMid slice"/>
+                    ` : `
+                        <circle cx="55" cy="${node.h / 2}" r="36" fill="${avatarColor}"/>
+                        <text x="55" y="${node.h / 2 + 1}"
+                              text-anchor="middle"
+                              dominant-baseline="middle"
+                              font-size="22"
+                              font-weight="700"
+                              fill="#FFFFFF"
+                              font-family="B Nazanin, Tahoma, sans-serif">
+                            ${initials}
+                        </text>
+                    `}
+
+                    <!-- نام -->
+    <text x="${textCenterX}" y="34"
+          text-anchor="middle"
+          font-size="24"
+          font-weight="700"
+          fill="#1F2937"
+          font-family="B Nazanin, Tahoma, sans-serif">
+        ${data.name || ""}
+    </text>
+
+    <!-- سمت -->
+    <text x="${textCenterX}" y="68"
+          text-anchor="middle"
+          font-size="22"
+          fill="#64748B"
+          font-family="B Nazanin, Tahoma, sans-serif">
+        ${data.title || ""}
+    </text>
+
+    <!-- دپارتمان -->
+    <text x="${textCenterX}" y="90"
+          text-anchor="middle"
+          font-size="20"
+          fill="${color}"
+          font-family="B Nazanin, Tahoma, sans-serif">
+        ${data.department || ""}
+    </text>
+
+                    <!-- بج نقش -->
+                    ${role ? `
+                    <rect x="${badgeX}" y="12"
+                          width="${badgeWidth}" height="24"
+                          rx="12" ry="12"
+                          fill="${color}" fill-opacity="0.13"/>
+                    <text x="${badgeX + badgeWidth / 2}" y="24"
+                          text-anchor="middle"
+                          dominant-baseline="middle"
+                          font-size="12"
+                          font-weight="700"
+                          fill="${color}"
+                          font-family="B Nazanin, Tahoma, sans-serif">
+                        ${role}
+                    </text>
+                    ` : ""}
+                `;
+        };
+
+        // لینک‌ها
+        OrgChart.templates.executive.link =
+            `<path stroke-linejoin="round" stroke="#CBD5E1" stroke-width="1.5" fill="none" d="{curve}" />`;
+
+        // دکمه +
+        OrgChart.templates.executive.plus = function (node) {
+            return `
+                <g transform="translate(${node.w / 2}, ${node.h - 2})">
+                    <circle cx="0" cy="0" r="13" fill="#fff" stroke="#1F2937" stroke-width="1.8"/>
+                    <line x1="-5" y1="0" x2="5" y2="0" stroke="#1F2937" stroke-width="1.8" stroke-linecap="round"/>
+                    <line x1="0" y1="-5" x2="0" y2="5" stroke="#1F2937" stroke-width="1.8" stroke-linecap="round"/>
+                </g>`;
+        };
+
+        // دکمه -
+        OrgChart.templates.executive.minus = function (node) {
+            return `
+                <g transform="translate(${node.w / 2}, ${node.h - 2})">
+                    <circle cx="0" cy="0" r="13" fill="#fff" stroke="#1F2937" stroke-width="1.8"/>
+                    <line x1="-5" y1="0" x2="5" y2="0" stroke="#1F2937" stroke-width="1.8" stroke-linecap="round"/>
+                </g>`;
+        };
+
+        // ===================== مدیریت چارت =====================
+        let chart = null;
+
+        function createChart(nodes) {
+            if (!chart) {
+                chart = new OrgChart(document.getElementById("tree"), {
+                    template: "executive",
+                    highlightOnHover: "parents",
+                    enableSearch: false,
+                    mouseScroll: OrgChart.action.scroll
+                });
+
+                chart.onRedraw(() => {
+                    if (chart.manager.action == OrgChart.action.expand ||
+                        chart.manager.action == OrgChart.action.collapse) {
+                        chart.fit();
+                    }
+                });
+            }
+
+            chart.load(nodes);
+            setTimeout(() => chart.fit(), 80);
+        }
+
+        // دریافت داده از C#
+        window.chrome.webview.addEventListener('message', function (event) {
+            createChart(event.data);
+        });
+
+        // اعلام آمادگی به C#
+        if (window.chrome && window.chrome.webview) {
+            window.chrome.webview.postMessage("ready");
+        }
+    </script>
+</body>
+</html>

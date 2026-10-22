@@ -1,0 +1,238 @@
+﻿<Window x:Class="HR.Pages.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:controls="clr-namespace:HR.Controls" xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes" xmlns:pages="clr-namespace:HR.Pages"
+        Title="HR Suite"
+        Height="750" Width="1520"
+        WindowStartupLocation="CenterScreen"
+        Background="#0B1120"
+        WindowStyle="SingleBorderWindow"
+        Style="{StaticResource MaterialDesignWindow}"
+        WindowState="Maximized"
+        >
+
+    <Window.Resources>
+        <SolidColorBrush x:Key="BgBrush" Color="#0B1120"/>
+        <SolidColorBrush x:Key="CardBrush" Color="#0F172A"/>
+        <SolidColorBrush x:Key="PrimaryBrush" Color="#3B82F6"/>
+        <SolidColorBrush x:Key="TextPrimary" Color="#F1F5F9"/>
+        <SolidColorBrush x:Key="TextSecondary" Color="#94A3B8"/>
+
+        <Style x:Key="NavButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
+            <Setter Property="FontSize" Value="13.5"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Padding" Value="14,11"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd" Background="{TemplateBinding Background}" 
+                                CornerRadius="10" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#1E293B"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="NavButtonActive" TargetType="Button" BasedOn="{StaticResource NavButton}">
+            <Setter Property="Background" Value="#1E3A8A"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Background="{StaticResource BgBrush}">
+
+        <!-- ===================== هدر بالا ===================== -->
+        <Border Height="50" Background="#0F172A" VerticalAlignment="Top"
+                BorderBrush="#1E293B" BorderThickness="0,0,0,1">
+            <Grid Margin="20,0" FlowDirection="RightToLeft">
+
+                <!-- سمت چپ هدر: لوگو + همبرگری + عنوان صفحه -->
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <!-- لوگو -->
+                    <Border Width="34" Height="34" Background="#3B82F6" CornerRadius="8" Margin="0,0,12,0">
+                        <TextBlock Text="HR" Foreground="White" FontWeight="Bold" FontSize="13"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <TextBlock Text="HR Suite" FontSize="16" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+
+                    <!-- همبرگری -->
+                    <Button Background="Transparent" BorderThickness="0" Margin="35,0,20,0" Cursor="Hand" Padding="6" x:Name="HamBtn" Click="HamBtn_Click">
+                        <TextBlock Text="☰" FontSize="20" Foreground="#94A3B8"/>
+                    </Button>
+
+                    <!-- عنوان صفحه (داخل هدر) -->
+                    <StackPanel VerticalAlignment="Center" Margin="30,0,0,0">
+                        <TextBlock Text="مرور کلی پرونده" x:Name="PageName" FontSize="22"  FontWeight="Bold" Foreground="White" FontFamily="pack://application:,,,/Fonts/#B Nazanin" />
+
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- سمت راست هدر -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <!-- سرچ -->
+                    <Border Visibility="Collapsed" Background="#1E293B" CornerRadius="10" Width="280" Height="38" Margin="0,0,12,0">
+                        <TextBlock Text="🔍  Search learning, courses, certificates..." 
+                                   Foreground="#64748B" FontSize="13" 
+                                   VerticalAlignment="Center" Margin="14,0"/>
+                    </Border>
+
+                    <!-- نوتیفیکیشن --><!--
+                    <Border Background="#1E293B" CornerRadius="10" Width="40" Height="38" Margin="0,0,10,0">
+                        <Grid>
+                            <TextBlock Text="🔔" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <Border Background="#EF4444" CornerRadius="8" Width="16" Height="16" 
+                                    HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,4,4,0">
+                                <TextBlock Text="3" FontSize="10" Foreground="White" 
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </Grid>
+                    </Border>-->
+
+                   
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <DockPanel LastChildFill="True" Margin="0,50,0,0" >
+            <Border x:Name="RightMenu" DockPanel.Dock="Right" Background="#0F172A" HorizontalAlignment="Right" BorderBrush="#1E293B" BorderThickness="1,0,0,0">
+                <DockPanel FlowDirection="RightToLeft">
+                    <!-- منو -->
+                    <StackPanel DockPanel.Dock="Top" Margin="5,20,5,0">
+
+                        <Button x:Name="DashbordBynSide" Style="{StaticResource NavButtonActive}" Margin="0,2" Padding="9"  Click="SideMenu_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="Home" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="15" Width="30"  Height="30"/>
+                                <TextBlock Text="داشبورد" VerticalAlignment="Center" FontSize="20" FontWeight="Bold" FontFamily="pack://application:,,,/Fonts/#B Nazanin"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button Style="{StaticResource NavButton}" x:Name="EmployeesBtn" Margin="0,2" Padding="9" Click="SideMenu_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="AccountGroup" Margin="0,0,10,0" FontSize="15" Width="30"  Height="30"/>
+                                <TextBlock Text="پرسنل" VerticalAlignment="Center" FontSize="20" FontWeight="Bold" FontFamily="pack://application:,,,/Fonts/#B Nazanin"/>
+
+                            </StackPanel>
+                        </Button>
+
+                        <Button Style="{StaticResource NavButton}" x:Name="DepartmentsBtn" Margin="0,2" Click="SideMenu_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="Domain" Margin="0,0,10,0" FontSize="15" Width="30"  Height="30" />
+                                <TextBlock Text="دپارتمان‌ها" VerticalAlignment="Center" FontSize="20" FontWeight="Bold" FontFamily="pack://application:,,,/Fonts/#B Nazanin"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button Style="{StaticResource NavButton}" Margin="0,2" Click="SideMenu_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="⭐" FontSize="15" Width="28"/>
+                                <TextBlock Text="Recommended for You" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button Style="{StaticResource NavButton}" Margin="0,2" Click="SideMenu_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="🚀" FontSize="15" Width="28"/>
+                                <TextBlock Text="Career Development" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button Style="{StaticResource NavButton}" Margin="0,2" Click="SideMenu_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="📊" FontSize="15" Width="28"/>
+                                <TextBlock Text="Reports &amp; Insights" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button Style="{StaticResource NavButton}" Margin="0,2" Click="SideMenu_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="⚙️" FontSize="15" Width="28"/>
+                                <TextBlock Text="Settings" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                    <materialDesign:PopupBox DockPanel.Dock="Bottom" Margin="10,50" PlacementMode="BottomAndAlignRightEdges" StaysOpen="False" PopupMode="Click">
+
+                        <!-- ظاهر پروفایل (دکمه‌ای که کلیک می‌شود) -->
+                        <materialDesign:PopupBox.ToggleContent>
+                            <Border Background="#1E293B" CornerRadius="20" Padding="6,4"  BorderBrush="#334155"  BorderThickness="1"  Cursor="Hand">
+                                <StackPanel Orientation="Horizontal">
+                                    <!-- عکس پروفایل -->
+                                    <Border Width="28" Height="28" CornerRadius="14" ClipToBounds="True" Margin="0,0,8,0" Background="#3B82F6">
+                                        <Image x:Name="UserProfileImg" Stretch="UniformToFill"/>
+                                    </Border>
+
+                                    <!-- نام و نقش -->
+                                    <StackPanel VerticalAlignment="Center" Margin="0,0,6,0">
+                                        <TextBlock Text="Priya Sharma"  FontSize="12.5" FontWeight="SemiBold"  Foreground="White"/>
+                                        <TextBlock Text="HR Business Partner" FontSize="10.5" Foreground="#94A3B8"/>
+                                    </StackPanel>
+
+                                    <!-- فلش -->
+                                    <TextBlock Text="▼" FontSize="10"  Foreground="#94A3B8" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                        </materialDesign:PopupBox.ToggleContent>
+
+                        <!-- منوی بازشونده -->
+                        <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="12" Padding="6" Width="140">
+                            <StackPanel>
+                                <Button Content="پروفایل من" FontWeight="Bold" FontSize="18" FontFamily="pack://application:,,,/Fonts/#B Nazanin"
+ Style="{StaticResource MaterialDesignFlatButton}"
+ HorizontalContentAlignment="Left"
+ Foreground="White"
+ Height="36"
+ Margin="0,2"/>
+
+                                <Button Content="تنظیمات" FontWeight="Bold" FontSize="18" FontFamily="pack://application:,,,/Fonts/#B Nazanin"
+ Style="{StaticResource MaterialDesignFlatButton}"
+ HorizontalContentAlignment="Left"
+ Foreground="White"
+ Height="36"
+ Margin="0,2"/>
+
+                                <Separator Background="#334155" Margin="4,6"/>
+
+                                <Button Content="خروج" FontWeight="Bold" FontSize="18" FontFamily="pack://application:,,,/Fonts/#B Nazanin"
+ Style="{StaticResource MaterialDesignFlatButton}"
+ HorizontalContentAlignment="Left"
+ Foreground="#F87171"
+ Height="36"
+ Margin="0,2"/>
+                            </StackPanel>
+                        </Border>
+                    </materialDesign:PopupBox>
+
+                    <!-- کارت انگیزشی پایین -->
+                    <Border DockPanel.Dock="Bottom" Background="#0F172A" CornerRadius="14" 
+                Margin="14,0,14,18" Padding="16" Height="110">
+                        <StackPanel>
+                            <TextBlock Text="⭐" FontSize="20" Margin="0,0,0,6"/>
+                            <TextBlock Text="Keep growing." FontSize="14" FontWeight="SemiBold" Foreground="White"/>
+                            <TextBlock Text="Keep learning." FontSize="14" FontWeight="SemiBold" Foreground="White"/>
+                        </StackPanel>
+                    </Border>
+                    <!-- پروفایل -->
+                </DockPanel>
+            </Border>
+            
+            <!-- ===================== فضای محتوا (وسط) ===================== -->
+            <Frame Name="DataPanel" NavigationUIVisibility="Hidden" Margin="0,5,0,0"  DockPanel.Dock="Right" Background="#0B1120">
+                
+            </Frame>
+        </DockPanel>
+        <!-- ===================== سایدبار سمت راست ===================== -->
+        <Grid x:Name="NotificationHost"
+          Panel.ZIndex="9999"
+          IsHitTestVisible="True"/>
+    </Grid>
+</Window>

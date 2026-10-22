@@ -1,0 +1,180 @@
+﻿<!-- AssessmentFooterStatsControl.xaml -->
+<UserControl x:Class="HR.Controls.Assessment.AssessmentFooterStatsControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             x:Name="Root"
+             FontFamily="B Nazanin"
+             Height="64"
+             FlowDirection="LeftToRight">
+
+    <Border CornerRadius="18"
+          Background="#0A1628"
+          BorderBrush="#1A3A5C"
+          BorderThickness="1" 
+          Padding="14,3">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="16" ShadowDepth="0" Color="#22D3EE" Opacity="0.12"/>
+        </Border.Effect>
+
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+
+            <!-- پیشرفت کلی -->
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,18,0">
+                <Grid Width="48" Height="48" Margin="0,0,10,0">
+                    <!-- حلقه پس‌زمینه -->
+                    <Ellipse Stroke="#12233A" StrokeThickness="5" Fill="Transparent"/>
+                    <!-- حلقه پیشرفت -->
+                    <Path x:Name="RingPath"
+                Stroke="#22D3EE"
+                StrokeThickness="5"
+                StrokeStartLineCap="Round"
+                StrokeEndLineCap="Round"
+                Fill="Transparent">
+                        <Path.Effect>
+                            <DropShadowEffect BlurRadius="10" ShadowDepth="0" Color="#22D3EE" Opacity="0.55"/>
+                        </Path.Effect>
+                    </Path>
+                    <TextBlock x:Name="TxtPercent"
+                     Text="۳۸٪"
+                     FontSize="12"
+                     FontWeight="Bold"
+                     Foreground="#22D3EE"
+                     HorizontalAlignment="Center"
+                     VerticalAlignment="Center"/>
+                </Grid>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="پیشرفت کلی"
+                     FontSize="12"
+                     FontWeight="SemiBold"
+                     Foreground="#E8F4FF"/>
+                    <TextBlock Text="از کل تست‌ها"
+                     FontSize="11"
+                     Foreground="#5D7694"/>
+                </StackPanel>
+            </StackPanel>
+
+            <Rectangle Width="1" Height="28" Fill="#1A3A5C" Margin="0,0,16,0"/>
+
+            <!-- کل تست‌ها -->
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,16,0">
+                <TextBlock x:Name="TxtTotal"
+                   Text="۲۸"
+                   FontSize="18"
+                   FontWeight="Bold"
+                   Foreground="#E8F4FF"
+                   VerticalAlignment="Center"
+                   Margin="0,0,6,0"/>
+                <materialDesign:PackIcon Kind="ClipboardTextOutline"
+                                 Width="18" Height="18"
+                                 Foreground="#22D3EE"
+                                 VerticalAlignment="Center"
+                                 Margin="0,0,6,0"/>
+                <TextBlock Text="کل تست‌ها"
+                   FontSize="12"
+                   Foreground="#8EA6C2"
+                   VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- روانشناسی -->
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,14,0">
+                <materialDesign:PackIcon Kind="Brain"
+                                 Width="18" Height="18"
+                                 Foreground="#A78BFA"
+                                 VerticalAlignment="Center"
+                                 Margin="0,0,6,0"/>
+                <TextBlock x:Name="TxtPsychology"
+                   Text="۸"
+                   FontSize="16"
+                   FontWeight="SemiBold"
+                   Foreground="#E8F4FF"
+                   VerticalAlignment="Center"
+                   Margin="0,0,4,0"/>
+                <TextBlock Text="روانشناسی"
+                   FontSize="12"
+                   Foreground="#8EA6C2"
+                   VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- شغلی -->
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,14,0">
+                <materialDesign:PackIcon Kind="Briefcase"
+                                 Width="18" Height="18"
+                                 Foreground="#38BDF8"
+                                 VerticalAlignment="Center"
+                                 Margin="0,0,6,0"/>
+                <TextBlock x:Name="TxtJob"
+                   Text=""
+                   FontSize="16"
+                   FontWeight="SemiBold"
+                   Foreground="#E8F4FF"
+                   VerticalAlignment="Center"
+                   Margin="0,0,4,0"/>
+                <TextBlock Text="شغلی"
+                   FontSize="12"
+                   Foreground="#8EA6C2"
+                   VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- مهارتی -->
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,14,0">
+                <materialDesign:PackIcon Kind="Cog"
+                                 Width="18" Height="18"
+                                 Foreground="#22D3EE"
+                                 VerticalAlignment="Center"
+                                 Margin="0,0,6,0"/>
+                <TextBlock x:Name="TxtSkill"
+                   Text=""
+                   FontSize="16"
+                   FontWeight="SemiBold"
+                   Foreground="#E8F4FF"
+                   VerticalAlignment="Center"
+                   Margin="0,0,4,0"/>
+                <TextBlock Text="مهارتی"
+                   FontSize="12"
+                   Foreground="#8EA6C2"
+                   VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- داده پرت -->
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,14,0">
+                <TextBlock x:Name="TxtOutlier"
+                   Text="۳"
+                   FontSize="16"
+                   FontWeight="Bold"
+                   Foreground="#FB7185"
+                   VerticalAlignment="Center"
+                   Margin="0,0,6,0"/>
+                <materialDesign:PackIcon Kind="AlertCircleOutline"
+                                 Width="18" Height="18"
+                                 Foreground="#FB7185"
+                                 VerticalAlignment="Center"
+                                 Margin="0,0,6,0"/>
+                <TextBlock Text="دارای داده پرت"
+                   FontSize="12"
+                   Foreground="#FB7185"
+                   VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- قفل شده -->
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock x:Name="TxtLocked"
+                   Text="۴"
+                   FontSize="16"
+                   FontWeight="Bold"
+                   Foreground="#E8F4FF"
+                   VerticalAlignment="Center"
+                   Margin="0,0,6,0"/>
+                <materialDesign:PackIcon Kind="LockOutline"
+                                 Width="18" Height="18"
+                                 Foreground="#94A3B8"
+                                 VerticalAlignment="Center"
+                                 Margin="0,0,6,0"/>
+                <TextBlock Text="قفل شده"
+                   FontSize="12"
+                   Foreground="#8EA6C2"
+                   VerticalAlignment="Center"/>
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</UserControl>

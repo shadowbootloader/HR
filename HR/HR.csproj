@@ -1,0 +1,87 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Assets\people.gif" />
+    <None Remove="Assets\people.json" />
+    <None Remove="Assets\people.lottie" />
+    <None Remove="Assets\people.svg" />
+    <None Remove="Assets\pulse-Green.svg" />
+    <None Remove="Assets\pulse.json" />
+    <None Remove="Assets\Shining Stars.lottie" />
+    <None Remove="Assets\Shining_Stars.svg" />
+    <None Remove="Fonts\BNazanin.ttf" />
+    <None Remove="Fonts\BNaznnBd.ttf" />
+    <None Remove="Icons\date.png" />
+    <None Remove="Icons\employee-id.png" />
+    <None Remove="Icons\Join.png" />
+    <None Remove="Icons\location_100.png" />
+    <None Remove="Icons\manager.png" />
+    <None Remove="Icons\phone.png" />
+    <None Remove="Icons\wedding.png" />
+    <None Remove="OrgChart.html" />
+    <None Remove="orgchart.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="OrgChart.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="orgchart.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="LiveChartsCore" Version="2.1.0-dev-798" />
+    <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.1.0-dev-798" />
+    <PackageReference Include="LottieSharp" Version="2.4.3" />
+    <PackageReference Include="MaterialDesignThemes" Version="5.4.0-ci1482" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4255-prerelease" />
+    <PackageReference Include="PersianDateTimeWPFTools" Version="1.5.1.9" />
+    <PackageReference Include="WpfAnimatedGif" Version="2.0.2" />
+    <PackageReference Include="XamlRadialProgressBar" Version="1.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Controls\Employe\" />
+    <Folder Include="ViewModels\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\people.gif">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\people.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\pulse.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Assets\Shining Stars.lottie">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Fonts\BNazanin.ttf" />
+    <Resource Include="Fonts\BNaznnBd.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Icons\date.png" />
+    <Resource Include="Icons\employee-id.png" />
+    <Resource Include="Icons\Join.png" />
+    <Resource Include="Icons\location_100.png" />
+    <Resource Include="Icons\manager.png" />
+    <Resource Include="Icons\phone.png" />
+    <Resource Include="Icons\wedding.png" />
+  </ItemGroup>
+
+</Project>

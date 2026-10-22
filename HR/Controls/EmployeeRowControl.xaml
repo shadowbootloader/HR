@@ -1,0 +1,83 @@
+﻿<UserControl x:Class="HR.Controls.EmployeeRowControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:uc="clr-namespace:HR.Controls">
+    <UserControl.Resources>
+        <Style x:Key="LawnGreenNeonIcon"
+TargetType="{x:Type materialDesign:PackIcon}">
+
+            <Setter Property="Foreground"
+     Value="LawnGreen"/>
+
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect
+         Color="Yellow"
+         BlurRadius="18"
+         ShadowDepth="0"
+         Opacity="0.9"/>
+                </Setter.Value>
+            </Setter>
+
+        </Style>
+    </UserControl.Resources>
+
+    <Border Background="Transparent" Padding="12,10" BorderBrush="#1E293B" BorderThickness="0,0,0,1">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="50"/>
+                <!-- Avatar -->
+                <ColumnDefinition Width="200"/>
+                <!-- Name -->
+                <ColumnDefinition Width="160"/>
+                <!-- Position -->
+                <ColumnDefinition Width="160"/>
+                <!-- Department -->
+                <ColumnDefinition Width="100"/>
+                <!-- Status -->
+                <ColumnDefinition Width="150"/>
+                <!-- Performance -->
+                <ColumnDefinition Width="150"/>
+                <!-- Actions -->
+            </Grid.ColumnDefinitions>
+
+            <!-- Avatar -->
+            <Border Grid.Column="0" Width="40" Height="40" CornerRadius="20" BorderBrush="#3B82F6" BorderThickness="2">
+                <materialDesign:PackIcon Kind="{Binding AvatarUrl}"  Style="{StaticResource LawnGreenNeonIcon}" HorizontalAlignment="Center" Width="35" Height="35" />
+            </Border>
+
+            <!-- Name + Email -->
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10,0,0,0">
+                <TextBlock Text="{Binding FullName}" FontWeight="SemiBold" Foreground="White" FontSize="13"/>
+                <TextBlock Text="{Binding Email}" Foreground="#64748B" FontSize="11"/>
+            </StackPanel>
+
+            <!-- Position -->
+            <TextBlock Grid.Column="2" Text="{Binding Position}" TextWrapping="Wrap" Margin="5,0" Foreground="#E2E8F0" 
+                       VerticalAlignment="Center" FontSize="13"/>
+
+            <!-- Department -->
+            <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,0">
+                <Border Width="24" Height="24" CornerRadius="6" Background="#1E3A5F" Margin="0,0,8,0">
+                    <TextBlock Text="{Binding DepartmentIcon}" FontSize="11" 
+                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+                <TextBlock Text="{Binding Department}" Foreground="#E2E8F0" VerticalAlignment="Center" FontSize="13"/>
+            </StackPanel>
+
+            <!-- Status -->
+            <uc:StatusBadgeControl Grid.Column="4" Status="{Binding Status}" VerticalAlignment="Center" Margin="5,0"/>
+
+            <!-- Performance -->
+            <uc:PerformanceMiniGauge x:Name="Performancegauge" FlowDirection="LeftToRight" Value="{Binding PerformanceValue}"  Label="{Binding PerformanceLabel}" Grid.Column="5" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
+
+            <!-- Actions -->
+            <StackPanel Grid.Column="6" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <Button x:Name="ViewBtn" Click="ViewBtn_Click" materialDesign:ButtonAssist.CornerRadius="8" Content="👁" Width="35" Padding="0" Background="#222C3C" BorderBrush="#FF354256" BorderThickness="1.5" Foreground="White" Margin="0,0,5,0"/>
+                <Button materialDesign:ButtonAssist.CornerRadius="8" Content="✎" Width="35" Padding="0" Background="#222C3C" BorderBrush="#FF354256" BorderThickness="1.5" Foreground="White" Margin="0,0,5,0"/>
+                <Button materialDesign:ButtonAssist.CornerRadius="8" Content="⋮" Width="30" Padding="0" Background="#222C3C" BorderBrush="#FF354256" BorderThickness="1.5" Foreground="White" FontSize="20" FontWeight="Bold"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

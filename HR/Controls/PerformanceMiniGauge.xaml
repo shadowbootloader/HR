@@ -1,0 +1,42 @@
+﻿<UserControl x:Class="HR.Controls.PerformanceMiniGauge"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
+             x:Name="Root"  Height="100"
+             >
+
+    <StackPanel HorizontalAlignment="Stretch" VerticalAlignment="Center">
+
+        <Grid  Height="100" HorizontalAlignment="Center" >
+
+            <lvc:PieChart  Width="70" Height="70"  FontFamily="pack://application:,,,/Fonts/#B Nazanin"  VerticalAlignment="Center" HorizontalAlignment="Center" InitialRotation="-225"  Background="Transparent" x:Name="GaugeChart" MaxAngle="270" MinValue="0" MaxValue="100">
+                
+                <lvc:PieChart.Series>
+                    <lvc:SeriesCollection>
+
+                        <lvc:XamlGaugeSeries x:Name="Tracker"  OuterRadiusOffset="0"  MaxRadialColumnWidth="8"  GaugeValue="{Binding Value, ElementName=Root}"   ShowDataLabels="False"   DataLabelsSize="20" DataLabelsPosition="ChartCenter" InnerRadius="5">
+                            
+                            <lvc:XamlGaugeSeries.DataLabelsPaint>
+                                <lvc:SolidColorPaint Color="#FFFFFF"/>
+                            </lvc:XamlGaugeSeries.DataLabelsPaint>
+                        </lvc:XamlGaugeSeries>
+
+                        <!-- The background series is used to style the gauge background. -->
+                        <lvc:XamlGaugeBackgroundSeries OuterRadiusOffset="0" InnerRadius="5" MaxRadialColumnWidth="8" Fill="#222C3C"/>
+
+                    </lvc:SeriesCollection>
+                </lvc:PieChart.Series>
+            </lvc:PieChart>
+
+            
+        </Grid>
+
+        <TextBlock Text="{Binding Label, ElementName=Root}" FontFamily="pack://application:,,,/Fonts/#B Nazanin"
+                   FontSize="14" VerticalAlignment="Top" Background="Transparent"
+                   Foreground="White"
+                   HorizontalAlignment="Center"
+                   
+                   Margin="0,-20,0,0"
+                   TextAlignment="Center"/>
+    </StackPanel>
+</UserControl>

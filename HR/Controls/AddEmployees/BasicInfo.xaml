@@ -1,0 +1,251 @@
+﻿<UserControl x:Class="HR.Controls.AddEmployees.BasicInfo"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:HR.Controls.AddEmployees" xmlns:materialDesign="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
+             mc:Ignorable="d" Background="Transparent" FontFamily="pack://application:,,,/Fonts/#B Nazanin"
+             d:DesignHeight="650" d:DesignWidth="800">
+    <StackPanel>
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,18" FlowDirection="RightToLeft">
+            <materialDesign:PackIcon Kind="AccountOutline" Width="35" Height="35"
+                             Style="{StaticResource NeonIcon}" VerticalAlignment="Center"/>
+            <StackPanel Margin="10,0,0,0">
+                <TextBlock Text="اطلاعات شخصی" FontSize="18" FontWeight="SemiBold" Foreground="White"/>
+                <TextBlock Text="اطلاعات پایه کارکنان" FontSize="14" Foreground="#64748B"/>
+            </StackPanel>
+        </StackPanel>
+
+        <!-- عکس + فیلدهای شخصی -->
+        <Grid Margin="0,0,0,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="22"/>
+                <ColumnDefinition Width="118"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Upload Photo -->
+            <StackPanel Grid.Column="2" HorizontalAlignment="Center">
+                <Grid Width="92" Height="92">
+                    <!-- دایره خاکستری -->
+                    <Ellipse Width="92" Height="92" Fill="#1E293B"/>
+                    <!-- آیکون آدم -->
+                    <materialDesign:PackIcon Kind="Account" Width="44" Height="44"
+                                     Foreground="#475569"
+                                     HorizontalAlignment="Center"
+                                     VerticalAlignment="Center"/>
+                    <!-- عکس واقعی (بعد از انتخاب) -->
+                    <Ellipse x:Name="PhotoEllipse" Width="92" Height="92" Visibility="Collapsed">
+                        <Ellipse.Fill>
+                            <ImageBrush x:Name="PhotoBrush" Stretch="UniformToFill"/>
+                        </Ellipse.Fill>
+                    </Ellipse>
+                    <!-- دکمه دوربین -->
+                    <Button Width="28" Height="28"
+                    HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                    Margin="0,0,0,0"
+                    Background="#2563EB" BorderThickness="0"
+                    Cursor="Hand" Click="UploadPhoto_Click">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="{TemplateBinding Background}" CornerRadius="14">
+                                    <materialDesign:PackIcon Kind="Camera"
+                                                     Width="14" Height="14"
+                                                     Foreground="White"
+                                                     HorizontalAlignment="Center"
+                                                     VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </Grid>
+                <TextBlock Text="Upload Photo" FontSize="12" FontWeight="SemiBold"
+                   Foreground="#E2E8F0" HorizontalAlignment="Center" Margin="0,10,0,2"/>
+                <TextBlock Text="JPG or PNG, max 5MB" FontSize="10"
+                   Foreground="#64748B" HorizontalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- فیلدهای Personal -->
+            <WrapPanel Grid.Column="0" FlowDirection="RightToLeft">
+
+
+                <!-- Full Name -->
+                <TextBox x:Name="PersonalFirstNameTb"
+         Style="{StaticResource DarkOutlinedTextBox}"
+         Width="160"
+         MaxLength="25"
+         materialDesign:HintAssist.Hint="نام"
+         TabIndex="0"/>
+                <TextBox x:Name="PersonalLastnameTb"
+         Style="{StaticResource DarkOutlinedTextBox}"
+         Width="160"
+         MaxLength="37"
+         materialDesign:HintAssist.Hint="نام خانوادگی"
+         TabIndex="1"/>
+                <TextBox x:Name="PersonalFatherNameTb"
+         Style="{StaticResource DarkOutlinedTextBox}"
+         Width="160"
+         MaxLength="25"
+         materialDesign:HintAssist.Hint="نام پدر"
+         TabIndex="4"/>
+                <TextBox x:Name="PersonalNationalCodeTb"
+         Style="{StaticResource DarkOutlinedTextBox}"
+         Width="160"
+         MaxLength="10"
+         materialDesign:HintAssist.Hint="کد ملی"
+         TabIndex="6"/>
+                <TextBox x:Name="PersonalIDTb"
+         Style="{StaticResource DarkOutlinedTextBox}"
+         Width="160"
+         MaxLength="10"
+         materialDesign:HintAssist.Hint="شماره شناسنامه"
+         TabIndex="7"/>
+
+                <DatePicker x:Name="PersonalBirthDateDP"
+         Width="120" VerticalContentAlignment="Center"
+         Style="{StaticResource DarkOutlinedDatePicker}"
+         materialDesign:HintAssist.Hint="تاریخ تولد"/>
+                <DatePicker x:Name="PersonalSodorDateDP"
+         Width="120" VerticalContentAlignment="Center"
+         Style="{StaticResource DarkOutlinedDatePicker}"
+         materialDesign:HintAssist.Hint="تاریخ صدور"/>
+
+                <TextBox x:Name="PersonalBirthPlaceTb"
+         Style="{StaticResource DarkOutlinedTextBox}"
+         Width="160"
+         MaxLength="25"
+         materialDesign:HintAssist.Hint="محل تولد"
+         TabIndex="8"/>
+                <TextBox x:Name="PersonalMahaleSodurTb"
+         Style="{StaticResource DarkOutlinedTextBox}"
+         Width="160"
+         MaxLength="25"
+         materialDesign:HintAssist.Hint="محل صدور"
+         TabIndex="9"/>
+                <ListBox
+         SelectedIndex="0"
+         
+         Style="{StaticResource SegmentedListBox}"
+         
+
+         VerticalAlignment="Center"  FontSize="18" Foreground="White">
+                    <ListBoxItem Foreground="White" materialDesign:ListBoxItemAssist.HoverBackground="Red" materialDesign:ListBoxItemAssist.SelectedFocusedBackground="Blue" materialDesign:ListBoxItemAssist.SelectedUnfocusedBackground="Transparent"  >
+                        مرد
+                    </ListBoxItem>
+                    <ListBoxItem Foreground="White" materialDesign:ListBoxItemAssist.HoverBackground="Red" materialDesign:ListBoxItemAssist.SelectedFocusedBackground="Blue" materialDesign:ListBoxItemAssist.SelectedUnfocusedBackground="Transparent">
+                        زن
+                    </ListBoxItem>
+
+                </ListBox>
+                <ComboBox x:Name="PersonalMaritalStatusTb" Style="{StaticResource DarkOutlinedComboBox}"
+            Width="100"
+            materialDesign:HintAssist.Hint="تاهل" >
+
+                </ComboBox>
+                <ComboBox x:Name="PersonalSarbaziTb" Style="{StaticResource DarkOutlinedComboBox}"
+            Width="100"
+            materialDesign:HintAssist.Hint="نظام وظیفه" >
+
+                </ComboBox>
+                <ComboBox x:Name="PersonalMoafiatStatusTb"  Style="{StaticResource DarkOutlinedComboBox}"
+            Width="100"
+            materialDesign:HintAssist.Hint="معافیت" >
+
+                </ComboBox>
+                <ComboBox x:Name="PersonalMoafiatTypeTb"  Style="{StaticResource DarkOutlinedComboBox}"
+            Width="120"
+            materialDesign:HintAssist.Hint="علت معافیت" >
+
+                </ComboBox>
+            </WrapPanel>
+
+        </Grid>
+        <Line Margin="50,30"
+ Stretch="Fill"
+ X1="0" Y1="0"
+ X2="1" Y2="0"
+ StrokeThickness="1"
+ HorizontalAlignment="Stretch"
+ VerticalAlignment="Bottom">
+            <Line.Stroke>
+                <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                    <GradientStop Color="Transparent" Offset="0"/>
+                    <GradientStop Color="#55008F88" Offset="0.20"/>
+                    <GradientStop Color="#9900CFC1" Offset="0.38"/>
+                    <GradientStop Color="#FF00E5D4" Offset="0.50"/>
+                    <GradientStop Color="#9900CFC1" Offset="0.62"/>
+                    <GradientStop Color="#55008F88" Offset="0.80"/>
+                    <GradientStop Color="Transparent" Offset="1"/>
+                </LinearGradientBrush>
+            </Line.Stroke>
+        </Line>
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,18" FlowDirection="RightToLeft">
+            <materialDesign:PackIcon Kind="FileDocumentMultipleOutline" Width="35" Height="35"
+                     Style="{StaticResource NeonIcon}" VerticalAlignment="Center"/>
+            <StackPanel Margin="10,0,0,0">
+                <TextBlock Text="مستندات" FontSize="18" FontWeight="SemiBold" Foreground="White"/>
+                <TextBlock Text="مستندات هویتی کارکنان" FontSize="14" Foreground="#64748B"/>
+            </StackPanel>
+        </StackPanel>
+        <WrapPanel FlowDirection="RightToLeft">
+            <StackPanel Orientation="Horizontal" FlowDirection="RightToLeft" Margin="10,8,10,0">
+                <TextBlock Text="کارت ملی :" Foreground="White" FontSize="18" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                <Button x:Name="NationalCardImageBtn"
+                    Content="انتخاب فایل"
+                    Height="36" Padding="14,0"
+                    Background="#3B82F6" Foreground="White" BorderThickness="0"
+                    materialDesign:ButtonAssist.CornerRadius="8"
+                    Click="NationalCardImageBtn_Click"/>
+                <Image x:Name="NationalCardImage"
+                    Width="56" Height="56"
+                    Margin="16,0,0,0"
+                    Stretch="UniformToFill"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" FlowDirection="RightToLeft" Margin="10,8,10,0">
+                <TextBlock Text="شناسنامه :" Foreground="White" FontSize="18" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                <Button x:Name="IDImageBtn"
+                    Content="انتخاب فایل"
+                    Height="36" Padding="14,0"
+                    Background="#3B82F6" Foreground="White" BorderThickness="0"
+                    materialDesign:ButtonAssist.CornerRadius="8"
+                    Click="IDImageBtn_Click"/>
+                <Image x:Name="IDImage"
+                    Width="56" Height="56"
+                    Margin="16,0,0,0"
+                    Stretch="UniformToFill"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" FlowDirection="RightToLeft" Margin="10,8,10,0">
+                <TextBlock Text="شناسنامه :" Foreground="White" FontSize="18" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                <Button x:Name="SarbaziImageBtn"
+                    Content="انتخاب فایل"
+                    Height="36" Padding="14,0"
+                    Background="#3B82F6" Foreground="White" BorderThickness="0"
+                    materialDesign:ButtonAssist.CornerRadius="8"
+                    Click="SarbaziImageBtn_Click"/>
+                <Image x:Name="SarbaziImage"
+                    Width="56" Height="56"
+                    Margin="16,0,0,0"
+                    Stretch="UniformToFill"/>
+            </StackPanel>
+        </WrapPanel>
+        <Line Margin="50,30"
+                Stretch="Fill"
+                X1="0" Y1="0"
+                X2="1" Y2="0"
+                StrokeThickness="1"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Bottom">
+            <Line.Stroke>
+                <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                    <GradientStop Color="Transparent" Offset="0"/>
+                    <GradientStop Color="#55008F88" Offset="0.20"/>
+                    <GradientStop Color="#9900CFC1" Offset="0.38"/>
+                    <GradientStop Color="#FF00E5D4" Offset="0.50"/>
+                    <GradientStop Color="#9900CFC1" Offset="0.62"/>
+                    <GradientStop Color="#55008F88" Offset="0.80"/>
+                    <GradientStop Color="Transparent" Offset="1"/>
+                </LinearGradientBrush>
+            </Line.Stroke>
+        </Line>
+    </StackPanel>
+</UserControl>

@@ -1,0 +1,113 @@
+﻿<UserControl x:Class="HR.Controls.AddEmployees.Criminal"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:HR.Controls.AddEmployees" xmlns:materialDesign="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <StackPanel>
+        <StackPanel>
+
+            <!-- عنوان -->
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,14" FlowDirection="RightToLeft">
+                <materialDesign:PackIcon Kind="Gavel" Width="35" Height="35"
+                 Style="{StaticResource NeonIcon}"
+                 VerticalAlignment="Center"
+                 Margin="0,0,10,0"/>
+                <StackPanel>
+                    <TextBlock Text="سابقه کیفری - سیاسی" FontSize="18" FontWeight="SemiBold" Foreground="White"/>
+                    <TextBlock Text="سوابق کیفری و سیاسی فرد" FontSize="14" Foreground="#64748B"/>
+                </StackPanel>
+            </StackPanel>
+
+            <!-- جدول -->
+            <ListView x:Name="PersonalCriminalList" FlowDirection="RightToLeft"
+            Style="{StaticResource DarkListView}"
+            MinHeight="80" MaxHeight="280"
+            Margin="0,15,0,12"
+            HorizontalAlignment="Center"
+            SelectionChanged="PersonalCriminalList_SelectionChanged"
+            >
+                <ListView.View>
+                    <GridView AllowsColumnReorder="True"
+      ColumnHeaderContainerStyle="{StaticResource DarkGridViewColumnHeader}">
+                        <GridViewColumn Header="ردیف" Width="60" DisplayMemberBinding="{Binding Row}"/>
+                        <GridViewColumn Header="عنوان سابقه" Width="210" DisplayMemberBinding="{Binding Post}"/>
+                        <GridViewColumn Header="نام و نام خانوادگی" Width="180" DisplayMemberBinding="{Binding WorkInstitutionName}"/>
+                        <GridViewColumn Header="نوع" Width="150" DisplayMemberBinding="{Binding DateOfStartWork}"/>
+                        <GridViewColumn Header="توضیحات" Width="250" DisplayMemberBinding="{Binding DateOfStartWork}"/>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+
+            <!-- حذف -->
+            <Button x:Name="DeleteCriminalDataBtn"
+        Content="حذف اطلاعات"
+        Height="36" Width="120"
+        Margin="0,0,0,14"
+        HorizontalAlignment="Right"
+        Background="#EF4444" Foreground="White" BorderThickness="0"
+        materialDesign:ButtonAssist.CornerRadius="8"
+        IsEnabled="{Binding ElementName=PersonalCriminalList, Path=SelectedItems.Count}"
+        Click="DeleteCriminalDataBtn_Click"/>
+
+
+
+            <!-- فرم -->
+            <WrapPanel FlowDirection="RightToLeft">
+
+                <ComboBox x:Name="Criminal_FamilyNameCombo"
+  Style="{StaticResource DarkOutlinedComboBox}"
+  Width="180"
+  materialDesign:HintAssist.Hint="نام و نام خانوادگی"
+  IsEditable="True"/>
+                <ComboBox x:Name="Criminal_TypeCombo"
+  Style="{StaticResource DarkOutlinedComboBox}"
+  Width="180"
+  materialDesign:HintAssist.Hint="نوع سابقه"
+  IsEditable="True"/>
+                <TextBox x:Name="Criminal_CriminalTitleTB"
+ Style="{StaticResource DarkOutlinedTextBox}"
+ Width="220"
+ materialDesign:HintAssist.Hint="عنوان سابقه"/>
+
+                <TextBox x:Name="Criminal_NoteTB"
+ Style="{StaticResource DarkOutlinedTextBox}"
+ Width="320"
+ materialDesign:HintAssist.Hint="توضیحات"/>
+
+            </WrapPanel>
+
+            <!-- ثبت -->
+            <Button x:Name="AddCriminalDataBtn"
+        Content="ثبت داده"
+        Height="38" Width="120"
+        Margin="0,14,0,0"
+        HorizontalAlignment="Right"
+        Background="#22C55E" Foreground="White" BorderThickness="0"
+        materialDesign:ButtonAssist.CornerRadius="8"
+        Click="AddCriminalDataBtn_Click"/>
+
+        </StackPanel>
+        <Line Margin="50,30"
+        Stretch="Fill"
+        X1="0" Y1="0"
+        X2="1" Y2="0"
+        StrokeThickness="1"
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Bottom">
+            <Line.Stroke>
+                <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                    <GradientStop Color="Transparent" Offset="0"/>
+                    <GradientStop Color="#55008F88" Offset="0.20"/>
+                    <GradientStop Color="#9900CFC1" Offset="0.38"/>
+                    <GradientStop Color="#FF00E5D4" Offset="0.50"/>
+                    <GradientStop Color="#9900CFC1" Offset="0.62"/>
+                    <GradientStop Color="#55008F88" Offset="0.80"/>
+                    <GradientStop Color="Transparent" Offset="1"/>
+                </LinearGradientBrush>
+            </Line.Stroke>
+        </Line>
+    </StackPanel>
+</UserControl>

@@ -1,0 +1,111 @@
+﻿
+<UserControl
+    x:Class="HR.Controls.Department.DepartmentHeader"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+    FlowDirection="RightToLeft">
+
+    <Grid>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+
+        <!-- TITLE -->
+
+        <StackPanel>
+
+            <StackPanel
+                Orientation="Horizontal">
+
+                <Border
+                    Width="44"
+                    Height="44"
+                    CornerRadius="12"
+                    Background="#092A39"
+                    BorderBrush="#00E5D4"
+                    BorderThickness="1">
+
+                    <materialDesign:PackIcon
+                        Kind="Domain"
+                        Width="25"
+                        Height="25"
+                        Foreground="#00E5D4"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"/>
+
+                </Border>
+
+                <StackPanel
+                    Margin="12,0,0,0">
+
+                    <TextBlock
+                        Text="دپارتمان مهندسی"
+                        FontSize="25"
+                        FontWeight="Bold"
+                        Foreground="#F3F8FC"/>
+
+                    <TextBlock
+                        Text="شناسه دپارتمان: ENG-001"
+                        FontSize="11"
+                        Foreground="#8EA5B8"/>
+
+                </StackPanel>
+
+            </StackPanel>
+
+
+            <TextBlock
+                Text="نمای کلی وضعیت، عملکرد، پروژه‌ها، قراردادها و منابع مالی دپارتمان"
+                Margin="56,6,0,0"
+                Foreground="#8EA5B8"
+                FontSize="12"/>
+
+        </StackPanel>
+
+
+        <!-- DATE -->
+
+        <StackPanel
+            Grid.Column="1"
+            HorizontalAlignment="Left">
+
+            <TextBlock
+                Text="آخرین بروزرسانی"
+                Foreground="#8198AA"
+                FontSize="10"
+                HorizontalAlignment="Left"/>
+
+            <TextBlock
+                Text="امروز • ۱۴۰۵/۰۶/۲۹"
+                Foreground="White"
+                FontSize="12"
+                Margin="0,3,0,0"/>
+
+            <StackPanel
+                Orientation="Horizontal"
+                HorizontalAlignment="Left"
+                Margin="0,5,0,0">
+
+                <Ellipse
+                    Width="7"
+                    Height="7"
+                    Fill="#32E18A"
+                    Margin="0,0,5,0"
+                    VerticalAlignment="Center"/>
+
+                <TextBlock
+                    Text="وضعیت دپارتمان پایدار"
+                    Foreground="#32E18A"
+                    FontSize="10"/>
+
+            </StackPanel>
+
+        </StackPanel>
+
+    </Grid>
+
+</UserControl>

@@ -1,0 +1,27 @@
+﻿<UserControl x:Class="HR.Controls.CircularProgressBar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="root"
+             Width="160" Height="160">
+
+    <Grid>
+        <!-- Track (بخش خالی) -->
+        <Path x:Name="trackPath"
+              Stroke="{Binding TrackColor, ElementName=root}"
+              StrokeThickness="{Binding StrokeThickness, ElementName=root}"
+              StrokeStartLineCap="Round"
+              StrokeEndLineCap="Round"
+              Fill="Transparent"/>
+
+        <!-- اینجا تکه‌های گرادینت progress اضافه می‌شن -->
+        <Canvas x:Name="progressCanvas"/>
+
+        <!-- درصد وسط -->
+        <TextBlock Text="{Binding PercentageText, ElementName=root}"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   FontSize="22"
+                   FontWeight="SemiBold"
+                   Foreground="#222"/>
+    </Grid>
+</UserControl>
