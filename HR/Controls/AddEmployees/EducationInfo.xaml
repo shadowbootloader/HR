@@ -31,15 +31,18 @@
                       >
                 <ListView.View>
                     <GridView AllowsColumnReorder="True"
-                          ColumnHeaderContainerStyle="{StaticResource DarkGridViewColumnHeader}">
+          ColumnHeaderContainerStyle="{StaticResource DarkGridViewColumnHeader}">
                         <GridViewColumn Header="ردیف" Width="60" DisplayMemberBinding="{Binding Row}"/>
-                        <GridViewColumn Header="مقطع" Width="130" DisplayMemberBinding="{Binding Grade}"/>
-                        <GridViewColumn Header="رشته" Width="130" DisplayMemberBinding="{Binding FieldOFStudy}"/>
-                        <GridViewColumn Header="وضعیت" Width="100" DisplayMemberBinding="{Binding EducationalStatus}"/>
-                        <GridViewColumn Header="نام موسسه" Width="130" DisplayMemberBinding="{Binding NameOfInstitution}"/>
-                        <GridViewColumn Header="تاریخ شروع" Width="130" DisplayMemberBinding="{Binding DateOfStartStudy}"/>
-                        <GridViewColumn Header="تاریخ پایان" Width="130" DisplayMemberBinding="{Binding DateOFEndStudy}"/>
-                        <GridViewColumn Header="پروژه / رساله" Width="450" DisplayMemberBinding="{Binding DateOFEndStudy}"/>
+                        <GridViewColumn Header="مقطع" Width="120" DisplayMemberBinding="{Binding DegreeText}"/>
+                        <GridViewColumn Header="رشته" Width="150" DisplayMemberBinding="{Binding Field}"/>
+                        <GridViewColumn Header="وضعیت" Width="100" DisplayMemberBinding="{Binding StatusText}"/>
+                        <GridViewColumn Header="نام موسسه" Width="150" DisplayMemberBinding="{Binding University}"/>
+                        <GridViewColumn Header="استان" Width="100" DisplayMemberBinding="{Binding State}"/>
+                        <GridViewColumn Header="شهر" Width="100" DisplayMemberBinding="{Binding City}"/>
+                        <GridViewColumn Header="معدل" Width="70" DisplayMemberBinding="{Binding Gpa}"/>
+                        <GridViewColumn Header="تاریخ شروع" Width="110" DisplayMemberBinding="{Binding StartDate}"/>
+                        <GridViewColumn Header="تاریخ پایان" Width="110" DisplayMemberBinding="{Binding EndDate}"/>
+                        <GridViewColumn Header="پروژه / رساله" Width="200" DisplayMemberBinding="{Binding ThesisTitle}"/>
                     </GridView>
                 </ListView.View>
             </ListView>

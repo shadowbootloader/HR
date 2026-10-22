@@ -1,17 +1,20 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Windows.Media;
 
 namespace HR.Models
 {
     public enum Gender { Unspecified, Male, Female }
     public enum MaritalStatus { Unspecified, Single, Married, Divorced, Widowed }
     public enum MilitaryStatus { Unspecified, Done, Exempt, InProgress, NotApplicable }
+
     public enum EmployeeStatus { Active, OnLeave, Terminated, Retired }
     public enum PhoneKind { Mobile, Home, Work, Emergency, Other }
     public enum DegreeLevel { Diploma, Associate, Bachelor, Master, Doctorate, PostDoctorate, Other }
     public enum LanguageLevel { None, Basic, Intermediate, Good, Fluent, Native }
     public enum SkillLevel { Weak, Average, Good, Excellent }
     public enum BankAccountType { Current, Savings, ShortTerm, LongTerm, Other }
+    public enum EducationStatusKind { Graduated, Studying, DroppedOut, OnHold }
 
     /// <summary>
     /// پرونده کامل کارمند — هسته‌ی داده‌ی برنامه.
@@ -32,6 +35,9 @@ namespace HR.Models
         public string BirthPlace { get; set; } = string.Empty;
         public Gender Gender { get; set; }
         public MaritalStatus MaritalStatus { get; set; }
+        public DateTime? IdIssueDate { get; set; }
+        public string IdIssuePlace { get; set; } = string.Empty;
+        public string ExemptionReason { get; set; } = string.Empty;
         public int? ChildrenCount { get; set; }
         public MilitaryStatus MilitaryStatus { get; set; }
 
@@ -116,19 +122,42 @@ namespace HR.Models
         public DegreeLevel Degree { get; set; }
         public string Field { get; set; } = string.Empty;
         public string University { get; set; } = string.Empty;
+        public string? State { get; set; }
+        public string? City { get; set; }
+        public EducationStatusKind Status { get; set; }
         public double? Gpa { get; set; }
-        public int? StartYear { get; set; }
-        public int? EndYear { get; set; }
+        public DateTime? StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
+        public string? ThesisTitle { get; set; }
         public string CertificateImagePath { get; set; } = string.Empty;
+
+        public string DegreeText => Degree switch
+        {
+            DegreeLevel.Diploma => "دیپلم",
+            DegreeLevel.Associate => "کاردانی",
+            DegreeLevel.Bachelor => "کارشناسی",
+            DegreeLevel.Master => "کارشناسی ارشد",
+            DegreeLevel.Doctorate => "دکتری",
+            DegreeLevel.PostDoctorate => "پس‌دکتری",
+            _ => "سایر"
+        };
+
+        public string StatusText => Status switch
+        {
+            EducationStatusKind.Graduated => "فارغ‌التحصیل",
+            EducationStatusKind.Studying => "در حال تحصیل",
+            EducationStatusKind.DroppedOut => "انصراف",
+            _ => "مرخصی تحصیلی"
+        };
     }
 
     public class TrainingCourseRecord : ObservableRow
     {
         public int Id { get; set; }
-        public string CourseName { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
         public string Institute { get; set; } = string.Empty;
-        public int? Hours { get; set; }
-        public DateTime? CompletedAt { get; set; }
+        public string? DurationText { get; set; }
+        public string? Note { get; set; }
         public string CertificateImagePath { get; set; } = string.Empty;
     }
 
@@ -137,10 +166,11 @@ namespace HR.Models
         public int Id { get; set; }
         public string Company { get; set; } = string.Empty;
         public string JobTitle { get; set; } = string.Empty;
+        public string? CompanyPhone { get; set; }
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
-        public decimal? LastSalary { get; set; }
         public string? LeaveReason { get; set; }
+        public string? Note { get; set; }
     }
 
     public class BankAccountRecord : ObservableRow
@@ -206,6 +236,24 @@ namespace HR.Models
         public string SoftwareName { get; set; } = string.Empty;
         public SkillLevel Level { get; set; }
         public string? Note { get; set; }
+
+        public string LevelText => Level switch
+        {
+            SkillLevel.Weak => "ضعیف",
+            SkillLevel.Average => "متوسط",
+            SkillLevel.Good => "خوب",
+            _ => "عالی"
+        };
+
+        public string DisplayText => $"{SoftwareName} · {LevelText}";
+
+        public Brush SkillLevelBrush => Level switch
+        {
+            SkillLevel.Weak => new SolidColorBrush((Color)ColorConverter.ConvertFromString("#7F1D1D")),
+            SkillLevel.Average => new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1E3A5F")),
+            SkillLevel.Good => new SolidColorBrush((Color)ColorConverter.ConvertFromString("#14532D")),
+            _ => new SolidColorBrush((Color)ColorConverter.ConvertFromString("#065F46"))
+        };
     }
 
     public class SkillTagRecord : ObservableRow

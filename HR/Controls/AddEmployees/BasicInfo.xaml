@@ -40,6 +40,11 @@
                             <ImageBrush x:Name="PhotoBrush" Stretch="UniformToFill"/>
                         </Ellipse.Fill>
                     </Ellipse>
+                    <Image x:Name="PhotoPreviewImage" Width="92" Height="92" Stretch="UniformToFill">
+                        <Image.Clip>
+                            <EllipseGeometry Center="46,46" RadiusX="46" RadiusY="46"/>
+                        </Image.Clip>
+                    </Image>
                     <!-- دکمه دوربین -->
                     <Button Width="28" Height="28"
                     HorizontalAlignment="Right" VerticalAlignment="Bottom"
@@ -122,13 +127,9 @@
          MaxLength="25"
          materialDesign:HintAssist.Hint="محل صدور"
          TabIndex="9"/>
-                <ListBox
-         SelectedIndex="0"
-         
+                <ListBox x:Name="PersonalGenderList" SelectedIndex="0"
          Style="{StaticResource SegmentedListBox}"
-         
-
-         VerticalAlignment="Center"  FontSize="18" Foreground="White">
+         VerticalAlignment="Center" FontSize="18" Foreground="White">
                     <ListBoxItem Foreground="White" materialDesign:ListBoxItemAssist.HoverBackground="Red" materialDesign:ListBoxItemAssist.SelectedFocusedBackground="Blue" materialDesign:ListBoxItemAssist.SelectedUnfocusedBackground="Transparent"  >
                         مرد
                     </ListBoxItem>
@@ -215,7 +216,8 @@
                     Stretch="UniformToFill"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" FlowDirection="RightToLeft" Margin="10,8,10,0">
-                <TextBlock Text="شناسنامه :" Foreground="White" FontSize="18" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                <TextBlock Text="کارت پایان خدمت :" Foreground="White" FontSize="18"
+           VerticalAlignment="Center" Margin="0,0,12,0"/>
                 <Button x:Name="SarbaziImageBtn"
                     Content="انتخاب فایل"
                     Height="36" Padding="14,0"

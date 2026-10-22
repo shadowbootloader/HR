@@ -32,12 +32,12 @@
                                 >
                 <ListView.View>
                     <GridView AllowsColumnReorder="True"
-                                        ColumnHeaderContainerStyle="{StaticResource DarkGridViewColumnHeader}">
+          ColumnHeaderContainerStyle="{StaticResource DarkGridViewColumnHeader}">
                         <GridViewColumn Header="ردیف" Width="60" DisplayMemberBinding="{Binding Row}"/>
-                        <GridViewColumn Header="عنوان" Width="280" DisplayMemberBinding="{Binding Grade}"/>
-                        <GridViewColumn Header="مرکز آموزشی" Width="200" DisplayMemberBinding="{Binding FieldOFStudy}"/>
-                        <GridViewColumn Header="مدت زمان" Width="100" DisplayMemberBinding="{Binding EducationalStatus}"/>
-                        <GridViewColumn Header="توضیحات" Width="320" DisplayMemberBinding="{Binding NameOfInstitution}"/>
+                        <GridViewColumn Header="عنوان" Width="260" DisplayMemberBinding="{Binding Title}"/>
+                        <GridViewColumn Header="مرکز آموزشی" Width="200" DisplayMemberBinding="{Binding Institute}"/>
+                        <GridViewColumn Header="مدت زمان" Width="110" DisplayMemberBinding="{Binding DurationText}"/>
+                        <GridViewColumn Header="توضیحات" Width="300" DisplayMemberBinding="{Binding Note}"/>
                     </GridView>
                 </ListView.View>
             </ListView>

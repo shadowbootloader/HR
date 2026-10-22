@@ -1,54 +1,90 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Text;
+﻿using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using HR.Models;
-using MaterialDesignThemes.Wpf;
 
 namespace HR.Controls.AddEmployees
 {
-    /// <summary>
-    /// Interaction logic for Skills.xaml
-    /// </summary>
-    public partial class Skills : UserControl
+    public partial class Skills : UserControl, IEmployeeSection
     {
-        ObservableCollection<SoftwareSkillItem> Softwares = new();
+        private readonly ObservableCollection<SoftwareSkillRecord> _softwares = new();
+
+        public string SectionTitle => "نرم‌افزارها";
+
         public Skills()
         {
             InitializeComponent();
-            DataContext = this;
-            PersonalSoftwareList.ItemsSource = Softwares;
+
+            PersonalSoftwareList.ItemsSource = _softwares;
+
+            SkillCombo.SelectedIndex = 1;
         }
+
         private void AddSoftwareDataBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(SoftwareNameTB.Text)) return;
+            var name = SoftwareNameTB.Text?.Trim();
 
-            Softwares.Add(new SoftwareSkillItem
+            if (string.IsNullOrWhiteSpace(name))
             {
-                SoftwareName = SoftwareNameTB.Text.Trim(),
-                SkillLevel = (SkillCombo.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "متوسط",
+                MessageBox.Show("نام نرم‌افزار را وارد کنید.", "نرم‌افزارها",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                SoftwareNameTB.Focus();
+                return;
+            }
 
+            if (_softwares.Any(x => x.SoftwareName == name))
+            {
+                MessageBox.Show($"«{name}» قبلاً اضافه شده است.", "نرم‌افزارها",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            _softwares.Add(new SoftwareSkillRecord
+            {
+                SoftwareName = name,
+                Level = (SkillCombo.SelectedItem as ComboBoxItem)?.Content?.ToString() switch
+                {
+                    "ضعیف" => SkillLevel.Weak,
+                    "متوسط" => SkillLevel.Average,
+                    "خوب" => SkillLevel.Good,
+                    _ => SkillLevel.Excellent
+                }
             });
 
             SoftwareNameTB.Clear();
-
-            SkillCombo.SelectedIndex = 0;
+            SkillCombo.SelectedIndex = 1;
+            SoftwareNameTB.Focus();
         }
-
 
         private void DeleteSoftwareChip_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Chip btn && btn.DataContext is SoftwareSkillItem item)
-                Softwares.Remove(item);
+            if (sender is MaterialDesignThemes.Wpf.Chip chip &&
+                chip.DataContext is SoftwareSkillRecord item)
+            {
+                _softwares.Remove(item);
+            }
+        }
+
+        // ==================== IEmployeeSection ====================
+
+        public void LoadFrom(EmployeeProfile profile)
+        {
+            _softwares.Clear();
+            foreach (var item in profile.SoftwareSkills)
+                _softwares.Add(item);
+        }
+
+        public void SaveTo(EmployeeProfile profile)
+        {
+            profile.SoftwareSkills.Clear();
+            foreach (var item in _softwares)
+                profile.SoftwareSkills.Add(item);
+        }
+
+        public bool Validate(out string message)
+        {
+            message = string.Empty;
+            return true;
         }
     }
 }
