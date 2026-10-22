@@ -1,112 +1,69 @@
 ﻿<UserControl x:Class="HR.Controls.AddEmployees.BankAccounts"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:HR.Controls.AddEmployees" xmlns:materialDesign="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
-             mc:Ignorable="d" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:HR.Controls.AddEmployees"
+             xmlns:materialDesign="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
+             mc:Ignorable="d"
              d:DesignHeight="450" d:DesignWidth="800">
     <StackPanel>
         <StackPanel>
-
-            <!-- عنوان -->
             <StackPanel Orientation="Horizontal" Margin="0,0,0,14" FlowDirection="RightToLeft">
                 <materialDesign:PackIcon Kind="Bank" Width="35" Height="35"
-                Style="{StaticResource NeonIcon}"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"/>
+                                         Style="{StaticResource NeonIcon}" VerticalAlignment="Center"/>
                 <StackPanel Margin="10,0,0,0">
                     <TextBlock Text="حساب‌های بانکی" FontSize="18" FontWeight="SemiBold" Foreground="White"/>
                     <TextBlock Text="لیست حساب‌ها و اطلاعات بانکی فرد" FontSize="14" Foreground="#64748B"/>
                 </StackPanel>
             </StackPanel>
 
-            <!-- جدول -->
             <ListView x:Name="PersonalBankList" FlowDirection="RightToLeft"
-                Style="{StaticResource DarkListView}"
-                MinHeight="80" MaxHeight="280"
-                Margin="0,15,0,12"
-                HorizontalAlignment="Center">
-
+                      Style="{StaticResource DarkListView}" SelectionMode="Extended"
+                      MinHeight="80" MaxHeight="280" Margin="0,15,0,12"
+                      HorizontalAlignment="Center">
                 <ListView.View>
                     <GridView AllowsColumnReorder="True"
-                    ColumnHeaderContainerStyle="{StaticResource DarkGridViewColumnHeader}">
+                              ColumnHeaderContainerStyle="{StaticResource DarkGridViewColumnHeader}">
                         <GridViewColumn Header="ردیف" Width="60" DisplayMemberBinding="{Binding Row}"/>
-                        <GridViewColumn Header="بانک" Width="160" DisplayMemberBinding="{Binding Post}"/>
-                        <GridViewColumn Header="شماره حساب" Width="200" DisplayMemberBinding="{Binding WorkInstitutionName}"/>
-                        <GridViewColumn Header="شماره شبا" Width="320" DisplayMemberBinding="{Binding DateOfStartWork}"/>
-                        <GridViewColumn Header="شماره کارت" Width="280" DisplayMemberBinding="{Binding DateOfndWork}"/>
-                        <GridViewColumn Header="نوع حساب" Width="150" DisplayMemberBinding="{Binding DateOfndWork}"/>
+                        <GridViewColumn Header="بانک" Width="160" DisplayMemberBinding="{Binding BankName}"/>
+                        <GridViewColumn Header="شماره حساب" Width="180" DisplayMemberBinding="{Binding AccountNumber}"/>
+                        <GridViewColumn Header="شماره شبا" Width="300" DisplayMemberBinding="{Binding ShebaNumber}"/>
+                        <GridViewColumn Header="شماره کارت" Width="180" DisplayMemberBinding="{Binding CardNumber}"/>
+                        <GridViewColumn Header="نوع حساب" Width="120" DisplayMemberBinding="{Binding AccountTypeText}"/>
                     </GridView>
                 </ListView.View>
             </ListView>
 
-            <!-- حذف -->
-            <Button x:Name="DeleteBankDataBtn"
-            Content="حذف اطلاعات"
-            Height="36" Width="120"
-            Margin="0,0,0,14"
-            HorizontalAlignment="Right"
-            Background="#EF4444" Foreground="White" BorderThickness="0"
-            materialDesign:ButtonAssist.CornerRadius="8"
-            IsEnabled="{Binding ElementName=PersonalBankList, Path=SelectedItems.Count}"
-            Click="DeleteBankDataBtn_Click"/>
+            <Button x:Name="DeleteBankDataBtn" Content="حذف اطلاعات" Height="36" Width="120"
+                    Margin="0,0,0,14" HorizontalAlignment="Right" Background="#EF4444"
+                    Foreground="White" BorderThickness="0"
+                    materialDesign:ButtonAssist.CornerRadius="8"
+                    IsEnabled="{Binding ElementName=PersonalBankList, Path=SelectedItems.Count}"
+                    Click="DeleteBankDataBtn_Click"/>
 
-
-
-            <!-- فرم -->
             <WrapPanel FlowDirection="RightToLeft">
-
-                <ComboBox x:Name="BankNameCB"
-                 Style="{StaticResource DarkOutlinedComboBox}"
-                 Width="180"
-                 materialDesign:HintAssist.Hint="نام بانک">
-
-                </ComboBox>
-
-                <TextBox x:Name="BankAccountTB"
-     Style="{StaticResource DarkOutlinedTextBox}"
-     Width="180"
-     materialDesign:HintAssist.Hint="شماره حساب"/>
-
-                <TextBox x:Name="ShebaNumberTB"
-     Style="{StaticResource DarkOutlinedTextBox}"
-     Width="300"
-     MaxLength="26" 
-     materialDesign:HintAssist.Hint="شماره شبا"/>
-
-                <TextBox x:Name="CardNumberTB"
-     Style="{StaticResource DarkOutlinedTextBox}"
-     Width="200"
-     MaxLength="16"
-     materialDesign:HintAssist.Hint="شماره کارت"/>
-                <ComboBox x:Name="BankAccountTypeCB"
-                Style="{StaticResource DarkOutlinedComboBox}"
-                Width="180"
-                materialDesign:HintAssist.Hint="نوع حساب">
-
-                </ComboBox>
-
+                <ComboBox x:Name="BankNameCB" Style="{StaticResource DarkOutlinedComboBox}"
+                          Width="180" materialDesign:HintAssist.Hint="نام بانک"/>
+                <TextBox x:Name="BankAccountTB" Style="{StaticResource DarkOutlinedTextBox}"
+                         Width="180" materialDesign:HintAssist.Hint="شماره حساب"/>
+                <TextBox x:Name="ShebaNumberTB" Style="{StaticResource DarkOutlinedTextBox}"
+                         Width="300" MaxLength="26" materialDesign:HintAssist.Hint="شماره شبا"/>
+                <TextBox x:Name="CardNumberTB" Style="{StaticResource DarkOutlinedTextBox}"
+                         Width="200" MaxLength="16" materialDesign:HintAssist.Hint="شماره کارت"/>
+                <ComboBox x:Name="BankAccountTypeCB" Style="{StaticResource DarkOutlinedComboBox}"
+                          Width="180" materialDesign:HintAssist.Hint="نوع حساب"/>
             </WrapPanel>
 
-            <!-- ثبت -->
-            <Button x:Name="AddBankDataBtn"
-Content="ثبت داده"
-Height="38" Width="120"
-Margin="0,14,0,0"
-HorizontalAlignment="Right"
-Background="#22C55E" Foreground="White" BorderThickness="0"
-materialDesign:ButtonAssist.CornerRadius="8"
-Click="AddBankDataBtn_Click"/>
-
+            <Button x:Name="AddBankDataBtn" Content="ثبت داده" Height="38" Width="120"
+                    Margin="0,14,0,0" HorizontalAlignment="Right" Background="#22C55E"
+                    Foreground="White" BorderThickness="0"
+                    materialDesign:ButtonAssist.CornerRadius="8"
+                    Click="AddBankDataBtn_Click"/>
         </StackPanel>
-        <Line Margin="50,30"
-            Stretch="Fill"
-            X1="0" Y1="0"
-            X2="1" Y2="0"
-            StrokeThickness="1"
-            HorizontalAlignment="Stretch"
-            VerticalAlignment="Bottom">
+
+        <Line Margin="50,30" Stretch="Fill" X1="0" Y1="0" X2="1" Y2="0"
+              StrokeThickness="1" HorizontalAlignment="Stretch" VerticalAlignment="Bottom">
             <Line.Stroke>
                 <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
                     <GradientStop Color="Transparent" Offset="0"/>
