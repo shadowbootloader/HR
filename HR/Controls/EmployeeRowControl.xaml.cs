@@ -6,6 +6,13 @@ namespace HR.Controls
 {
     public partial class EmployeeRowControl : UserControl
     {
+        public EmployeeModel? Employee => DataContext as EmployeeModel;
+        private void ViewBtn_Click(object sender, RoutedEventArgs e)
+        {
+            NavigationRequested?.Invoke(new EmployeOverview(Employee));
+        }
+
+
         public static event Action<Page> NavigationRequested;
         public EmployeeRowControl()
         {

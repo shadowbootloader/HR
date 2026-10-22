@@ -70,7 +70,10 @@
                     <Button Background="Transparent" BorderThickness="0" Margin="35,0,20,0" Cursor="Hand" Padding="6" x:Name="HamBtn" Click="HamBtn_Click">
                         <TextBlock Text="☰" FontSize="20" Foreground="#94A3B8"/>
                     </Button>
-
+                    <Button Background="Transparent" BorderThickness="0" Margin="10,0,0,0" Cursor="Hand"
+        Padding="6" Click="BackBtn_Click" ToolTip="بازگشت">
+                        <TextBlock Text="⟵" FontSize="18" Foreground="#94A3B8"/>
+                    </Button>
                     <!-- عنوان صفحه (داخل هدر) -->
                     <StackPanel VerticalAlignment="Center" Margin="30,0,0,0">
                         <TextBlock Text="مرور کلی پرونده" x:Name="PageName" FontSize="22"  FontWeight="Bold" Foreground="White" FontFamily="pack://application:,,,/Fonts/#B Nazanin" />
@@ -108,8 +111,7 @@
             <Border x:Name="RightMenu" DockPanel.Dock="Right" Background="#0F172A" HorizontalAlignment="Right" BorderBrush="#1E293B" BorderThickness="1,0,0,0">
                 <DockPanel FlowDirection="RightToLeft">
                     <!-- منو -->
-                    <StackPanel DockPanel.Dock="Top" Margin="5,20,5,0">
-
+                    <StackPanel x:Name="NavPanel" DockPanel.Dock="Top" Margin="5,20,5,0">
                         <Button x:Name="DashbordBynSide" Style="{StaticResource NavButtonActive}" Margin="0,2" Padding="9"  Click="SideMenu_Click">
                             <StackPanel Orientation="Horizontal">
                                 <materialDesign:PackIcon Kind="Home" VerticalAlignment="Center" Margin="0,0,10,0" FontSize="15" Width="30"  Height="30"/>
@@ -132,28 +134,28 @@
                             </StackPanel>
                         </Button>
 
-                        <Button Style="{StaticResource NavButton}" Margin="0,2" Click="SideMenu_Click">
+                        <Button x:Name="RecommendedBtn" Style="{StaticResource NavButton}" Margin="0,2" Click="SideMenu_Click">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="⭐" FontSize="15" Width="28"/>
                                 <TextBlock Text="Recommended for You" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
 
-                        <Button Style="{StaticResource NavButton}" Margin="0,2" Click="SideMenu_Click">
+                        <Button x:Name="CareerBtn" Style="{StaticResource NavButton}" Margin="0,2" Click="SideMenu_Click">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="🚀" FontSize="15" Width="28"/>
                                 <TextBlock Text="Career Development" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
 
-                        <Button Style="{StaticResource NavButton}" Margin="0,2" Click="SideMenu_Click">
+                        <Button x:Name="ReportsBtn" Style="{StaticResource NavButton}" Margin="0,2" Click="SideMenu_Click">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="📊" FontSize="15" Width="28"/>
                                 <TextBlock Text="Reports &amp; Insights" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
 
-                        <Button Style="{StaticResource NavButton}" Margin="0,2" Click="SideMenu_Click">
+                        <Button x:Name="SettingsBtn" Style="{StaticResource NavButton}" Margin="0,2" Click="SideMenu_Click">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="⚙️" FontSize="15" Width="28"/>
                                 <TextBlock Text="Settings" VerticalAlignment="Center"/>

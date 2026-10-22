@@ -3,18 +3,18 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using HR.Controls;
-using HR.Services;
+
 
 namespace HR.Services
 {
     public static class NotificationService
     {
-        private static Panel _host;
+        private static Panel? _host;
 
         private static readonly Queue<NotificationRequest>
             _queue = new();
 
-        private static NeonNotification _current;
+        private static NeonNotification? _current;
 
 
         public static void Initialize(Panel host)
@@ -102,8 +102,11 @@ namespace HR.Services
             double duration)
         {
             if (_host == null)
-                throw new InvalidOperationException(
-                    "NotificationService.Initialize() has not been called.");
+            {
+                System.Diagnostics.Debug.WriteLine(
+                    "[NotificationService] Initialize() صدا زده نشده؛ پیام نمایش داده نشد.");
+                return;
+            }
 
             Application.Current.Dispatcher.Invoke(() =>
             {

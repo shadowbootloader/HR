@@ -1,69 +1,60 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows.Controls;
-using System.Xml.Linq;
+﻿using System.Windows.Controls;
 
 namespace HR.Services
 {
+    /// <summary>
+    /// نشان‌دادن/پاک‌کردن خطای اعتبارسنجی روی TextBox.
+    /// نسخه قبلی پیام را در جایگاه «value» می‌گذاشت و ErrorContent نال می‌ماند،
+    /// پس متن خطا هرگز نمایش داده نمی‌شد.
+    /// </summary>
     public static class ValidationHelper
     {
-        public static void SetError(
-            TextBox textBox,
-            string message)
+        public static void SetError(TextBox textBox, string message)
         {
-            var bindingExpression =
-                textBox.GetBindingExpression(
-                    TextBox.TextProperty);
+            var binding = textBox.GetBindingExpression(TextBox.TextProperty);
+            if (binding == null) return;
 
-            if (bindingExpression == null)
-                return;
-
-            var error = new ValidationError(
-                new ManualValidationRule(),
-                bindingExpression,
-                message,
-                null);
-
-            Validation.MarkInvalid(
-                bindingExpression,
-                error);
-        }
-
-
-        public static void ClearError(
-            TextBox textBox)
-        {
-            var bindingExpression =
-                textBox.GetBindingExpression(
-                    TextBox.TextProperty);
-
-            if (bindingExpression == null)
-                return;
-
-            Validation.ClearInvalid(
-                bindingExpression);
-        }
-
-        public static bool CheckEmpty(TextBox textBox)
-        {
-            if (string.IsNullOrWhiteSpace(textBox.Text))
+            var error = new ValidationError(new MessageRule(message), binding)
             {
-                
+                ErrorContent = message
+            };
 
-                return false;
-            }
-            return true;
+            Validation.MarkInvalid(binding, error);
         }
-        private class ManualValidationRule
-            : ValidationRule
+
+        public static void ClearError(TextBox textBox)
         {
-            public override ValidationResult Validate(
-                object value,
-                System.Globalization.CultureInfo cultureInfo)
+            var binding = textBox.GetBindingExpression(TextBox.TextProperty);
+            if (binding == null) return;
+
+            Validation.ClearInvalid(binding);
+        }
+
+        /// <summary>اگر خالی باشد خطا نشان می‌دهد و false برمی‌گرداند.</summary>
+        public static bool CheckRequired(TextBox textBox, string message)
+        {
+            if (!string.IsNullOrWhiteSpace(textBox.Text))
             {
-                return ValidationResult.ValidResult;
+                ClearError(textBox);
+                return true;
             }
+
+            SetError(textBox, message);
+            return false;
+        }
+
+        /// <summary>فقط بررسی خالی بودن، بدون دست‌زدن به UI.</summary>
+        public static bool IsEmpty(TextBox textBox)
+            => string.IsNullOrWhiteSpace(textBox.Text);
+
+        private sealed class MessageRule : ValidationRule
+        {
+            private readonly string _message;
+
+            public MessageRule(string message) => _message = message;
+
+            public override ValidationResult Validate(object value, System.Globalization.CultureInfo cultureInfo)
+                => new(false, _message);
         }
     }
 }

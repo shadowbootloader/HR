@@ -375,7 +375,13 @@
                     <ItemsControl x:Name="EmployeeItems">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <uc:EmployeeRowControl/>
+                                <uc:EmployeeRowControl FullName="{Binding FullName}"
+                               Email="{Binding Email}"
+                               Position="{Binding Position}"
+                               Department="{Binding Department}"
+                               Status="{Binding Status}"
+                               PerformanceValue="{Binding PerformanceValue}"
+                               PerformanceLabel="{Binding PerformanceLabel}"/>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>

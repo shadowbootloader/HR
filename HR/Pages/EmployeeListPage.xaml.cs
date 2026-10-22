@@ -1,423 +1,212 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Reflection.Emit;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using HR.Controls;
+using HR.Models;
 using MaterialDesignThemes.Wpf;
 
 namespace HR.Pages
 {
-    public partial class EmployeeListPage : Page , INotifyPropertyChanged
+    public partial class EmployeeListPage : Page, INotifyPropertyChanged
     {
-        public event Action<Page> NavigationRequested;
+        public event Action<Page>? NavigationRequested;
 
-        public ObservableCollection<EmployeeModel> Employees { get; set; }
+        private const int PageSize = 10;
 
-        // ================== تنظیمات ==================
+        private readonly List<EmployeeModel> _all = new();
+        private readonly ObservableCollection<EmployeeModel> _visible = new();
+
         private int _currentPage = 1;
         private int _totalPages = 1;
-        private int _pageSize = 10;          // تعداد آیتم در هر صفحه
+        private string _searchTerm = string.Empty;
+        private string _statusFilter = "همه";
 
-        public int CurrentPage => _currentPage;
-        public int TotalPages => _totalPages;
+        public int FromIndex { get; private set; }
+        public int ToIndex { get; private set; }
+        public int TotalCount { get; private set; }
 
-        // ایونت برای اینکه لیستت رو آپدیت کنی
-        public event Action<int> PageChanged;
+        public string PaginationText => TotalCount == 0
+            ? "موردی یافت نشد"
+            : $"نمایش {FromIndex} تا {ToIndex} از {TotalCount} کارکنان";
 
+        public event PropertyChangedEventHandler? PropertyChanged;
 
-        int _FromIndex;
-        int _ToIndex;
-        int _TotalCount;
-        public int FromIndex 
-        { 
-            get
-            {
-                return _FromIndex;
-            }
-            set {
-                _FromIndex = value;
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(PaginationText));
-            } 
-        }
-        public int ToIndex
-        {
-            get
-            {
-                return _ToIndex;
-            }
-            set
-            {
-                _ToIndex = value;
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(PaginationText));
-            }
-        }
-        public int TotalCount
-        {
-            get
-            {
-                return _TotalCount;
-            }
-            set
-            {
-                _TotalCount = value;
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(PaginationText));
-            }
-        }
-
-        public int PagesCount;
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected void OnPropertyChanged([CallerMemberName] string name = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-        }
-        public string PaginationText => $"نمایش {FromIndex} تا {ToIndex} از {TotalCount} کارکنان";
-
-
-        
+        private void OnPropertyChanged([CallerMemberName] string? name = null)
+            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
         public EmployeeListPage()
         {
             InitializeComponent();
-            
+
             DataContext = this;
-            InitializePagination(248, 10);
-            LoadData(0);
-            EmployeeItems.ItemsSource = Employees;
-            
-            
-            PageChanged += (page) =>
-            {
-                // اینجا لیستت رو با صفحه جدید لود کن
-                LoadData(page-1);
-            };
+
+            EmployeeItems.ItemsSource = _visible;
+            LoadSampleData();
+            ApplyFilter(resetPage: true);
+
+            Loaded += OnLoaded;
+            Unloaded += OnUnloaded;
         }
 
-        // ================== فراخوانی اولیه ==================
-        /// <summary>
-        /// این متد رو بعد از لود شدن داده‌ها صدا بزن
-        /// </summary>
-        /// <param name="totalItems">تعداد کل آیتم‌های لیست</param>
-        /// <param name="pageSize">تعداد آیتم در هر صفحه</param>
-        public void InitializePagination(int totalItems, int pageSize = 10)
+        // ==================== چرخه عمر ====================
+
+        private void OnLoaded(object sender, RoutedEventArgs e)
         {
-            _pageSize = pageSize;
-            _totalPages = Math.Max(1, (int)Math.Ceiling(totalItems / (double)pageSize));
-            _currentPage = 1;
+            EmployeeRowControl.NavigationRequested -= OnRowNavigationRequested;
+            EmployeeRowControl.NavigationRequested += OnRowNavigationRequested;
+        }
+
+        private void OnUnloaded(object sender, RoutedEventArgs e)
+            => EmployeeRowControl.NavigationRequested -= OnRowNavigationRequested;
+
+        private void OnRowNavigationRequested(Page page) => NavigationRequested?.Invoke(page);
+
+        // ==================== داده ====================
+
+        private void LoadSampleData()
+        {
+            _all.Clear();
+
+            string[] firstNames = { "امیرحسین", "محمدرضا", "سعید", "رضا", "علی", "مهدی", "پارسا", "نیما", "حسین", "زهرا", "مریم", "سارا", "الهام", "مینا", "فاطمه", "نازنین" };
+            string[] lastNames = { "رضایی", "احمدی", "کریمی", "محمدی", "اکبری", "حسینی", "نادری", "نوری", "موسوی", "صالحی", "شریفی", "جعفری", "رستمی", "کاظمی" };
+            string[] positions = { "مهندس نرم‌افزار", "کارشناس جذب", "تحلیلگر مالی", "طراح رابط کاربری", "مدیر بازاریابی", "سرپرست تیم", "کارشناس فروش", "حسابدار", "برنامه‌نویس بک‌اند", "لید تست" };
+            string[] departments = { "منابع انسانی", "فناوری اطلاعات", "امور مالی", "بازاریابی", "پشتیبانی", "آموزش و توسعه" };
+            string[] statuses = { "فعال", "مرخصی", "غیرفعال" };
+
+            var random = new Random(1404);
+
+            for (int i = 1; i <= 148; i++)
+            {
+                var first = firstNames[random.Next(firstNames.Length)];
+                var last = lastNames[random.Next(lastNames.Length)];
+
+                _all.Add(new EmployeeModel
+                {
+                    FullName = $"{first} {last}",
+                    Email = $"user{i}@company.com",
+                    Position = positions[random.Next(positions.Length)],
+                    Department = departments[random.Next(departments.Length)],
+                    DepartmentIcon = "👤",
+                    Status = statuses[random.Next(statuses.Length)],
+                    PerformanceValue = random.Next(45, 100),
+                    PerformanceLabel = "—",
+                    AvatarUrl = PackIconKind.Account
+                });
+            }
+        }
+
+        // ==================== فیلتر و صفحه‌بندی ====================
+
+        private void ApplyFilter(bool resetPage)
+        {
+            var query = _all.AsEnumerable();
+
+            if (!string.IsNullOrWhiteSpace(_searchTerm))
+            {
+                query = query.Where(x =>
+                    x.FullName.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                    x.Position.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                    x.Department.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (_statusFilter != "همه")
+                query = query.Where(x => x.Status == _statusFilter);
+
+            var filtered = query.ToList();
+
+            if (resetPage) _currentPage = 1;
+
+            _totalPages = Math.Max(1, (int)Math.Ceiling(filtered.Count / (double)PageSize));
+            if (_currentPage > _totalPages) _currentPage = _totalPages;
+
+            _visible.Clear();
+            foreach (var item in filtered.Skip((_currentPage - 1) * PageSize).Take(PageSize))
+                _visible.Add(item);
+
+            TotalCount = filtered.Count;
+            FromIndex = TotalCount == 0 ? 0 : (_currentPage - 1) * PageSize + 1;
+            ToIndex = Math.Min(_currentPage * PageSize, TotalCount);
+
+            OnPropertyChanged(nameof(TotalCount));
+            OnPropertyChanged(nameof(FromIndex));
+            OnPropertyChanged(nameof(ToIndex));
+            OnPropertyChanged(nameof(PaginationText));
 
             UpdatePaginationUI();
         }
 
-        // ================== آپدیت ظاهر Pagination ==================
         private void UpdatePaginationUI()
         {
-            // دکمه قبلی
             BtnPrevious.IsEnabled = _currentPage > 1;
             BtnPrevious.Opacity = BtnPrevious.IsEnabled ? 1 : 0.4;
 
-            // دکمه بعدی
             BtnNext.IsEnabled = _currentPage < _totalPages;
             BtnNext.Opacity = BtnNext.IsEnabled ? 1 : 0.4;
 
-            // ------------------ منطق نمایش صفحات ------------------
-            if (_totalPages <= 1)
-            {
-                BtnCurrent.Content = "1";
-                BtnPage2.Visibility = Visibility.Collapsed;
-                BtnPage3.Visibility = Visibility.Collapsed;
-                TxtDots.Visibility = Visibility.Collapsed;
-                BtnLast.Visibility = Visibility.Collapsed;
-            }
-            else if (_totalPages == 2)
-            {
-                BtnCurrent.Content = "1";
-                BtnPage2.Content = "2";
-                BtnPage2.Visibility = Visibility.Visible;
-                BtnPage3.Visibility = Visibility.Collapsed;
-                TxtDots.Visibility = Visibility.Collapsed;
-                BtnLast.Visibility = Visibility.Collapsed;
-            }
-            else if (_totalPages == 3)
-            {
-                BtnCurrent.Content = "1";
-                BtnPage2.Content = "2";
-                BtnPage3.Content = "3";
-                BtnPage2.Visibility = Visibility.Visible;
-                BtnPage3.Visibility = Visibility.Visible;
-                TxtDots.Visibility = Visibility.Collapsed;
-                BtnLast.Visibility = Visibility.Collapsed;
-            }
-            else
-            {
-                // بیشتر از ۳ صفحه
-                if (_currentPage <= 2)
-                {
-                    // اول صفحات
-                    BtnCurrent.Content = "1";
-                    BtnPage2.Content = "2";
-                    BtnPage3.Content = "3";
+            BtnCurrent.Content = _currentPage.ToString();
+            BtnPage2.Visibility = _totalPages >= 2 ? Visibility.Visible : Visibility.Collapsed;
+            BtnPage3.Visibility = _totalPages >= 3 ? Visibility.Visible : Visibility.Collapsed;
+            BtnPage2.Content = Math.Min(_totalPages, _currentPage + 1).ToString();
+            BtnPage3.Content = Math.Min(_totalPages, _currentPage + 2).ToString();
 
-                    BtnPage2.Visibility = Visibility.Visible;
-                    BtnPage3.Visibility = Visibility.Visible;
-                    TxtDots.Visibility = Visibility.Visible;
-                    BtnLast.Content = _totalPages.ToString();
-                    BtnLast.Visibility = Visibility.Visible;
-                }
-                else if (_currentPage >= _totalPages - 2)
-                {
-                    // نزدیک به آخر (اینجا اصلاح شد)
-                    BtnCurrent.Content = (_totalPages - 2).ToString();
-                    BtnPage2.Content = (_totalPages - 1).ToString();
-                    BtnPage3.Content = _totalPages.ToString();
-
-                    BtnPage2.Visibility = Visibility.Visible;
-                    BtnPage3.Visibility = Visibility.Visible;
-                    TxtDots.Visibility = Visibility.Collapsed;   // نقطه‌چین لازم نیست
-                    BtnLast.Visibility = Visibility.Collapsed;   // دیگه دکمه Last نشون نده
-                }
-                else
-                {
-                    // حالت وسط
-                    BtnCurrent.Content = (_currentPage - 1).ToString();
-                    BtnPage2.Content = _currentPage.ToString();
-                    BtnPage3.Content = (_currentPage + 1).ToString();
-
-                    BtnPage2.Visibility = Visibility.Visible;
-                    BtnPage3.Visibility = Visibility.Visible;
-                    TxtDots.Visibility = Visibility.Visible;
-                    BtnLast.Content = _totalPages.ToString();
-                    BtnLast.Visibility = Visibility.Visible;
-                }
-            }
-
-            HighlightCurrentPage();
+            BtnLast.Visibility = _totalPages > 3 ? Visibility.Visible : Visibility.Collapsed;
+            BtnLast.Content = _totalPages.ToString();
+            TxtDots.Visibility = BtnLast.Visibility;
         }
 
-        private void HighlightCurrentPage()
+        private void GoToPage(int page)
         {
-            ResetButtonStyle(BtnCurrent);
-            ResetButtonStyle(BtnPage2);
-            ResetButtonStyle(BtnPage3);
-            ResetButtonStyle(BtnLast);
-
-            string current = _currentPage.ToString();
-
-            if (BtnCurrent.Content.ToString() == current)
-                SetActiveStyle(BtnCurrent);
-            else if (BtnPage2.Content.ToString() == current)
-                SetActiveStyle(BtnPage2);
-            else if (BtnPage3.Content.ToString() == current)
-                SetActiveStyle(BtnPage3);
-            else if (BtnLast.Content.ToString() == current)
-                SetActiveStyle(BtnLast);
+            if (page < 1 || page > _totalPages || page == _currentPage) return;
+            _currentPage = page;
+            ApplyFilter(resetPage: false);
         }
 
-        private void SetActiveStyle(Button btn)
-        {
-            btn.Background = new SolidColorBrush(Color.FromRgb(0x3F, 0x8C, 0xFF));
-            btn.FontWeight = FontWeights.SemiBold;
-        }
+        // ==================== رویدادها ====================
 
-        private void ResetButtonStyle(Button btn)
-        {
-            btn.Background = new SolidColorBrush(Color.FromArgb(0x22, 0xFF, 0xFF, 0xFF));
-            btn.FontWeight = FontWeights.Normal;
-        }
+        private void BtnPrevious_Click(object sender, RoutedEventArgs e) => GoToPage(_currentPage - 1);
 
-        // ================== رویدادها ==================
-        private void BtnPrevious_Click(object sender, RoutedEventArgs e)
-        {
-            if (_currentPage > 1)
-            {
-                _currentPage--;
-                UpdatePaginationUI();
-                PageChanged?.Invoke(_currentPage);
-            }
-        }
-
-        private void BtnNext_Click(object sender, RoutedEventArgs e)
-        {
-            if (_currentPage < _totalPages)
-            {
-                _currentPage++;
-                UpdatePaginationUI();
-                PageChanged?.Invoke(_currentPage);
-            }
-        }
+        private void BtnNext_Click(object sender, RoutedEventArgs e) => GoToPage(_currentPage + 1);
 
         private void PageButton_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button btn && int.TryParse(btn.Content.ToString(), out int page))
-            {
-                if (page != _currentPage)
-                {
-                    _currentPage = page;
-                    UpdatePaginationUI();
-                    PageChanged?.Invoke(_currentPage);
-                }
-            }
-        }
-        private void LoadData( int PageNumber)
-        {
-            TotalCount = 248;
-            FromIndex = (PageNumber ) * _pageSize;
-            if(FromIndex == 0)
-            {
-                FromIndex = 1;
-            }
-            if(PageNumber != (_totalPages - 1))
-            {
-                ToIndex = (PageNumber+1) * _pageSize;
-            }
-            else
-            {
-                ToIndex = TotalCount ;
-            }
-            Employees = new ObservableCollection<EmployeeModel>
-{
-    new EmployeeModel
-    {
-        FullName = "امیرحسین رضایی",
-        Email = "amirhossein.rezaei@company.com",
-        Position = "مدیر عملیات منابع انسانی",
-        Department = "منابع انسانی",
-        DepartmentIcon = "👥",
-        Status = "فعال",
-        PerformanceValue = 92,
-        PerformanceLabel = "عالی",
-
-        AvatarUrl = PackIconKind.Account
-    },
-
-    new EmployeeModel
-    {
-        FullName = "محمدرضا احمدی",
-        Email = "mohammadreza.ahmadi@company.com",
-        Position = "مهندس نرم‌افزار",
-        Department = "فناوری اطلاعات",
-        DepartmentIcon = "</>",
-        Status = "فعال",
-        PerformanceValue = 88,
-        PerformanceLabel = "بسیار خوب",
-
-        AvatarUrl = PackIconKind.Account
-    },
-
-    new EmployeeModel
-    {
-        FullName = "سعید کریمی",
-        Email = "saeed.karimi@company.com",
-        Position = "طراح تجربه و رابط کاربری",
-        Department = "طراحی",
-        DepartmentIcon = "🎨",
-        Status = "در مرخصی",
-        PerformanceValue = 76,
-        PerformanceLabel = "خوب",
-
-        AvatarUrl = PackIconKind.Account
-    },
-
-    new EmployeeModel
-    {
-        FullName = "رضا محمدی",
-        Email = "reza.mohammadi@company.com",
-        Position = "کارشناس جذب و استخدام",
-        Department = "منابع انسانی",
-        DepartmentIcon = "👥",
-        Status = "فعال",
-        PerformanceValue = 81,
-        PerformanceLabel = "بسیار خوب",
-
-        AvatarUrl = PackIconKind.Account
-    },
-
-    new EmployeeModel
-    {
-        FullName = "علی اکبری",
-        Email = "ali.akbari@company.com",
-        Position = "تحلیلگر مالی",
-        Department = "امور مالی",
-        DepartmentIcon = "📊",
-        Status = "فعال",
-        PerformanceValue = 90,
-        PerformanceLabel = "عالی",
-
-        AvatarUrl = PackIconKind.Account
-    },
-
-    new EmployeeModel
-    {
-        FullName = "مهدی حسینی",
-        Email = "mehdi.hosseini@company.com",
-        Position = "مدیر بازاریابی",
-        Department = "بازاریابی",
-        DepartmentIcon = "📢",
-        Status = "در مرخصی",
-        PerformanceValue = 65,
-        PerformanceLabel = "نیازمند بهبود",
-
-        AvatarUrl = PackIconKind.Account
-    },
-
-    new EmployeeModel
-    {
-        FullName = "پارسا نادری",
-        Email = "parsa.naderi@company.com",
-        Position = "مدیر موفقیت مشتریان",
-        Department = "ارتباط با مشتریان",
-        DepartmentIcon = "💙",
-        Status = "فعال",
-        PerformanceValue = 85,
-        PerformanceLabel = "بسیار خوب",
-
-        AvatarUrl = PackIconKind.Account
-    }
-};
-        }
-
-        void RetriveData(int PageNumber)
-        {
-
-        }
-
-        private void SummaryCardControl_Loaded(object sender, RoutedEventArgs e)
-        {
-
+            if (sender is Button btn && int.TryParse(btn.Content?.ToString(), out var page))
+                GoToPage(page);
         }
 
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            // فیلتر لیست
+            _searchTerm = SearchBox.Text?.Trim() ?? string.Empty;
+            ApplyFilter(resetPage: true);
         }
 
         private void StatusFilterCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            // فیلتر وضعیت
+            _statusFilter = (StatusFilterCombo.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "همه";
+            ApplyFilter(resetPage: true);
         }
+
+        private void SummaryCardControl_Loaded(object sender, RoutedEventArgs e) { }
+
         private void BtnAddEmployee_Click(object sender, RoutedEventArgs e)
-        {
-            NavigationRequested?.Invoke(new AddEmployeePage());
-        }
+            => NavigationRequested?.Invoke(new AddEmployeePage());
     }
 
-    // مدل ساده کارمند
     public class EmployeeModel
     {
-        public string FullName { get; set; }
-        public string Email { get; set; }
-        public string Position { get; set; }
-        public string Department { get; set; }
-        public string DepartmentIcon { get; set; }
-        public string Status { get; set; }
+        public string FullName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Position { get; set; } = string.Empty;
+        public string Department { get; set; } = string.Empty;
+        public string DepartmentIcon { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
         public double PerformanceValue { get; set; }
-        public string PerformanceLabel { get; set; }
+        public string PerformanceLabel { get; set; } = string.Empty;
         public PackIconKind AvatarUrl { get; set; }
     }
 }

@@ -1,10 +1,12 @@
 ﻿using System.Collections.ObjectModel;
 using System.Linq;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using MaterialDesignThemes.Wpf;
 using HR.Controls;
+using MaterialDesignThemes.Wpf;
+using System.Windows;
 using static HR.Controls.DepartmentCardControl;
 
 namespace HR.Pages
@@ -69,13 +71,14 @@ namespace HR.Pages
 
         private void DepartmentCard_Click(object sender, MouseButtonEventArgs e)
         {
-            NavigationRequested?.Invoke(new DepartmentDetailPage());
+            if (sender is not FrameworkElement element) return;
+
+            var model = element.DataContext as DepartmentModel;
+            NavigationRequested?.Invoke(new DepartmentDetailPage(model));
         }
 
-        private void BtnAddDepartment_Click(object sender, System.Windows.RoutedEventArgs e)
-        {
-            NavigationRequested?.Invoke(new AddDepartmentPage());
-        }
+        private void BtnAddDepartment_Click(object sender, RoutedEventArgs e)
+            => NavigationRequested?.Invoke(new AddDepartmentPage());
     }
 
     public class DepartmentModel

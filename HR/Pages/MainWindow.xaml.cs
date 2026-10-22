@@ -1,81 +1,56 @@
-﻿using System.Windows;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using HR.Controls;
 using HR.Services;
 using LiveChartsCore;
-using LiveChartsCore.Measure;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
-using MaterialDesignThemes.Wpf;
 using SkiaSharp;
-using Chart = HR.Controls.Chart;
 
 namespace HR.Pages
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, INotifyPropertyChanged
     {
-        bool SideMenu_IsOpen = true;
-        Button ActiveSideMenu;
-        EmployeeListPage EmpListPage = new EmployeeListPage();
-        DepartmentsPage AllDepartmentPage = new DepartmentsPage();
-        DepartmentDetailPage DPDetail = new DepartmentDetailPage();
-        EmployeeAssessmentCenterPage EACP = new EmployeeAssessmentCenterPage();
+        private readonly Dictionary<string, Page> _pages = new();
+        private Button? _activeSideMenu;
+        private bool _sideMenuOpen = true;
 
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = this;
-            SetupCharts();
-            ActiveSideMenu = DashbordBynSide;
 
-            DataPanel.Navigate(EACP);
+            // مهم: چارت‌ها باید قبل از DataContext مقدار بگیرند،
+            // وگرنه بایندینگ‌ها نال می‌خوانند و هرگز آپدیت نمی‌شوند.
+            SetupCharts();
+            DataContext = this;
+
+            _activeSideMenu = DashbordBynSide;
             NotificationService.Initialize(NotificationHost);
 
-            AllDepartmentPage.NavigationRequested += page =>
-            {
-                DataPanel.Navigate(page);
-            };
-            EmployeeRowControl.NavigationRequested += page =>
-            {
-                DataPanel.Navigate(page);
-            };
-            EmpListPage.NavigationRequested += page =>
-            {
-                DataPanel.Navigate( page);
-            };
-            List<ChartEmployee> AllData = new List<ChartEmployee>() {
-            new ChartEmployee { Id = 1, ManagerId = null, FullName = "علی رضایی", Position = "مدیر فروش", DepartmentId = 1,DepartmentName="فتی",Role="CEO" },
-            new ChartEmployee { Id = 2, ManagerId = 1, FullName = "مریم احمدی", Position = "سرپرست تیم A", DepartmentId = 1 ,DepartmentName="فتی",Role="CEO"},
-            new ChartEmployee { Id = 3, ManagerId = 1, FullName = "حسین محمدی", Position = "سرپرست تیم B", DepartmentId = 1 ,DepartmentName="فتی",Role="CEO"},
-            new ChartEmployee { Id = 4, ManagerId = 2, FullName = "سارا کریمی", Position = "کارشناس فروش", DepartmentId = 1 ,DepartmentName="فتی",Role="CEO"},
-            new ChartEmployee { Id = 5, ManagerId = 2, FullName = "رضا نوری", Position = "کارشناس فروش", DepartmentId = 1,DepartmentName="فتی",Role="CEO" },
-            new ChartEmployee {Id = 6, ManagerId = 3, FullName = "فاطمه موسوی", Position = "کارشناس فروش", DepartmentId = 1, DepartmentName = "فتی", Role = "CEO"},
-
-            // ========== دپارتمان مالی (DepartmentId = 2) ==========
-            //new ChartEmployee { Id = 10, ManagerId = null, FullName = "محمد حسینی", Position = "مدیر مالی", DepartmentId = 2 },
-            new ChartEmployee { Id = 11, ManagerId = 1, FullName = "زهرا اکبری", Position = "حسابدار ارشد", DepartmentId = 2 ,DepartmentName="فتی",Role="CEO"},
-            new ChartEmployee { Id = 12, ManagerId = 1, FullName = "امیر جعفری", Position = "کارشناس بودجه", DepartmentId = 2 ,DepartmentName="فتی",Role="CEO"},
-            new ChartEmployee {Id = 13, ManagerId = 1, FullName = "نازنین صالحی", Position = "حسابدار", DepartmentId = 2, DepartmentName = "فتی", Role = "CEO"},
-
-            // ========== دپارتمان فناوری (DepartmentId = 3) ==========
-            //new ChartEmployee { Id = 20, ManagerId = null, FullName = "کیانوش مرادی", Position = "مدیر فناوری", DepartmentId = 3 },
-            new ChartEmployee {Id = 21, ManagerId = 2, FullName = "نیما فرهادی", Position = "لید برنامه‌نویس", DepartmentId = 3, DepartmentName = "فتی", Role = "CEO"},
-            new ChartEmployee {Id = 22, ManagerId = 2, FullName = "الهام رستمی", Position = "لید تست", DepartmentId = 3, DepartmentName = "فتی", Role = "CEO"},
-            new ChartEmployee {Id = 23, ManagerId = 2, FullName = "پویا کاظمی", Position = "برنامه‌نویس بک‌اند", DepartmentId = 3, DepartmentName = "فتی", Role = "CEO"},
-            new ChartEmployee {Id = 24, ManagerId = 2, FullName = "مینا شریفی", Position = "برنامه‌نویس فرانت", DepartmentId = 3, DepartmentName = "فتی", Role = "CEO"}};
-            //Dispatcher.Invoke(async () => { await Test.ShowDepartment(AllData); });
+            ShowDashboard();
         }
 
-        public ISeries[] CompetencySeries { get; set; }
-        public ISeries[] PerformanceSeries { get; set; }
-        public PolarAxis[] AngleAxes { get; set; }
-        public Axis[] XAxes { get; set; }
-        public Axis[] YAxes { get; set; }
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        private void OnPropertyChanged([CallerMemberName] string? name = null)
+            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+
+        // ==================== چارت‌ها ====================
+
+        public ISeries[]? CompetencySeries { get; private set; }
+        public ISeries[]? PerformanceSeries { get; private set; }
+        public PolarAxis[]? AngleAxes { get; private set; }
+        public Axis[]? XAxes { get; private set; }
+        public Axis[]? YAxes { get; private set; }
 
         private void SetupCharts()
         {
-            // ===== Radar Chart (درست شده) =====
             CompetencySeries = new ISeries[]
             {
                 new PolarLineSeries<double>
@@ -95,14 +70,10 @@ namespace HR.Pages
             {
                 new PolarAxis
                 {
-                    Labels = new string[]
+                    Labels = new[]
                     {
-                        "Leadership",
-                        "Communication",
-                        "Collaboration",
-                        "Problem Solving",
-                        "Results Orientation",
-                        "Strategic Thinking"
+                        "Leadership", "Communication", "Collaboration",
+                        "Problem Solving", "Results Orientation", "Strategic Thinking"
                     },
                     LabelsPaint = new SolidColorPaint(SKColor.Parse("#94A3B8")),
                     TextSize = 11,
@@ -110,7 +81,6 @@ namespace HR.Pages
                 }
             };
 
-            // ===== Line Chart =====
             PerformanceSeries = new ISeries[]
             {
                 new LineSeries<double>
@@ -149,49 +119,58 @@ namespace HR.Pages
             };
         }
 
+        // ==================== ناوبری ====================
+
+        private T GetPage<T>(Func<T> factory, string key) where T : Page
+        {
+            if (_pages.TryGetValue(key, out var existing) && existing is T typed)
+                return typed;
+
+            var page = factory();
+            _pages[key] = page;
+            return page;
+        }
+
+        private void Navigate(Page page, string title)
+        {
+            PageName.Text = title;
+            DataPanel.Navigate(page);
+        }
+
+        private void ShowDashboard()
+        {
+            PageName.Text = "مرور کلی پرونده";
+            DataPanel.Navigate(GetPage(() => new EmployeeAssessmentCenterPage(), "assessment"));
+        }
+
+        private void BackBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataPanel.CanGoBack)
+                DataPanel.GoBack();
+            else
+                ShowDashboard();
+        }
+
         private void HamBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (SideMenu_IsOpen)
-            {
-                SideMenu_IsOpen = false;
-                CloseMenu(sender);
-            }
-            else
-            {
-                SideMenu_IsOpen = true;
-                OpenMenu(sender);
-            }
+            _sideMenuOpen = !_sideMenuOpen;
+            RightMenu.Width = _sideMenuOpen ? double.NaN : 60;
+
+            foreach (var button in NavPanel.Children.OfType<Button>())
+                SetButtonTextVisible(button, _sideMenuOpen);
         }
 
-        private void SideMenu_Click(object sender, RoutedEventArgs e)
+        /// <summary>متن دکمه‌های منو را مخفی/نمایان می‌کند (بدون وابستگی به sender).</summary>
+        private static void SetButtonTextVisible(Button button, bool visible)
         {
-            ActiveSideMenu.Style = this.FindResource("NavButton") as Style;
-            if (sender is Button targetBtn)
-            {
-                var style = this.FindResource("NavButtonActive") as Style;
-                targetBtn.Style = style;
-                ActiveSideMenu = targetBtn;
-            }
-            if(EmployeesBtn == (sender as Button))
-            {
-                PageName.Text = "کارکنان";
-                DataPanel.Navigate(EmpListPage);
-                //DataPanel.Content = EmpListPage;
-                
-            }
-            if(DepartmentsBtn == (sender as Button))
-            {
-                PageName.Text = "دپارتمان ها";
-                DataPanel.Navigate(AllDepartmentPage);
-            }
-            if(DashbordBynSide ==  (sender as Button))
-            {
-                DataPanel.Content = null;
-            }
+            var stack = FindVisualChild<StackPanel>(button);
+            if (stack == null) return;
+
+            foreach (var child in stack.Children.OfType<TextBlock>())
+                child.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
         }
 
-
-        private T FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
+        private static T? FindVisualChild<T>(DependencyObject? parent) where T : DependencyObject
         {
             if (parent == null) return null;
 
@@ -199,59 +178,55 @@ namespace HR.Pages
             {
                 var child = VisualTreeHelper.GetChild(parent, i);
 
-                if (child is T typedChild)
-                    return typedChild;
+                if (child is T typed) return typed;
 
-                var result = FindVisualChild<T>(child);
-                if (result != null)
-                    return result;
+                var nested = FindVisualChild<T>(child);
+                if (nested != null) return nested;
             }
 
             return null;
         }
 
-
-        void CloseMenu(object sender)
+        private void SideMenu_Click(object sender, RoutedEventArgs e)
         {
-            RightMenu.Width = 60;
+            if (sender is not Button target) return;
 
+            _activeSideMenu?.Style = (Style)FindResource("NavButton");
+            target.Style = (Style)FindResource("NavButtonActive");
+            _activeSideMenu = target;
 
-            if (sender is Button targetBtn)
+            if (ReferenceEquals(target, DashbordBynSide))
             {
-                // پیدا کردن StackPanel داخل دکمه
-                var stackPanel = FindVisualChild<StackPanel>(targetBtn);
+                ShowDashboard();
+                return;
+            }
 
-                if (stackPanel != null && stackPanel.Children.Count > 1)
+            if (ReferenceEquals(target, EmployeesBtn))
+            {
+                var page = GetPage(() =>
                 {
-                    // مخفی کردن TextBlock دوم (متن)
-                    stackPanel.Children[1].Visibility = Visibility.Collapsed;
-                }
+                    var list = new EmployeeListPage();
+                    list.NavigationRequested += p => Navigate(p, PageName.Text);
+                    return list;
+                }, "employees");
+
+                Navigate(page, "کارکنان");
+                return;
+            }
+
+            if (ReferenceEquals(target, DepartmentsBtn))
+            {
+                var page = GetPage(() =>
+                {
+                    var departments = new DepartmentsPage();
+                    departments.NavigationRequested += p => Navigate(p, PageName.Text);
+                    return departments;
+                }, "departments");
+
+                Navigate(page, "دپارتمان‌ها");
             }
         }
 
-        public void NavigateTo(Page page)
-        {
-            //DataPanel.Content = page;
-            DataPanel.Navigate(page);
-        }
-        void OpenMenu(object sender)
-        {
-            RightMenu.Width = double.NaN;
-
-
-            if (sender is Button targetBtn)
-            {
-                {
-                    // پیدا کردن StackPanel داخل دکمه
-                    var stackPanel = FindVisualChild<StackPanel>(targetBtn);
-
-                    if (stackPanel != null && stackPanel.Children.Count > 1)
-                    {
-                        // مخفی کردن TextBlock دوم (متن)
-                        stackPanel.Children[1].Visibility = Visibility.Visible;
-                    }
-                }
-            }
-        }
+        public void NavigateTo(Page page) => DataPanel.Navigate(page);
     }
 }
