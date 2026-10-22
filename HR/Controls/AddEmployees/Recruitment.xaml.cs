@@ -1,41 +1,67 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using HR.Models;
+using HR.Services;
 
 namespace HR.Controls.AddEmployees
 {
-    /// <summary>
-    /// Interaction logic for Recruitment.xaml
-    /// </summary>
-    public partial class Recruitment : UserControl
+    public partial class Recruitment : UserControl, IEmployeeSection
     {
+        private readonly SectionList<RecruitmentRecord> _list = new();
+
+        public string SectionTitle => "استخدام";
+
         public Recruitment()
         {
             InitializeComponent();
-        }
+            _list.Attach(PersonalEmploymentList);
 
-        private void DeleteEmploymentDataBtn_Click(object sender, RoutedEventArgs e)
-        {
-
+            Employment_OrganTypeCombo.ItemsSource = Lookups.InstitutionTypes;
+            Employment_OrganTypeCombo.SelectedIndex = 0;
         }
 
         private void AddEmploymentDataBtn_Click(object sender, RoutedEventArgs e)
         {
+            var name = Employment_OrganNameTB.Text?.Trim();
 
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                Warn("نام مرکز را وارد کنید.");
+                Employment_OrganNameTB.Focus();
+                return;
+            }
+
+            _list.Items.Add(new RecruitmentRecord
+            {
+                InstitutionName = name,
+                InstitutionType = Employment_OrganTypeCombo.Text?.Trim() ?? string.Empty,
+                Result = NullIfEmpty(Employment_ResaltTB.Text),
+                Note = NullIfEmpty(Employment_NoteTB.Text)
+            });
+
+            ClearForm();
         }
 
-        private void PersonalEmploymentList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void DeleteEmploymentDataBtn_Click(object sender, RoutedEventArgs e) => _list.DeleteSelected();
+        private void PersonalEmploymentList_SelectionChanged(object sender, SelectionChangedEventArgs e) { }
+
+        public void LoadFrom(EmployeeProfile profile) => _list.Replace(profile.Recruitments);
+        public void SaveTo(EmployeeProfile profile) => _list.CopyTo(profile.Recruitments);
+
+        public bool Validate(out string message) { message = string.Empty; return true; }
+
+        private void ClearForm()
         {
-
+            Employment_OrganNameTB.Clear();
+            Employment_ResaltTB.Clear();
+            Employment_NoteTB.Clear();
+            Employment_OrganTypeCombo.SelectedIndex = 0;
+            Employment_OrganNameTB.Focus();
         }
+
+        private static string? NullIfEmpty(string? v) => string.IsNullOrWhiteSpace(v) ? null : v.Trim();
+
+        private static void Warn(string t)
+            => MessageBox.Show(t, "استخدام", MessageBoxButton.OK, MessageBoxImage.Warning);
     }
 }

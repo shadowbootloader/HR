@@ -1,41 +1,65 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using HR.Models;
+using HR.Services;
 
 namespace HR.Controls.AddEmployees
 {
-    /// <summary>
-    /// Interaction logic for Citizenship.xaml
-    /// </summary>
-    public partial class Citizenship : UserControl
+    public partial class Citizenship : UserControl, IEmployeeSection
     {
+        private readonly SectionList<CitizenshipRecord> _list = new();
+
+        public string SectionTitle => "تابعیت";
+
         public Citizenship()
         {
             InitializeComponent();
-        }
+            _list.Attach(PersonalCitizenshipList);
 
-        private void DeleteCitizenshipDataBtn_Click(object sender, RoutedEventArgs e)
-        {
-
+            Citizenship_CountryNameCombo.ItemsSource = Lookups.Countries;
+            Citizenship_CountryNameCombo.SelectedIndex = 0;
         }
 
         private void AddCitizenshipDataBtn_Click(object sender, RoutedEventArgs e)
         {
+            var country = Citizenship_CountryNameCombo.Text?.Trim();
 
+            if (string.IsNullOrWhiteSpace(country))
+            {
+                Warn("کشور را انتخاب کنید.");
+                return;
+            }
+
+            _list.Items.Add(new CitizenshipRecord
+            {
+                Country = country,
+                Reason = Citizenship_ReasonTB.Text?.Trim() ?? string.Empty,
+                StartDate = Citizenship_StartDateDP.SelectedDate,
+                Note = NullIfEmpty(Citizenship_NoteTB.Text)
+            });
+
+            ClearForm();
         }
 
-        private void PersonalCitizenshipList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void DeleteCitizenshipDataBtn_Click(object sender, RoutedEventArgs e) => _list.DeleteSelected();
+        private void PersonalCitizenshipList_SelectionChanged(object sender, SelectionChangedEventArgs e) { }
+
+        public void LoadFrom(EmployeeProfile profile) => _list.Replace(profile.Citizenships);
+        public void SaveTo(EmployeeProfile profile) => _list.CopyTo(profile.Citizenships);
+
+        public bool Validate(out string message) { message = string.Empty; return true; }
+
+        private void ClearForm()
         {
-
+            Citizenship_ReasonTB.Clear();
+            Citizenship_NoteTB.Clear();
+            Citizenship_StartDateDP.SelectedDate = null;
+            Citizenship_CountryNameCombo.SelectedIndex = 0;
         }
+
+        private static string? NullIfEmpty(string? v) => string.IsNullOrWhiteSpace(v) ? null : v.Trim();
+
+        private static void Warn(string t)
+            => MessageBox.Show(t, "تابعیت", MessageBoxButton.OK, MessageBoxImage.Warning);
     }
 }

@@ -33,10 +33,10 @@
                     <GridView AllowsColumnReorder="True"
                 ColumnHeaderContainerStyle="{StaticResource DarkGridViewColumnHeader}">
                         <GridViewColumn Header="ردیف" Width="60" DisplayMemberBinding="{Binding Row}"/>
-                        <GridViewColumn Header="نام مرکز" Width="180" DisplayMemberBinding="{Binding WorkInstitutionName}"/>
-                        <GridViewColumn Header="نوع مرکز" Width="120" DisplayMemberBinding="{Binding DateOfStartWork}"/>
-                        <GridViewColumn Header="نتیجه" Width="140" DisplayMemberBinding="{Binding DateOfStartWork}"/>
-                        <GridViewColumn Header="توضیحات" Width="250" DisplayMemberBinding="{Binding DateOfStartWork}"/>
+                        <GridViewColumn Header="نام مرکز" Width="200" DisplayMemberBinding="{Binding InstitutionName}"/>
+                        <GridViewColumn Header="نوع مرکز" Width="130" DisplayMemberBinding="{Binding InstitutionType}"/>
+                        <GridViewColumn Header="نتیجه" Width="160" DisplayMemberBinding="{Binding Result}"/>
+                        <GridViewColumn Header="توضیحات" Width="240" DisplayMemberBinding="{Binding Note}"/>
                     </GridView>
                 </ListView.View>
             </ListView>

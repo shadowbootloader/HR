@@ -1,54 +1,85 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Text;
+﻿using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using HR.Models;
-using MaterialDesignThemes.Wpf;
+using System.Linq;
 
 namespace HR.Controls.AddEmployees
 {
-    /// <summary>
-    /// Interaction logic for WorkInterests.xaml
-    /// </summary>
-    public partial class WorkInterests : UserControl
+    public partial class WorkInterests : UserControl, IEmployeeSection
     {
-        ObservableCollection<InterestingItem> WorkInt = new();
+        private readonly ObservableCollection<WorkInterestRecord> _items = new();
+
+        public string SectionTitle => "علایق شغلی";
+
         public WorkInterests()
         {
             InitializeComponent();
-            DataContext = this;
-            PersonalWorkInterestsList.ItemsSource = WorkInt;
+
+            PersonalWorkInterestsList.ItemsSource = _items;
+
+            InterestLevelCombo.SelectedIndex = 1;
         }
 
         private void AddWorkInterestDataBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(InterestNameTB.Text)) return;
+            var name = InterestNameTB.Text?.Trim();
 
-            WorkInt.Add(new InterestingItem
+            if (string.IsNullOrWhiteSpace(name))
             {
-                InterestingItemName = InterestNameTB.Text.Trim(),
-                InterestingItemLevel = (InterestLevelCombo.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "متوسط",
+                Warn("عنوان علاقه شغلی را وارد کنید.");
+                InterestNameTB.Focus();
+                return;
+            }
 
+            if (_items.Any(x => x.Title == name))
+            {
+                Warn($"«{name}» قبلاً اضافه شده است.");
+                return;
+            }
+
+            _items.Add(new WorkInterestRecord
+            {
+                Title = name,
+                Level = (InterestLevelCombo.SelectedItem as ComboBoxItem)?.Content?.ToString() switch
+                {
+                    "کم" => InterestLevel.Low,
+                    "متوسط" => InterestLevel.Medium,
+                    _ => InterestLevel.High
+                }
             });
 
             InterestNameTB.Clear();
-
-            InterestLevelCombo.SelectedIndex = 0;
+            InterestLevelCombo.SelectedIndex = 1;
+            InterestNameTB.Focus();
         }
 
         private void DeleteInterestingChip_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Chip btn && btn.DataContext is InterestingItem item)
-                WorkInt.Remove(item);
+            if (sender is MaterialDesignThemes.Wpf.Chip chip &&
+                chip.DataContext is WorkInterestRecord item)
+            {
+                _items.Remove(item);
+            }
         }
+
+        public void LoadFrom(EmployeeProfile profile)
+        {
+            _items.Clear();
+            foreach (var item in profile.WorkInterests)
+                _items.Add(item);
+        }
+
+        public void SaveTo(EmployeeProfile profile)
+        {
+            profile.WorkInterests.Clear();
+            foreach (var item in _items)
+                profile.WorkInterests.Add(item);
+        }
+
+        public bool Validate(out string message) { message = string.Empty; return true; }
+
+        private static void Warn(string text)
+            => MessageBox.Show(text, "علایق شغلی", MessageBoxButton.OK, MessageBoxImage.Warning);
     }
 }

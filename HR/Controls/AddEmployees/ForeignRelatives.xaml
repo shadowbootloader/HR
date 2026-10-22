@@ -33,11 +33,11 @@ SelectionChanged="PersonalForeignFamilyList_SelectionChanged"
                     <GridView AllowsColumnReorder="True"
                       ColumnHeaderContainerStyle="{StaticResource DarkGridViewColumnHeader}">
                         <GridViewColumn Header="ردیف" Width="50" DisplayMemberBinding="{Binding Row}"/>
-                        <GridViewColumn Header="نام و نام خانوادگی" Width="170" DisplayMemberBinding="{Binding WorkInstitutionName}"/>
-                        <GridViewColumn Header="کشور" Width="120" DisplayMemberBinding="{Binding DateOfStartWork}"/>
-                        <GridViewColumn Header="تاریخ عزیمت" Width="120" DisplayMemberBinding="{Binding DateOfStartWork}"/>
-                        <GridViewColumn Header="علت" Width="200" DisplayMemberBinding="{Binding DateOfStartWork}"/>
-                        <GridViewColumn Header="توضیحات" Width="250" DisplayMemberBinding="{Binding DateOfStartWork}"/>
+                        <GridViewColumn Header="نام و نام خانوادگی" Width="170" DisplayMemberBinding="{Binding FullName}"/>
+                        <GridViewColumn Header="کشور" Width="120" DisplayMemberBinding="{Binding Country}"/>
+                        <GridViewColumn Header="تاریخ عزیمت" Width="120" DisplayMemberBinding="{Binding DepartureDate}"/>
+                        <GridViewColumn Header="علت" Width="180" DisplayMemberBinding="{Binding Reason}"/>
+                        <GridViewColumn Header="توضیحات" Width="220" DisplayMemberBinding="{Binding Note}"/>
                     </GridView>
                 </ListView.View>
             </ListView>

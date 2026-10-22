@@ -15,6 +15,7 @@ namespace HR.Models
     public enum SkillLevel { Weak, Average, Good, Excellent }
     public enum BankAccountType { Current, Savings, ShortTerm, LongTerm, Other }
     public enum EducationStatusKind { Graduated, Studying, DroppedOut, OnHold }
+    public enum InterestLevel { Low, Medium, High }
 
     /// <summary>
     /// پرونده کامل کارمند — هسته‌ی داده‌ی برنامه.
@@ -61,8 +62,8 @@ namespace HR.Models
         public ObservableCollection<FamilyMemberRecord> Family { get; set; } = new();
         public ObservableCollection<LanguageRecord> Languages { get; set; } = new();
         public ObservableCollection<SoftwareSkillRecord> SoftwareSkills { get; set; } = new();
-        public ObservableCollection<SkillTagRecord> Abilities { get; set; } = new();
-        public ObservableCollection<SkillTagRecord> WorkInterests { get; set; } = new();
+        public ObservableCollection<AbilityRecord> Abilities { get; set; } = new();
+        public ObservableCollection<WorkInterestRecord> WorkInterests { get; set; } = new();
         public ObservableCollection<TripAbroadRecord> TripsAbroad { get; set; } = new();
         public ObservableCollection<ForeignCooperationRecord> ForeignCooperations { get; set; } = new();
         public ObservableCollection<CitizenshipRecord> Citizenships { get; set; } = new();
@@ -74,7 +75,7 @@ namespace HR.Models
         public ObservableCollection<SacrificeRecord> Sacrifices { get; set; } = new();
 
         public SupplementaryInfo Supplementary { get; set; } = new();
-        public SelfAssessmentInfo SelfAssessment { get; set; } = new();
+        public SelfAssessmentRecord SelfAssessment { get; set; } = new();
 
         public string FullName => $"{FirstName} {LastName}".Trim();
     }
@@ -266,49 +267,59 @@ namespace HR.Models
     public class TripAbroadRecord : ObservableRow
     {
         public int Id { get; set; }
-        public string Country { get; set; } = string.Empty;
-        public string Purpose { get; set; } = string.Empty;
-        public DateTime? FromDate { get; set; }
-        public DateTime? ToDate { get; set; }
+        public string OriginCountry { get; set; } = string.Empty;
+        public string DestinationCountry { get; set; } = string.Empty;
+        public string Transport { get; set; } = string.Empty;
+        public string Reason { get; set; } = string.Empty;
+        public DateTime? DepartDate { get; set; }
+        public DateTime? ReturnDate { get; set; }
+        public string? Companions { get; set; }
+        public string? Note { get; set; }
     }
-
     public class ForeignCooperationRecord : ObservableRow
     {
         public int Id { get; set; }
-        public string Entity { get; set; } = string.Empty;
-        public string Subject { get; set; } = string.Empty;
-        public DateTime? Date { get; set; }
+        public string PersonName { get; set; } = string.Empty;
+        public string Country { get; set; } = string.Empty;
+        public string InstitutionName { get; set; } = string.Empty;
+        public string InstitutionType { get; set; } = string.Empty;
+        public DateTime? StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
+        public string? Note { get; set; }
     }
-
     public class CitizenshipRecord : ObservableRow
     {
         public int Id { get; set; }
         public string Country { get; set; } = string.Empty;
-        public string? PassportNumber { get; set; }
-        public DateTime? IssuedAt { get; set; }
+        public string Reason { get; set; } = string.Empty;
+        public DateTime? StartDate { get; set; }
+        public string? Note { get; set; }
     }
-
     public class CriminalRecord : ObservableRow
     {
         public int Id { get; set; }
-        public string Description { get; set; } = string.Empty;
-        public string? Authority { get; set; }
-        public DateTime? Date { get; set; }
+        public string PersonName { get; set; } = string.Empty;
+        public string RecordType { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+        public string? Note { get; set; }
     }
 
     public class ForeignRelativeRecord : ObservableRow
     {
         public int Id { get; set; }
         public string FullName { get; set; } = string.Empty;
-        public string Relation { get; set; } = string.Empty;
         public string Country { get; set; } = string.Empty;
+        public DateTime? DepartureDate { get; set; }
+        public string? Reason { get; set; }
+        public string? Note { get; set; }
     }
 
     public class RecruitmentRecord : ObservableRow
     {
         public int Id { get; set; }
-        public string Source { get; set; } = string.Empty;
-        public DateTime? Date { get; set; }
+        public string InstitutionName { get; set; } = string.Empty;
+        public string InstitutionType { get; set; } = string.Empty;
+        public string? Result { get; set; }
         public string? Note { get; set; }
     }
 
@@ -316,36 +327,104 @@ namespace HR.Models
     {
         public int Id { get; set; }
         public string OrganName { get; set; } = string.Empty;
-        public string Subject { get; set; } = string.Empty;
-        public DateTime? Date { get; set; }
+        public string OrganType { get; set; } = string.Empty;
+        public string? Note { get; set; }
     }
 
     public class OtherActivityRecord : ObservableRow
     {
         public int Id { get; set; }
         public string Title { get; set; } = string.Empty;
-        public string? Description { get; set; }
-        public DateTime? Date { get; set; }
+        public string? Place { get; set; }
+        public string? Note { get; set; }
     }
 
     public class SacrificeRecord : ObservableRow
     {
         public int Id { get; set; }
-        public string Kind { get; set; } = string.Empty;
-        public string? Description { get; set; }
-        public double? DurationMonths { get; set; }
-    }
-
-    public class SupplementaryInfo
-    {
+        public string FullName { get; set; } = string.Empty;
+        public string SacrificeType { get; set; } = string.Empty;
+        public string? Amount { get; set; }
         public string? Note { get; set; }
-        public string? AttachmentPath { get; set; }
     }
 
-    public class SelfAssessmentInfo
+    public class SupplementaryInfo : ObservableRow
     {
-        public string? Strengths { get; set; }
-        public string? Weaknesses { get; set; }
-        public string? Goals { get; set; }
+        public int Id { get; set; }
+        public string? Post { get; set; }
+        public string? Position { get; set; }
+        public string? InsuranceType { get; set; }
+        public string? CooperationType { get; set; }
+        public DateTime? StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
+        public decimal? Salary { get; set; }
+        public string ResumePath { get; set; } = string.Empty;
+    }
+
+    public class SelfAssessmentRecord : ObservableRow
+    {
+        public int Id { get; set; }
+        public int Discipline { get; set; } = 50;
+        public int Speed { get; set; } = 50;
+        public int Effort { get; set; } = 50;
+        public int Negotiation { get; set; } = 50;
+        public int Patience { get; set; } = 50;
+        public int Creativity { get; set; } = 50;
+        public int Punctuality { get; set; } = 50;
+        public int Teamwork { get; set; } = 50;
+        public int Accuracy { get; set; } = 50;
+        public int Planning { get; set; } = 50;
+
+        public double Average =>
+            (Discipline + Speed + Effort + Negotiation + Patience +
+             Creativity + Punctuality + Teamwork + Accuracy + Planning) / 10.0;
+    }
+    public class AbilityRecord : ObservableRow
+    {
+        public int Id { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public SkillLevel Level { get; set; }
+
+        public string DisplayText => $"{Title} · {LevelText}";
+
+        public string LevelText => Level switch
+        {
+            SkillLevel.Weak => "ضعیف",
+            SkillLevel.Average => "متوسط",
+            SkillLevel.Good => "خوب",
+            _ => "عالی"
+        };
+
+        public Brush AbilityLevelBrush => Level switch
+        {
+            SkillLevel.Weak => new SolidColorBrush((Color)ColorConverter.ConvertFromString("#7F1D1D")),
+            SkillLevel.Average => new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1E3A5F")),
+            SkillLevel.Good => new SolidColorBrush((Color)ColorConverter.ConvertFromString("#14532D")),
+            _ => new SolidColorBrush((Color)ColorConverter.ConvertFromString("#065F46"))
+        };
+    }
+
+
+    public class WorkInterestRecord : ObservableRow
+    {
+        public int Id { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public InterestLevel Level { get; set; }
+
+        public string DisplayText => $"{Title} · {LevelText}";
+
+        public string LevelText => Level switch
+        {
+            InterestLevel.Low => "کم",
+            InterestLevel.Medium => "متوسط",
+            _ => "زیاد"
+        };
+
+        public Brush InterestLevelBrush => Level switch
+        {
+            InterestLevel.Low => new SolidColorBrush((Color)ColorConverter.ConvertFromString("#7F1D1D")),
+            InterestLevel.Medium => new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1E3A5F")),
+            _ => new SolidColorBrush((Color)ColorConverter.ConvertFromString("#14532D"))
+        };
     }
 }

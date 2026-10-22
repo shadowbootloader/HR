@@ -33,9 +33,9 @@
                     <GridView AllowsColumnReorder="True"
                 ColumnHeaderContainerStyle="{StaticResource DarkGridViewColumnHeader}">
                         <GridViewColumn Header="ردیف" Width="60" DisplayMemberBinding="{Binding Row}"/>
-                        <GridViewColumn Header="عنوان" Width="200" DisplayMemberBinding="{Binding WorkInstitutionName}"/>
-                        <GridViewColumn Header="محل اجرا" Width="160" DisplayMemberBinding="{Binding DateOfStartWork}"/>
-                        <GridViewColumn Header="توضیحات" Width="280" DisplayMemberBinding="{Binding DateOfStartWork}"/>
+                        <GridViewColumn Header="عنوان" Width="220" DisplayMemberBinding="{Binding Title}"/>
+                        <GridViewColumn Header="محل اجرا" Width="170" DisplayMemberBinding="{Binding Place}"/>
+                        <GridViewColumn Header="توضیحات" Width="280" DisplayMemberBinding="{Binding Note}"/>
                     </GridView>
                 </ListView.View>
             </ListView>

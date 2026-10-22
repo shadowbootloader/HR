@@ -33,13 +33,13 @@
                     <GridView AllowsColumnReorder="True"
       ColumnHeaderContainerStyle="{StaticResource DarkGridViewColumnHeader}">
                         <GridViewColumn Header="ردیف" Width="50" DisplayMemberBinding="{Binding Row}"/>
-                        <GridViewColumn Header="نام و نام خانوادگی" Width="160" DisplayMemberBinding="{Binding WorkInstitutionName}"/>
+                        <GridViewColumn Header="نام و نام خانوادگی" Width="150" DisplayMemberBinding="{Binding PersonName}"/>
                         <GridViewColumn Header="کشور" Width="110" DisplayMemberBinding="{Binding Country}"/>
-                        <GridViewColumn Header="نام مرکز" Width="180" DisplayMemberBinding="{Binding WorkInstitutionName}"/>
-                        <GridViewColumn Header="نوع مرکز" Width="120" DisplayMemberBinding="{Binding DateOfStartWork}"/>
-                        <GridViewColumn Header="تاریخ شروع" Width="130" DisplayMemberBinding="{Binding StartDate}"/>
-                        <GridViewColumn Header="تاریخ اتمام" Width="130" DisplayMemberBinding="{Binding EndDate}"/>
-                        <GridViewColumn Header="توضیحات" Width="250" DisplayMemberBinding="{Binding Note}"/>
+                        <GridViewColumn Header="نام مرکز" Width="170" DisplayMemberBinding="{Binding InstitutionName}"/>
+                        <GridViewColumn Header="نوع مرکز" Width="110" DisplayMemberBinding="{Binding InstitutionType}"/>
+                        <GridViewColumn Header="تاریخ شروع" Width="110" DisplayMemberBinding="{Binding StartDate}"/>
+                        <GridViewColumn Header="تاریخ اتمام" Width="110" DisplayMemberBinding="{Binding EndDate}"/>
+                        <GridViewColumn Header="توضیحات" Width="220" DisplayMemberBinding="{Binding Note}"/>
                     </GridView>
                 </ListView.View>
             </ListView>

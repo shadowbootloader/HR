@@ -32,14 +32,14 @@
                     <GridView AllowsColumnReorder="True"
                 ColumnHeaderContainerStyle="{StaticResource DarkGridViewColumnHeader}">
                         <GridViewColumn Header="ردیف" Width="50" DisplayMemberBinding="{Binding Row}"/>
-                        <GridViewColumn Header="کشور مبدأ" Width="130" DisplayMemberBinding="{Binding OriginCountry}"/>
-                        <GridViewColumn Header="کشور مقصد" Width="130" DisplayMemberBinding="{Binding DestinationCountry}"/>
+                        <GridViewColumn Header="کشور مبدأ" Width="120" DisplayMemberBinding="{Binding OriginCountry}"/>
+                        <GridViewColumn Header="کشور مقصد" Width="120" DisplayMemberBinding="{Binding DestinationCountry}"/>
                         <GridViewColumn Header="وسیله سفر" Width="100" DisplayMemberBinding="{Binding Transport}"/>
-                        <GridViewColumn Header="علت" Width="160" DisplayMemberBinding="{Binding Reason}"/>
-                        <GridViewColumn Header="تاریخ رفت" Width="110" DisplayMemberBinding="{Binding DateOfStartWork}"/>
-                        <GridViewColumn Header="تاریخ برگشت" Width="110" DisplayMemberBinding="{Binding DateOfStartWork}"/>
-                        <GridViewColumn Header="همراهان" Width="220" DisplayMemberBinding="{Binding Companions}"/>
-                        <GridViewColumn Header="توضیحات" Width="200" DisplayMemberBinding="{Binding Note}"/>
+                        <GridViewColumn Header="علت" Width="150" DisplayMemberBinding="{Binding Reason}"/>
+                        <GridViewColumn Header="تاریخ رفت" Width="110" DisplayMemberBinding="{Binding DepartDate}"/>
+                        <GridViewColumn Header="تاریخ برگشت" Width="110" DisplayMemberBinding="{Binding ReturnDate}"/>
+                        <GridViewColumn Header="همراهان" Width="180" DisplayMemberBinding="{Binding Companions}"/>
+                        <GridViewColumn Header="توضیحات" Width="180" DisplayMemberBinding="{Binding Note}"/>
                     </GridView>
                 </ListView.View>
             </ListView>

@@ -1,41 +1,62 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using HR.Models;
+using HR.Services;
 
 namespace HR.Controls.AddEmployees
 {
-    /// <summary>
-    /// Interaction logic for OtherActivity.xaml
-    /// </summary>
-    public partial class OtherActivity : UserControl
+    public partial class OtherActivity : UserControl, IEmployeeSection
     {
+        private readonly SectionList<OtherActivityRecord> _list = new();
+
+        public string SectionTitle => "سایر فعالیت‌ها";
+
         public OtherActivity()
         {
             InitializeComponent();
-        }
-
-        private void PersonalOtherActivityList_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-
-        }
-
-        private void DeleteOtherActivityDataBtn_Click(object sender, RoutedEventArgs e)
-        {
-
+            _list.Attach(PersonalOtherActivityList);
         }
 
         private void AddOtherActivityDataBtn_Click(object sender, RoutedEventArgs e)
         {
+            var title = OtherActivity_NameTB.Text?.Trim();
 
+            if (string.IsNullOrWhiteSpace(title))
+            {
+                Warn("عنوان را وارد کنید.");
+                OtherActivity_NameTB.Focus();
+                return;
+            }
+
+            _list.Items.Add(new OtherActivityRecord
+            {
+                Title = title,
+                Place = NullIfEmpty(OtherActivity_OptationPlaceTB.Text),
+                Note = NullIfEmpty(OtherActivity_NoteTB.Text)
+            });
+
+            ClearForm();
         }
+
+        private void DeleteOtherActivityDataBtn_Click(object sender, RoutedEventArgs e) => _list.DeleteSelected();
+        private void PersonalOtherActivityList_SelectionChanged(object sender, SelectionChangedEventArgs e) { }
+
+        public void LoadFrom(EmployeeProfile profile) => _list.Replace(profile.OtherActivities);
+        public void SaveTo(EmployeeProfile profile) => _list.CopyTo(profile.OtherActivities);
+
+        public bool Validate(out string message) { message = string.Empty; return true; }
+
+        private void ClearForm()
+        {
+            OtherActivity_NameTB.Clear();
+            OtherActivity_OptationPlaceTB.Clear();
+            OtherActivity_NoteTB.Clear();
+            OtherActivity_NameTB.Focus();
+        }
+
+        private static string? NullIfEmpty(string? v) => string.IsNullOrWhiteSpace(v) ? null : v.Trim();
+
+        private static void Warn(string t)
+            => MessageBox.Show(t, "سایر فعالیت‌ها", MessageBoxButton.OK, MessageBoxImage.Warning);
     }
 }
