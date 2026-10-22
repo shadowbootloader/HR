@@ -140,23 +140,49 @@ TargetType="{x:Type TextBlock}">
 
             <StackPanel Grid.Column="2">
                 <!-- ========== عنوان + تب‌های صفحه ========== -->
-                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,5">
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
 
-                    <!-- عنوان -->
+                    <!-- عنوان و زیرعنوان -->
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock x:Name="DeptTitleText"
+                   Text="دپارتمان"
+                   FontSize="20" FontWeight="Bold" Foreground="White"/>
+                        <TextBlock x:Name="ManagerNameText"
+                   Text=""
+                   FontSize="14" Foreground="#94A3B8" Margin="0,2,0,0"/>
+                        <TextBlock Text="وضعیت کلی، شاخص‌ها و فعالیت‌های دپارتمان در یک نگاه"
+                   FontSize="13" Foreground="#64748B" Margin="0,4,0,0"/>
+                    </StackPanel>
+
+                    <!-- نشانگر وضعیت -->
+                    <StackPanel Orientation="Horizontal"
+                VerticalAlignment="Center"
+                Margin="18,0,0,0">
+                        <materialDesign:PackIcon Kind="Circle"
+                                 Style="{StaticResource LightSeaGreenNeonIcon}"
+                                 Width="10" Height="10"
+                                 VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <TextBlock Text="وضعیت:"
+                   Foreground="White" FontSize="16" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="PerformanceLabelText"
+                   Text="—"
+                   Style="{StaticResource LightSeaGreenNeonText}"
+                   FontSize="16" FontWeight="Bold" Margin="10,0,0,0"/>
+                    </StackPanel>
+                </StackPanel>
+                <!-- عنوان -->
                     <DockPanel Margin="0,0,0,5">
                         <StackPanel>
-                            
+
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="منابع انسانی" FontSize="20" FontWeight="Bold" Foreground="White"/>
                                 <StackPanel DockPanel.Dock="Left" Margin="15,0,0,0" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <materialDesign:PackIcon Kind="Circle" Style="{StaticResource LightSeaGreenNeonIcon}" Width="10"  Height="10" VerticalAlignment="Center" Margin="0,0,6,0"/>
-
-                                    <TextBlock Text="عملکرد دپارتمان:" Foreground="White" FontSize="16"  VerticalAlignment="Center"/>
+                                    <materialDesign:PackIcon Kind="Circle" Style="{StaticResource LightSeaGreenNeonIcon}" Width="10" Height="10" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                    <TextBlock Text="عملکرد دپارتمان:" Foreground="White" FontSize="16" VerticalAlignment="Center"/>
                                     <TextBlock Text="عالی" Style="{StaticResource LightSeaGreenNeonText}" FontSize="16" FontWeight="Bold" Margin="10,0"/>
-
                                 </StackPanel>
-                            </StackPanel>
-                            <TextBlock Text="وضعیت کلی، شاخص‌ها و فعالیت‌های دپارتمان در یک نگاه"
+                        </StackPanel>
+                        <TextBlock Text="وضعیت کلی، شاخص‌ها و فعالیت‌های دپارتمان در یک نگاه"
                        FontSize="14" Foreground="#64748B" Margin="0,4,0,0"/>
                         </StackPanel>
                         
@@ -324,47 +350,37 @@ TargetType="{x:Type TextBlock}">
 
                 <!-- KPIها -->
                 <UniformGrid Columns="6" FlowDirection="LeftToRight" Margin="0,0,0,5">
-                    <dept:DepartmentKpiCard Margin="0,0,8,0"
-                        NeonType="None" Accent="#22D3EE"
-                        Title="تعداد کل کارکنان"
-                        ValueText="۲۸"
-                        SubText="↑ ۶٪ نسبت به ماه قبل"
-                        IconKind="AccountGroupOutline"/>
 
-                    <dept:DepartmentKpiCard Margin="0,0,8,0" NeonType="None" Accent="#A78BFA"
-        Title="میانگین عملکرد"
-        ValueText="۸۶.۴٪"
-        SubText="↑ ۵.۷٪ نسبت به ماه قبل"
-        IconKind="StarOutline"
-        />
+                    <dept:DepartmentKpiCard x:Name="KpiMembers" Margin="0,0,8,0"
+                            NeonType="None" Accent="#22D3EE"
+                            Title="تعداد کل کارکنان" ValueText="۰"
+                            SubText="نفر" IconKind="AccountGroupOutline"/>
 
-                    <dept:DepartmentKpiCard Margin="0,0,8,0" NeonType="None" Accent="#22D3EE"
-        Title="موقعیت‌های خالی" 
-        ValueText="۳"
-        SubText="در حال جذب"
-        IconKind="AccountPlusOutline"
-        />
+                    <dept:DepartmentKpiCard x:Name="KpiPerformance" Margin="0,0,8,0"
+                            NeonType="None" Accent="#A78BFA"
+                            Title="میانگین عملکرد" ValueText="۰٪"
+                            SubText="امتیاز" IconKind="StarOutline"/>
 
-                    <dept:DepartmentKpiCard Margin="0,0,8,0" NeonType="None" Accent="#A78BFA"
-        Title="پروژه‌های فعال"
-        ValueText="۴"
-        SubText="↑ ۱ نسبت به ماه قبل"
-        IconKind="ProjectorScreenOutline"
-        />
+                    <dept:DepartmentKpiCard x:Name="KpiEvaluation" Margin="0,0,8,0"
+                            NeonType="None" Accent="#22D3EE"
+                            Title="پیشرفت ارزیابی" ValueText="۰٪"
+                            SubText="تکمیل‌شده" IconKind="AccountPlusOutline"/>
 
-                    <dept:DepartmentKpiCard Margin="0,0,8,0" NeonType="None" Accent="#22D3EE"
-        Title="قراردادهای فعال"
-        ValueText="۲۶"
-        SubText="↑ ۳ نسبت به ماه قبل"
-        IconKind="ClipboardTextOutline"
-        />
+                    <dept:DepartmentKpiCard x:Name="KpiProjects" Margin="0,0,8,0"
+                            NeonType="None" Accent="#A78BFA"
+                            Title="پروژه‌های فعال" ValueText="۰"
+                            SubText="پروژه" IconKind="ProjectorScreenOutline"/>
 
-                    <dept:DepartmentKpiCard NeonType="None" Accent="#34D399"
-        Title="بودجه دپارتمان"
-        ValueText="۱,۲۰۰,۰۰۰,۰۰۰"
-        SubText="ریال"
-        IconKind="Dollar"
-        />
+                    <dept:DepartmentKpiCard x:Name="KpiProjectProgress" Margin="0,0,8,0"
+                            NeonType="None" Accent="#22D3EE"
+                            Title="پیشرفت پروژه‌ها" ValueText="۰٪"
+                            SubText="میانگین" IconKind="ClipboardTextOutline"/>
+
+                    <dept:DepartmentKpiCard x:Name="KpiStatus"
+                            NeonType="None" Accent="#34D399"
+                            Title="وضعیت دپارتمان" ValueText="—"
+                            SubText="ارزیابی کلی" IconKind="Dollar"/>
+
                 </UniformGrid>
 
                 <!-- ردیف پروژه + قرارداد + مالی -->
