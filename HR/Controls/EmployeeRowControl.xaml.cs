@@ -111,9 +111,6 @@ namespace HR.Controls
         public static readonly DependencyProperty DepartmentIconProperty =
             DependencyProperty.Register(nameof(DepartmentIcon), typeof(string), typeof(EmployeeRowControl));
 
-        private void ViewBtn_Click(object sender, RoutedEventArgs e)
-        {
-            NavigationRequested?.Invoke(new EmployeOverview());
-        }
+        
     }
 }

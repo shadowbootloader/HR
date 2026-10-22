@@ -1,26 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+﻿using System.Windows.Controls;
 
 namespace HR.Pages
 {
-    /// <summary>
-    /// Interaction logic for EmployeOverview.xaml
-    /// </summary>
     public partial class EmployeOverview : Page
     {
-        public EmployeOverview()
+        /// <summary>کارمندی که این صفحه نمایش می‌دهد (ممکن است null باشد).</summary>
+        public EmployeeModel? Employee { get; }
+
+        public EmployeOverview() : this(null) { }
+
+        public EmployeOverview(EmployeeModel? employee)
         {
             InitializeComponent();
+            Employee = employee;
         }
     }
 }

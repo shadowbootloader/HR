@@ -124,13 +124,11 @@ TargetType="{x:Type TextBlock}">
         </Style>
     </Page.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" FlowDirection="RightToLeft"  Padding="20,12" Margin="10,0,0,0">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" FlowDirection="RightToLeft" Padding="20,12" Margin="10,0,0,0">
         <ScrollViewer.Resources>
-
-            <Style TargetType="ScrollBar"
-       BasedOn="{StaticResource NeonScrollBar}"/>
-
+            <Style TargetType="ScrollBar" BasedOn="{StaticResource NeonScrollBar}"/>
         </ScrollViewer.Resources>
+
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="290"/>
@@ -145,230 +143,222 @@ TargetType="{x:Type TextBlock}">
                     <!-- عنوان و زیرعنوان -->
                     <StackPanel VerticalAlignment="Center">
                         <TextBlock x:Name="DeptTitleText"
-                   Text="دپارتمان"
-                   FontSize="20" FontWeight="Bold" Foreground="White"/>
+                               Text="دپارتمان"
+                               FontSize="20" FontWeight="Bold" Foreground="White"/>
                         <TextBlock x:Name="ManagerNameText"
-                   Text=""
-                   FontSize="14" Foreground="#94A3B8" Margin="0,2,0,0"/>
+                               Text=""
+                               FontSize="14" Foreground="#94A3B8" Margin="0,2,0,0"/>
                         <TextBlock Text="وضعیت کلی، شاخص‌ها و فعالیت‌های دپارتمان در یک نگاه"
-                   FontSize="13" Foreground="#64748B" Margin="0,4,0,0"/>
+                               FontSize="13" Foreground="#64748B" Margin="0,4,0,0"/>
                     </StackPanel>
 
                     <!-- نشانگر وضعیت -->
                     <StackPanel Orientation="Horizontal"
-                VerticalAlignment="Center"
-                Margin="18,0,0,0">
+                            VerticalAlignment="Center"
+                            Margin="18,0,0,0">
                         <materialDesign:PackIcon Kind="Circle"
-                                 Style="{StaticResource LightSeaGreenNeonIcon}"
-                                 Width="10" Height="10"
-                                 VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                             Style="{StaticResource LightSeaGreenNeonIcon}"
+                                             Width="10" Height="10"
+                                             VerticalAlignment="Center" Margin="0,0,6,0"/>
                         <TextBlock Text="وضعیت:"
-                   Foreground="White" FontSize="16" VerticalAlignment="Center"/>
+                               Foreground="White" FontSize="16" VerticalAlignment="Center"/>
                         <TextBlock x:Name="PerformanceLabelText"
-                   Text="—"
-                   Style="{StaticResource LightSeaGreenNeonText}"
-                   FontSize="16" FontWeight="Bold" Margin="10,0,0,0"/>
+                               Text="—"
+                               Style="{StaticResource LightSeaGreenNeonText}"
+                               FontSize="16" FontWeight="Bold" Margin="10,0,0,0"/>
                     </StackPanel>
+
                     <Button Content="بازگشت" Click="Back_Click"
-        Height="34" Padding="14,0" Margin="18,0,0,0"
-        Background="#1E293B" Foreground="White" BorderThickness="0"
-        materialDesign:ButtonAssist.CornerRadius="8"
-        VerticalAlignment="Center"/>
+                        Height="34" Padding="14,0" Margin="18,0,0,0"
+                        Background="#1E293B" Foreground="White" BorderThickness="0"
+                        materialDesign:ButtonAssist.CornerRadius="8"
+                        VerticalAlignment="Center"/>
                 </StackPanel>
-                <!-- عنوان -->
 
-                    <!-- تب‌ها زیر عنوان -->
-                    <TabControl x:Name="DeptTabs"
-            VerticalAlignment="Center"
-            HorizontalAlignment="Center"
-            Margin="50,5,10,0"
-            Background="Transparent"
-            BorderThickness="0"
-            Padding="0"
-            SelectionChanged="DeptTabs_SelectionChanged">
+                <!-- تب‌ها زیر عنوان -->
+                <TabControl x:Name="DeptTabs"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Center"
+                        Margin="50,5,10,0"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Padding="0"
+                        SelectionChanged="DeptTabs_SelectionChanged">
 
-                        <TabControl.Resources>
-                            <Style TargetType="TabItem">
-                                <Setter Property="Background" Value="Transparent"/>
-                                <Setter Property="BorderThickness" Value="0"/>
-                                <Setter Property="Foreground" Value="#E2E8F0"/>
-                                <Setter Property="Cursor" Value="Hand"/>
-                                <Setter Property="Margin" Value="15,0"/>
-                                <Setter Property="Padding" Value="4,0"/>
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="TabItem">
-                                            <StackPanel Background="Transparent">
-                                                <!-- همان Header که در TabItem نوشتی -->
-                                                <ContentPresenter x:Name="HeaderContent"
-                                              ContentSource="Header"
-                                              RecognizesAccessKey="True"
-                                              HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"/>
+                    <TabControl.Resources>
+                        <Style TargetType="TabItem">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="Foreground" Value="#E2E8F0"/>
+                            <Setter Property="Cursor" Value="Hand"/>
+                            <Setter Property="Margin" Value="15,0"/>
+                            <Setter Property="Padding" Value="4,0"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="TabItem">
+                                        <StackPanel Background="Transparent">
+                                            <ContentPresenter x:Name="HeaderContent"
+                                                          ContentSource="Header"
+                                                          RecognizesAccessKey="True"
+                                                          HorizontalAlignment="Center"
+                                                          VerticalAlignment="Center"/>
+                                            <Rectangle x:Name="Underline"
+                                                   Height="2"
+                                                   Margin="0,8,0,0"
+                                                   Fill="Transparent"
+                                                   RadiusX="1" RadiusY="1"/>
+                                        </StackPanel>
 
-                                                <Rectangle x:Name="Underline"
-                                       Height="2"
-                                       Margin="0,8,0,0"
-                                       Fill="Transparent"
-                                       RadiusX="1" RadiusY="1"/>
-                                            </StackPanel>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter Property="Foreground" Value="#22D3EE"/>
+                                                <Setter TargetName="HeaderContent" Property="Effect">
+                                                    <Setter.Value>
+                                                        <DropShadowEffect Color="#22D3EE"
+                                                                      BlurRadius="14"
+                                                                      ShadowDepth="0"
+                                                                      Opacity="0.85"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Setter TargetName="Underline" Property="Fill" Value="#22D3EE"/>
+                                                <Setter TargetName="Underline" Property="Effect">
+                                                    <Setter.Value>
+                                                        <DropShadowEffect Color="#22D3EE"
+                                                                      BlurRadius="12"
+                                                                      ShadowDepth="0"
+                                                                      Opacity="0.9"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Trigger>
 
-                                            <ControlTemplate.Triggers>
-                                                <Trigger Property="IsSelected" Value="True">
-                                                    <!-- رنگ تب -->
-                                                    <Setter Property="Foreground" Value="#22D3EE"/>
+                                            <MultiTrigger>
+                                                <MultiTrigger.Conditions>
+                                                    <Condition Property="IsMouseOver" Value="True"/>
+                                                    <Condition Property="IsSelected" Value="False"/>
+                                                </MultiTrigger.Conditions>
+                                                <Setter Property="Foreground" Value="White"/>
+                                            </MultiTrigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </TabControl.Resources>
 
-                                                    <!-- نئون روی کل هدر -->
-                                                    <Setter TargetName="HeaderContent" Property="Effect">
-                                                        <Setter.Value>
-                                                            <DropShadowEffect Color="#22D3EE"
-                                                          BlurRadius="14"
-                                                          ShadowDepth="0"
-                                                          Opacity="0.85"/>
-                                                        </Setter.Value>
-                                                    </Setter>
+                    <!-- خلاصه -->
+                    <TabItem>
+                        <TabItem.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="HomeOutline" Width="22" Height="22"
+                                                     VerticalAlignment="Center" Margin="0,0,6,0"
+                                                     Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=TabItem}}"/>
+                                <TextBlock Text="خلاصه" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"
+                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=TabItem}}"/>
+                            </StackPanel>
+                        </TabItem.Header>
+                    </TabItem>
 
-                                                    <!-- خط زیر نئون -->
-                                                    <Setter TargetName="Underline" Property="Fill" Value="#22D3EE"/>
-                                                    <Setter TargetName="Underline" Property="Effect">
-                                                        <Setter.Value>
-                                                            <DropShadowEffect Color="#22D3EE"
-                                                          BlurRadius="12"
-                                                          ShadowDepth="0"
-                                                          Opacity="0.9"/>
-                                                        </Setter.Value>
-                                                    </Setter>
-                                                </Trigger>
+                    <!-- کارکنان -->
+                    <TabItem>
+                        <TabItem.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="AccountGroupOutline" Width="22" Height="22"
+                                                     VerticalAlignment="Center" Margin="0,0,6,0"
+                                                     Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=TabItem}}"/>
+                                <TextBlock Text="کارکنان" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"
+                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=TabItem}}"/>
+                            </StackPanel>
+                        </TabItem.Header>
+                    </TabItem>
 
-                                                <MultiTrigger>
-                                                    <MultiTrigger.Conditions>
-                                                        <Condition Property="IsMouseOver" Value="True"/>
-                                                        <Condition Property="IsSelected" Value="False"/>
-                                                    </MultiTrigger.Conditions>
-                                                    <Setter Property="Foreground" Value="White"/>
-                                                </MultiTrigger>
-                                            </ControlTemplate.Triggers>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </TabControl.Resources>
+                    <!-- سازمان -->
+                    <TabItem>
+                        <TabItem.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="SitemapOutline" Width="22" Height="22"
+                                                     VerticalAlignment="Center" Margin="0,0,6,0"
+                                                     Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=TabItem}}"/>
+                                <TextBlock Text="سازمان" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"
+                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=TabItem}}"/>
+                            </StackPanel>
+                        </TabItem.Header>
+                    </TabItem>
 
-                        <!-- خلاصه -->
-                        <TabItem>
-                            <TabItem.Header>
-                                <StackPanel Orientation="Horizontal">
-                                    <materialDesign:PackIcon Kind="HomeOutline" Width="22" Height="22"
-                                         VerticalAlignment="Center" Margin="0,0,6,0"
-                                         Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=TabItem}}"/>
-                                    <TextBlock Text="خلاصه" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"
-                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=TabItem}}"/>
-                                </StackPanel>
-                            </TabItem.Header>
-                        </TabItem>
+                    <!-- پروژه‌ها -->
+                    <TabItem>
+                        <TabItem.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="ClipboardCheckOutline" Width="22" Height="22"
+                                                     VerticalAlignment="Center" Margin="0,0,6,0"
+                                                     Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=TabItem}}"/>
+                                <TextBlock Text="پروژه‌ها" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"
+                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=TabItem}}"/>
+                            </StackPanel>
+                        </TabItem.Header>
+                    </TabItem>
 
-                        <!-- کارکنان -->
-                        <TabItem>
-                            <TabItem.Header>
-                                <StackPanel Orientation="Horizontal">
-                                    <materialDesign:PackIcon Kind="AccountGroupOutline" Width="22" Height="22"
-                                         VerticalAlignment="Center" Margin="0,0,6,0"
-                                         Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=TabItem}}"/>
-                                    <TextBlock Text="کارکنان" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"
-                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=TabItem}}"/>
-                                </StackPanel>
-                            </TabItem.Header>
-                        </TabItem>
+                    <!-- مالی -->
+                    <TabItem>
+                        <TabItem.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="Cash" Width="22" Height="22"
+                                                     VerticalAlignment="Center" Margin="0,0,6,0"
+                                                     Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=TabItem}}"/>
+                                <TextBlock Text="مالی" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"
+                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=TabItem}}"/>
+                            </StackPanel>
+                        </TabItem.Header>
+                    </TabItem>
 
-                        <!-- سازمان -->
-                        <TabItem>
-                            <TabItem.Header>
-                                <StackPanel Orientation="Horizontal">
-                                    <materialDesign:PackIcon Kind="SitemapOutline" Width="22" Height="22"
-                                         VerticalAlignment="Center" Margin="0,0,6,0"
-                                         Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=TabItem}}"/>
-                                    <TextBlock Text="سازمان" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"
-                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=TabItem}}"/>
-                                </StackPanel>
-                            </TabItem.Header>
-                        </TabItem>
+                    <!-- گزارشات -->
+                    <TabItem>
+                        <TabItem.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="FileChartOutline" Width="22" Height="22"
+                                                     VerticalAlignment="Center" Margin="0,0,6,0"
+                                                     Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=TabItem}}"/>
+                                <TextBlock Text="گزارشات" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"
+                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=TabItem}}"/>
+                            </StackPanel>
+                        </TabItem.Header>
+                    </TabItem>
+                </TabControl>
 
-                        <!-- پروژه‌ها -->
-                        <TabItem>
-                            <TabItem.Header>
-                                <StackPanel Orientation="Horizontal">
-                                    <materialDesign:PackIcon Kind="ClipboardCheckOutline" Width="22" Height="22"
-                                         VerticalAlignment="Center" Margin="0,0,6,0"
-                                         Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=TabItem}}"/>
-                                    <TextBlock Text="پروژه‌ها" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"
-                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=TabItem}}"/>
-                                </StackPanel>
-                            </TabItem.Header>
-                        </TabItem>
-
-                        <!-- مالی -->
-                        <TabItem>
-                            <TabItem.Header>
-                                <StackPanel Orientation="Horizontal">
-                                    <materialDesign:PackIcon Kind="Cash" Width="22" Height="22"
-                                         VerticalAlignment="Center" Margin="0,0,6,0"
-                                         Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=TabItem}}"/>
-                                    <TextBlock Text="مالی" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"
-                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=TabItem}}"/>
-                                </StackPanel>
-                            </TabItem.Header>
-                        </TabItem>
-
-                        <!-- گزارشات -->
-                        <TabItem>
-                            <TabItem.Header>
-                                <StackPanel Orientation="Horizontal">
-                                    <materialDesign:PackIcon Kind="FileChartOutline" Width="22" Height="22"
-                                         VerticalAlignment="Center" Margin="0,0,6,0"
-                                         Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=TabItem}}"/>
-                                    <TextBlock Text="گزارشات" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"
-                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=TabItem}}"/>
-                                </StackPanel>
-                            </TabItem.Header>
-                        </TabItem>
-                    </TabControl>
-                    <!-- خط زیر تب فعال -->
-                    <Rectangle Height="1" Fill="#1E293B" Margin="0,0,0,0"/>
-                </StackPanel>
+                <!-- خط زیر تب فعال -->
+                <Rectangle Height="1" Fill="#1E293B" Margin="0,0,0,0"/>
 
                 <!-- KPIها -->
                 <UniformGrid Columns="6" FlowDirection="LeftToRight" Margin="0,0,0,5">
 
                     <dept:DepartmentKpiCard x:Name="KpiMembers" Margin="0,0,8,0"
-                            NeonType="None" Accent="#22D3EE"
-                            Title="تعداد کل کارکنان" ValueText="۰"
-                            SubText="نفر" IconKind="AccountGroupOutline"/>
+                                        NeonType="None" Accent="#22D3EE"
+                                        Title="تعداد کل کارکنان" ValueText="۰"
+                                        SubText="نفر" IconKind="AccountGroupOutline"/>
 
                     <dept:DepartmentKpiCard x:Name="KpiPerformance" Margin="0,0,8,0"
-                            NeonType="None" Accent="#A78BFA"
-                            Title="میانگین عملکرد" ValueText="۰٪"
-                            SubText="امتیاز" IconKind="StarOutline"/>
+                                        NeonType="None" Accent="#A78BFA"
+                                        Title="میانگین عملکرد" ValueText="۰٪"
+                                        SubText="امتیاز" IconKind="StarOutline"/>
 
                     <dept:DepartmentKpiCard x:Name="KpiEvaluation" Margin="0,0,8,0"
-                            NeonType="None" Accent="#22D3EE"
-                            Title="پیشرفت ارزیابی" ValueText="۰٪"
-                            SubText="تکمیل‌شده" IconKind="AccountPlusOutline"/>
+                                        NeonType="None" Accent="#22D3EE"
+                                        Title="پیشرفت ارزیابی" ValueText="۰٪"
+                                        SubText="تکمیل‌شده" IconKind="AccountPlusOutline"/>
 
                     <dept:DepartmentKpiCard x:Name="KpiProjects" Margin="0,0,8,0"
-                            NeonType="None" Accent="#A78BFA"
-                            Title="پروژه‌های فعال" ValueText="۰"
-                            SubText="پروژه" IconKind="ProjectorScreenOutline"/>
+                                        NeonType="None" Accent="#A78BFA"
+                                        Title="پروژه‌های فعال" ValueText="۰"
+                                        SubText="پروژه" IconKind="ProjectorScreenOutline"/>
 
                     <dept:DepartmentKpiCard x:Name="KpiProjectProgress" Margin="0,0,8,0"
-                            NeonType="None" Accent="#22D3EE"
-                            Title="پیشرفت پروژه‌ها" ValueText="۰٪"
-                            SubText="میانگین" IconKind="ClipboardTextOutline"/>
+                                        NeonType="None" Accent="#22D3EE"
+                                        Title="پیشرفت پروژه‌ها" ValueText="۰٪"
+                                        SubText="میانگین" IconKind="ClipboardTextOutline"/>
 
                     <dept:DepartmentKpiCard x:Name="KpiStatus"
-                            NeonType="None" Accent="#34D399"
-                            Title="وضعیت دپارتمان" ValueText="—"
-                            SubText="ارزیابی کلی" IconKind="Dollar"/>
-
+                                        NeonType="None" Accent="#34D399"
+                                        Title="وضعیت دپارتمان" ValueText="—"
+                                        SubText="ارزیابی کلی" IconKind="Dollar"/>
                 </UniformGrid>
 
                 <!-- ردیف پروژه + قرارداد + مالی -->
@@ -381,10 +371,11 @@ TargetType="{x:Type TextBlock}">
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <dept:DepartmentProjectsCard x:Name="ProjectsCard" Grid.Column="0"/>
-                    <dept:DepartmentContractsCard x:Name="ContractsCard" Grid.Column="4" CompletedCount="18" ExpiringCount="4" CancelledCount="4" ReviewingCount="5" InitialApprovalCount="3" ProblemCount="1"
-                        />
+                    <dept:DepartmentContractsCard x:Name="ContractsCard" Grid.Column="4"
+                                              CompletedCount="18" ExpiringCount="4" CancelledCount="4"
+                                              ReviewingCount="5" InitialApprovalCount="3" ProblemCount="1"/>
                     <dept:DepartmentFinanceCard x:Name="FinanceCard" UsedPercent="67" Grid.Column="2"
-                         BudgetText="۱,۲۰۰,۰۰۰,۰۰۰" SpentText="۸۰۴,۰۰۰,۰۰۰" RemainingText="۳۹۶,۰۰۰,۰۰۰"/>
+                                            BudgetText="۱,۲۰۰,۰۰۰,۰۰۰" SpentText="۸۰۴,۰۰۰,۰۰۰" RemainingText="۳۹۶,۰۰۰,۰۰۰"/>
                 </Grid>
 
                 <!-- ردیف دستاورد + ریسک + ارزیابی -->
@@ -404,9 +395,9 @@ TargetType="{x:Type TextBlock}">
 
             <!-- ستون راست -->
             <dept:DepartmentLeaderSidePanel x:Name="LeaderPanel" Grid.Column="0"
-                ManagerName="سارا احمدی" ManagerTitle="مدیر منابع انسانی"
-                DeputyName="مهدی کاظمی"
-                LeadershipScore="90" SatisfactionScore="88" GrowthScore="81"/>
+                                        ManagerName="سارا احمدی" ManagerTitle="مدیر منابع انسانی"
+                                        DeputyName="مهدی کاظمی"
+                                        LeadershipScore="90" SatisfactionScore="88" GrowthScore="81"/>
         </Grid>
     </ScrollViewer>
 </Page>
