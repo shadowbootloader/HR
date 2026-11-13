@@ -27,7 +27,7 @@ namespace HR.Pages
 
         private void DeptTabs_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (!ReferenceEquals(e.OriginalSource, DeptTabs)) return;
+            //if (!ReferenceEquals(e.OriginalSource, DeptTabs)) return;
 
             // محتوای تبها فعلاً در همین صفحه نمایش داده میشود.
             // اگر بعداً خواستی هر تب محتوای جداگانه لود کند، اینجا فیلتر/بارگذاری را انجام بده.

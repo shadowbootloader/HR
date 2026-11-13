@@ -59,5 +59,10 @@ namespace HR.Pages
             if (NavigationService?.CanGoBack == true)
                 NavigationService.GoBack();
         }
+
+        private void DeptTabs_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
+        }
     }
 }

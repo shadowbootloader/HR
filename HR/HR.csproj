@@ -55,6 +55,7 @@
 
   <ItemGroup>
     <Folder Include="Controls\Employe\" />
+    <Folder Include="DB\" />
     <Folder Include="ViewModels\" />
   </ItemGroup>
 
