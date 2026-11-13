@@ -47,6 +47,13 @@
     <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.1.0-dev-798" />
     <PackageReference Include="LottieSharp" Version="2.4.3" />
     <PackageReference Include="MaterialDesignThemes" Version="5.4.0-ci1482" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.1.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.15" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer.HierarchyId" Version="10.0.15" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.14">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4255-prerelease" />
     <PackageReference Include="PersianDateTimeWPFTools" Version="1.5.1.9" />
     <PackageReference Include="WpfAnimatedGif" Version="2.0.2" />

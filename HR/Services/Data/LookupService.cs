@@ -1,0 +1,93 @@
+using HR.Data;
+using HR.Data.Entities;
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace HR.Services.Data
+{
+    /// <summary>
+    /// سرویس خواندن جداول Lookup (که از قبل پر شده‌اند)
+    /// </summary>
+    public class LookupService
+    {
+        private readonly PersonnelDbContext _db;
+
+        public LookupService(PersonnelDbContext db)
+        {
+            _db = db;
+        }
+
+        public LookupService() : this(new PersonnelDbContext())
+        {
+        }
+
+        public async Task<List<Gender>> GetGendersAsync() =>
+            await _db.Genders.AsNoTracking().OrderBy(x => x.GenderId).ToListAsync();
+
+        public async Task<List<MaritalStatus>> GetMaritalStatusesAsync() =>
+            await _db.MaritalStatuses.AsNoTracking().OrderBy(x => x.MaritalStatusId).ToListAsync();
+
+        public async Task<List<MilitaryStatus>> GetMilitaryStatusesAsync() =>
+            await _db.MilitaryStatuses.AsNoTracking().OrderBy(x => x.MilitaryStatusId).ToListAsync();
+
+        public async Task<List<Religion>> GetReligionsAsync() =>
+            await _db.Religions.AsNoTracking().OrderBy(x => x.ReligionId).ToListAsync();
+
+        public async Task<List<EducationDegree>> GetEducationDegreesAsync() =>
+            await _db.EducationDegrees.AsNoTracking().OrderBy(x => x.DegreeId).ToListAsync();
+
+        public async Task<List<EducationStatus>> GetEducationStatusesAsync() =>
+            await _db.EducationStatuses.AsNoTracking().OrderBy(x => x.StatusId).ToListAsync();
+
+        public async Task<List<Bank>> GetBanksAsync() =>
+            await _db.Banks.AsNoTracking().OrderBy(x => x.Title).ToListAsync();
+
+        public async Task<List<AccountTypeBank>> GetAccountTypesAsync() =>
+            await _db.AccountTypeBanks.AsNoTracking().OrderBy(x => x.AccountTypeId).ToListAsync();
+
+        public async Task<List<InsuranceType>> GetInsuranceTypesAsync() =>
+            await _db.InsuranceTypes.AsNoTracking().OrderBy(x => x.InsuranceTypeId).ToListAsync();
+
+        public async Task<List<CooperationType>> GetCooperationTypesAsync() =>
+            await _db.CooperationTypes.AsNoTracking().OrderBy(x => x.CooperationTypeId).ToListAsync();
+
+        public async Task<List<SkillLevel>> GetSkillLevelsAsync() =>
+            await _db.SkillLevels.AsNoTracking().OrderBy(x => x.SkillLevelId).ToListAsync();
+
+        public async Task<List<Language>> GetLanguagesAsync() =>
+            await _db.Languages.AsNoTracking().OrderBy(x => x.Title).ToListAsync();
+
+        public async Task<List<Software>> GetSoftwaresAsync() =>
+            await _db.Softwares.AsNoTracking().OrderBy(x => x.Title).ToListAsync();
+
+        public async Task<List<PhoneType>> GetPhoneTypesAsync() =>
+            await _db.PhoneTypes.AsNoTracking().OrderBy(x => x.PhoneTypeId).ToListAsync();
+
+        public async Task<List<PhoneStatus>> GetPhoneStatusesAsync() =>
+            await _db.PhoneStatuses.AsNoTracking().OrderBy(x => x.PhoneStatusId).ToListAsync();
+
+        public async Task<List<FileType>> GetFileTypesAsync() =>
+            await _db.FileTypes.AsNoTracking().OrderBy(x => x.FileTypeId).ToListAsync();
+
+        public async Task<List<EmploymentEndReason>> GetEmploymentEndReasonsAsync() =>
+            await _db.EmploymentEndReasons.AsNoTracking().OrderBy(x => x.EndReasonId).ToListAsync();
+
+        public async Task<List<Department>> GetDepartmentsAsync() =>
+            await _db.Departments.AsNoTracking().OrderBy(x => x.Title).ToListAsync();
+
+        public async Task<List<Geo>> GetGeosByLevelAsync(int level) =>
+            await _db.Geos.Where(g => g.Level == level).AsNoTracking().OrderBy(g => g.Name).ToListAsync();
+
+        public async Task<List<Geo>> SearchGeoAsync(string term, int? maxLevel = null)
+        {
+            var query = _db.Geos.AsQueryable();
+            if (!string.IsNullOrWhiteSpace(term))
+                query = query.Where(g => g.Name.Contains(term) || (g.NativeName != null && g.NativeName.Contains(term)));
+            if (maxLevel.HasValue)
+                query = query.Where(g => g.Level <= maxLevel.Value);
+
+            return await query.AsNoTracking().OrderBy(g => g.Name).Take(50).ToListAsync();
+        }
+    }
+}

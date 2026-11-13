@@ -1,0 +1,343 @@
+using HR.Data.Entities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+
+namespace HR.Data
+{
+    public class PersonnelDbContext : DbContext
+    {
+        // ==================== Connection String ====================
+        // این را مطابق سرور خودت تغییر بده
+        private const string ConnectionString =
+            "Server=.;Database=Personnel;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true";
+
+        public PersonnelDbContext()
+        {
+        }
+
+        public PersonnelDbContext(DbContextOptions<PersonnelDbContext> options) : base(options)
+        {
+        }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            if (!optionsBuilder.IsConfigured)
+            {
+                optionsBuilder.UseSqlServer(ConnectionString, sqlOptions =>
+                {
+                    sqlOptions.UseHierarchyId(); // پشتیبانی hierarchyid
+                });
+            }
+        }
+
+        // ==================== DbSets ====================
+
+        // Core
+        public DbSet<Employee> Employees => Set<Employee>();
+        public DbSet<EmployeeSupplement> EmployeeSupplements => Set<EmployeeSupplement>();
+        public DbSet<Department> Departments => Set<Department>();
+        public DbSet<Geo> Geos => Set<Geo>();
+
+        // Child tables
+        public DbSet<Education> Educations => Set<Education>();
+        public DbSet<Course> Courses => Set<Course>();
+        public DbSet<BankAccount> BankAccounts => Set<BankAccount>();
+        public DbSet<PhoneNumber> PhoneNumbers => Set<PhoneNumber>();
+        public DbSet<RelatedPerson> RelatedPersons => Set<RelatedPerson>();
+        public DbSet<EmployeeLanguage> EmployeeLanguages => Set<EmployeeLanguage>();
+        public DbSet<EmployeeSoftware> EmployeeSoftwares => Set<EmployeeSoftware>();
+        public DbSet<EmploymentHistory> EmploymentHistories => Set<EmploymentHistory>();
+        public DbSet<Citizenship> Citizenships => Set<Citizenship>();
+        public DbSet<ForeignTravel> ForeignTravels => Set<ForeignTravel>();
+        public DbSet<ForeignRelative> ForeignRelatives => Set<ForeignRelative>();
+        public DbSet<ForeignCooperation> ForeignCooperations => Set<ForeignCooperation>();
+        public DbSet<OrganizationCooperation> OrganizationCooperations => Set<OrganizationCooperation>();
+        public DbSet<OtherActivity> OtherActivities => Set<OtherActivity>();
+        public DbSet<SacrificeRecord> SacrificeRecords => Set<SacrificeRecord>();
+        public DbSet<HiringRecord> HiringRecords => Set<HiringRecord>();
+        public DbSet<PersonFile> PersonFiles => Set<PersonFile>();
+        public DbSet<Address> Addresses => Set<Address>();
+        public DbSet<BackgroundRecord> BackgroundRecords => Set<BackgroundRecord>();
+
+        // Lookups
+        public DbSet<Gender> Genders => Set<Gender>();
+        public DbSet<MaritalStatus> MaritalStatuses => Set<MaritalStatus>();
+        public DbSet<MilitaryStatus> MilitaryStatuses => Set<MilitaryStatus>();
+        public DbSet<Religion> Religions => Set<Religion>();
+        public DbSet<Denomination> Denominations => Set<Denomination>();
+        public DbSet<EducationDegree> EducationDegrees => Set<EducationDegree>();
+        public DbSet<EducationStatus> EducationStatuses => Set<EducationStatus>();
+        public DbSet<AccountTypeBank> AccountTypeBanks => Set<AccountTypeBank>();
+        public DbSet<Bank> Banks => Set<Bank>();
+        public DbSet<InsuranceType> InsuranceTypes => Set<InsuranceType>();
+        public DbSet<CooperationType> CooperationTypes => Set<CooperationType>();
+        public DbSet<SkillLevel> SkillLevels => Set<SkillLevel>();
+        public DbSet<Language> Languages => Set<Language>();
+        public DbSet<Software> Softwares => Set<Software>();
+        public DbSet<PhoneType> PhoneTypes => Set<PhoneType>();
+        public DbSet<PhoneStatus> PhoneStatuses => Set<PhoneStatus>();
+        public DbSet<FileType> FileTypes => Set<FileType>();
+        public DbSet<EmploymentEndReason> EmploymentEndReasons => Set<EmploymentEndReason>();
+        public DbSet<ExemptionType> ExemptionTypes => Set<ExemptionType>();
+        public DbSet<ExemptionReason> ExemptionReasons => Set<ExemptionReason>();
+        public DbSet<CitizenshipReason> CitizenshipReasons => Set<CitizenshipReason>();
+        public DbSet<TransportType> TransportTypes => Set<TransportType>();
+        public DbSet<TravelReason> TravelReasons => Set<TravelReason>();
+        public DbSet<AbroadReason> AbroadReasons => Set<AbroadReason>();
+        public DbSet<CenterType> CenterTypes => Set<CenterType>();
+        public DbSet<SectorType> SectorTypes => Set<SectorType>();
+        public DbSet<HiringResult> HiringResults => Set<HiringResult>();
+        public DbSet<RecordType> RecordTypes => Set<RecordType>();
+        public DbSet<SacrificeType> SacrificeTypes => Set<SacrificeType>();
+        public DbSet<SacrificeRelationship> SacrificeRelationships => Set<SacrificeRelationship>();
+        public DbSet<AmountUnit> AmountUnits => Set<AmountUnit>();
+        public DbSet<GeoType> GeoTypes => Set<GeoType>();
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            // ==================== Employee ====================
+            modelBuilder.Entity<Employee>(entity =>
+            {
+                entity.ToTable("Employee");
+                entity.HasKey(e => e.EmployeeId);
+
+                entity.Property(e => e.FirstName).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.LastName).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.FatherName).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.NationalCode).HasMaxLength(10).IsRequired();
+                entity.Property(e => e.BirthCertificateNumber).HasMaxLength(10).IsRequired();
+                entity.Property(e => e.Email).HasMaxLength(254).IsRequired();
+                entity.Property(e => e.InsuranceNumber).HasMaxLength(10).IsRequired();
+                entity.Property(e => e.Description).HasMaxLength(250);
+                entity.Property(e => e.IsDeleted).HasDefaultValue(false);
+
+                entity.HasOne(e => e.Gender).WithMany().HasForeignKey(e => e.GenderId);
+                entity.HasOne(e => e.MaritalStatus).WithMany().HasForeignKey(e => e.MaritalStatusId);
+                entity.HasOne(e => e.MilitaryStatus).WithMany().HasForeignKey(e => e.MilitaryStatusId);
+                entity.HasOne(e => e.Religion).WithMany().HasForeignKey(e => e.ReligionId);
+
+                entity.HasOne(e => e.Supplement)
+                      .WithOne(s => s.Employee)
+                      .HasForeignKey<EmployeeSupplement>(s => s.EmployeeId);
+            });
+
+            // ==================== EmployeeSupplement ====================
+            modelBuilder.Entity<EmployeeSupplement>(entity =>
+            {
+                entity.ToTable("EmployeeSupplement");
+                entity.HasKey(e => e.EmployeeSupplementId);
+
+                entity.Property(e => e.PositionTitle).HasMaxLength(100).IsRequired();
+                entity.Property(e => e.PersonnelCode).HasMaxLength(20).IsRequired();
+                entity.Property(e => e.Salary).HasColumnType("decimal(18,0)");
+
+                entity.HasIndex(e => e.EmployeeId).IsUnique();
+                entity.HasIndex(e => e.PersonnelCode).IsUnique();
+
+                entity.HasOne(e => e.Department).WithMany(d => d.Employees).HasForeignKey(e => e.DepartmentId);
+                entity.HasOne(e => e.InsuranceType).WithMany().HasForeignKey(e => e.InsuranceTypeId);
+                entity.HasOne(e => e.CooperationType).WithMany().HasForeignKey(e => e.CooperationTypeId);
+            });
+
+            // ==================== Department ====================
+            modelBuilder.Entity<Department>(entity =>
+            {
+                entity.ToTable("Department");
+                entity.HasKey(e => e.DepartmentId);
+                entity.Property(e => e.Title).HasMaxLength(100).IsRequired();
+                entity.HasIndex(e => e.Title).IsUnique();
+
+                entity.HasOne(e => e.Parent)
+                      .WithMany(d => d.Children)
+                      .HasForeignKey(e => e.ParentDepartment)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // ==================== Geo ====================
+            modelBuilder.Entity<Geo>(entity =>
+            {
+                entity.ToTable("Geo");
+                entity.HasKey(e => e.GeoId);
+                entity.Property(e => e.Node).IsRequired();
+                entity.HasIndex(e => e.Node).IsUnique();
+                entity.Property(e => e.Level).HasComputedColumnSql("[Node].[GetLevel]()", stored: true);
+            });
+
+            // ==================== Education ====================
+            modelBuilder.Entity<Education>(entity =>
+            {
+                entity.ToTable("Education");
+                entity.HasKey(e => e.EducationId);
+                entity.Property(e => e.FieldOfStudy).HasMaxLength(150).IsRequired();
+                entity.Property(e => e.InstitutionName).HasMaxLength(150).IsRequired();
+                entity.Property(e => e.GPA).HasColumnType("decimal(20,0)");
+                entity.Property(e => e.ThesisTitle).HasMaxLength(500);
+                entity.Property(e => e.Description).HasMaxLength(250);
+
+                entity.HasOne(e => e.Employee).WithMany(emp => emp.Educations).HasForeignKey(e => e.EmployeeId);
+                entity.HasOne(e => e.Status).WithMany().HasForeignKey(e => e.StatusId);
+                entity.HasOne(e => e.Degree).WithMany().HasForeignKey(e => e.DegreeId);
+            });
+
+            // ==================== Course ====================
+            modelBuilder.Entity<Course>(entity =>
+            {
+                entity.ToTable("Course");
+                entity.HasKey(e => e.CourseId);
+                entity.Property(e => e.Title).HasMaxLength(150).IsRequired();
+                entity.Property(e => e.InstitutionName).HasMaxLength(150).IsRequired();
+                entity.Property(e => e.Description).HasMaxLength(250);
+
+                entity.HasOne(e => e.Employee).WithMany(emp => emp.Courses).HasForeignKey(e => e.EmployeeId);
+            });
+
+            // ==================== BankAccount ====================
+            modelBuilder.Entity<BankAccount>(entity =>
+            {
+                entity.ToTable("BankAccount");
+                entity.HasKey(e => e.BankAccountId);
+                entity.Property(e => e.AccountNumber).HasMaxLength(10).IsRequired();
+                entity.Property(e => e.Sheba).HasMaxLength(26).IsRequired().IsFixedLength();
+                entity.Property(e => e.CardNumber).HasMaxLength(16).IsRequired().IsFixedLength();
+                entity.Property(e => e.Description).HasMaxLength(250);
+
+                entity.HasIndex(e => new { e.AccountNumber, e.BankId }).IsUnique();
+                entity.HasIndex(e => e.Sheba).IsUnique();
+
+                entity.HasOne(e => e.Employee).WithMany(emp => emp.BankAccounts).HasForeignKey(e => e.EmployeeId);
+                entity.HasOne(e => e.Bank).WithMany().HasForeignKey(e => e.BankId);
+                entity.HasOne(e => e.AccountType).WithMany().HasForeignKey(e => e.AccountTypeId);
+            });
+
+            // ==================== PhoneNumber ====================
+            modelBuilder.Entity<PhoneNumber>(entity =>
+            {
+                entity.ToTable("PhoneNumber");
+                entity.HasKey(e => e.PhoneNumberId);
+                entity.Property(e => e.Number).HasMaxLength(11).IsRequired();
+                entity.Property(e => e.OwnerFirstName).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.OwnerLastName).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.Description).HasMaxLength(250);
+
+                entity.HasOne(e => e.Employee).WithMany(emp => emp.PhoneNumbers).HasForeignKey(e => e.EmployeeId);
+                entity.HasOne(e => e.Status).WithMany().HasForeignKey(e => e.PhoneNumberStatus);
+                entity.HasOne(e => e.Type).WithMany().HasForeignKey(e => e.PhoneNumberType);
+            });
+
+            // ==================== RelatedPerson ====================
+            modelBuilder.Entity<RelatedPerson>(entity =>
+            {
+                entity.ToTable("RelatedPerson");
+                entity.HasKey(e => e.RelatedPersonId);
+                entity.Property(e => e.FirstName).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.LastName).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.FatherName).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.NationalCode).HasMaxLength(10).IsRequired();
+                entity.Property(e => e.BirthCertificateNumber).HasMaxLength(10).IsRequired();
+                entity.Property(e => e.JobTitle).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.Relationship).HasMaxLength(50).IsRequired();
+
+                entity.HasOne(e => e.Employee).WithMany(emp => emp.RelatedPersons).HasForeignKey(e => e.EmployeeId);
+            });
+
+            // ==================== EmployeeLanguage ====================
+            modelBuilder.Entity<EmployeeLanguage>(entity =>
+            {
+                entity.ToTable("EmployeeLanguage");
+                entity.HasKey(e => e.EmployeeLanguageId);
+                entity.Property(e => e.Description).HasMaxLength(250);
+
+                entity.HasIndex(e => new { e.EmployeeId, e.LanguageId }).IsUnique();
+
+                entity.HasOne(e => e.Employee).WithMany(emp => emp.Languages).HasForeignKey(e => e.EmployeeId);
+                entity.HasOne(e => e.Language).WithMany().HasForeignKey(e => e.LanguageId);
+                entity.HasOne(e => e.ReadingLevel).WithMany().HasForeignKey(e => e.ReadingLevelId);
+                entity.HasOne(e => e.WritingLevel).WithMany().HasForeignKey(e => e.WritingLevelId);
+                entity.HasOne(e => e.ComprehensionLevel).WithMany().HasForeignKey(e => e.ComprehensionLevelId);
+                entity.HasOne(e => e.SpeakingLevel).WithMany().HasForeignKey(e => e.SpeakingLevelId);
+            });
+
+            // ==================== EmployeeSoftware ====================
+            modelBuilder.Entity<EmployeeSoftware>(entity =>
+            {
+                entity.ToTable("EmployeeSoftware");
+                entity.HasKey(e => e.EmployeeSoftwareId);
+                entity.Property(e => e.Description).HasMaxLength(250);
+
+                entity.HasIndex(e => new { e.EmployeeId, e.SoftwareId }).IsUnique();
+
+                entity.HasOne(e => e.Employee).WithMany(emp => emp.Softwares).HasForeignKey(e => e.EmployeeId);
+                entity.HasOne(e => e.Software).WithMany().HasForeignKey(e => e.SoftwareId);
+                entity.HasOne(e => e.SkillLevel).WithMany().HasForeignKey(e => e.SkillLevelId);
+            });
+
+            // ==================== EmploymentHistory ====================
+            modelBuilder.Entity<EmploymentHistory>(entity =>
+            {
+                entity.ToTable("EmploymentHistory");
+                entity.HasKey(e => e.EmploymentHistoryId);
+                entity.Property(e => e.WorkplaceName).HasMaxLength(200).IsRequired();
+                entity.Property(e => e.JobTitle).HasMaxLength(150).IsRequired();
+                entity.Property(e => e.PhoneNumber).HasMaxLength(11).IsRequired();
+                entity.Property(e => e.Description).HasMaxLength(250).IsRequired();
+
+                entity.HasOne(e => e.Employee).WithMany(emp => emp.EmploymentHistories).HasForeignKey(e => e.EmployeeId);
+                entity.HasOne(e => e.EndReason).WithMany().HasForeignKey(e => e.EndReasonId);
+            });
+
+            // ==================== Lookups - simple tables ====================
+            modelBuilder.Entity<Gender>().ToTable("Gender").HasKey(e => e.GenderId);
+            modelBuilder.Entity<MaritalStatus>().ToTable("MaritalStatus").HasKey(e => e.MaritalStatusId);
+            modelBuilder.Entity<MilitaryStatus>().ToTable("MilitaryStatus").HasKey(e => e.MilitaryStatusId);
+            modelBuilder.Entity<Religion>().ToTable("Religion").HasKey(e => e.ReligionId);
+            modelBuilder.Entity<Denomination>().ToTable("Denomination").HasKey(e => e.DenominationId);
+            modelBuilder.Entity<EducationDegree>().ToTable("EducationDegree").HasKey(e => e.DegreeId);
+            modelBuilder.Entity<EducationStatus>().ToTable("EducationStatus").HasKey(e => e.StatusId);
+            modelBuilder.Entity<AccountTypeBank>().ToTable("AccountTypeBank").HasKey(e => e.AccountTypeId);
+            modelBuilder.Entity<Bank>().ToTable("Bank").HasKey(e => e.BankId);
+            modelBuilder.Entity<InsuranceType>().ToTable("InsuranceType").HasKey(e => e.InsuranceTypeId);
+            modelBuilder.Entity<CooperationType>().ToTable("CooperationType").HasKey(e => e.CooperationTypeId);
+            modelBuilder.Entity<SkillLevel>().ToTable("SkillLevel").HasKey(e => e.SkillLevelId);
+            modelBuilder.Entity<Language>().ToTable("Language").HasKey(e => e.LanguageId);
+            modelBuilder.Entity<Software>().ToTable("Software").HasKey(e => e.SoftwareId);
+            modelBuilder.Entity<PhoneType>().ToTable("PhoneType").HasKey(e => e.PhoneTypeId);
+            modelBuilder.Entity<PhoneStatus>().ToTable("PhoneStatus").HasKey(e => e.PhoneStatusId);
+            modelBuilder.Entity<FileType>().ToTable("FileType").HasKey(e => e.FileTypeId);
+            modelBuilder.Entity<EmploymentEndReason>().ToTable("EmploymentEndReason").HasKey(e => e.EndReasonId);
+            modelBuilder.Entity<ExemptionType>().ToTable("ExemptionType").HasKey(e => e.ExemptionTypeId);
+            modelBuilder.Entity<ExemptionReason>().ToTable("ExemptionReason").HasKey(e => e.ExemptionReasonId);
+            modelBuilder.Entity<CitizenshipReason>().ToTable("CitizenshipReason").HasKey(e => e.CitizenshipReasonId);
+            modelBuilder.Entity<TransportType>().ToTable("TransportType").HasKey(e => e.TransportTypeId);
+            modelBuilder.Entity<TravelReason>().ToTable("TravelReason").HasKey(e => e.TravelReasonId);
+            modelBuilder.Entity<AbroadReason>().ToTable("AbroadReason").HasKey(e => e.AbroadReasonId);
+            modelBuilder.Entity<CenterType>().ToTable("CenterType").HasKey(e => e.CenterTypeId);
+            modelBuilder.Entity<SectorType>().ToTable("SectorType").HasKey(e => e.SectorTypeId);
+            modelBuilder.Entity<HiringResult>().ToTable("HiringResult").HasKey(e => e.HiringResultId);
+            modelBuilder.Entity<RecordType>().ToTable("RecordType").HasKey(e => e.RecordTypeId);
+            modelBuilder.Entity<SacrificeType>().ToTable("SacrificeType").HasKey(e => e.SacrificeTypeId);
+            modelBuilder.Entity<SacrificeRelationship>().ToTable("SacrificeRelationship").HasKey(e => e.SacrificeRelationshipId);
+            modelBuilder.Entity<AmountUnit>().ToTable("AmountUnit").HasKey(e => e.AmountUnitId);
+            modelBuilder.Entity<GeoType>().ToTable("GeoType").HasKey(e => e.GeoTypeId);
+
+            // Address mapping (column name difference)
+            modelBuilder.Entity<Address>(entity =>
+            {
+                entity.ToTable("Address");
+                entity.HasKey(e => e.AddressId);
+                entity.Property(e => e.AddressText).HasColumnName("Address").HasMaxLength(500).IsRequired();
+                entity.Property(e => e.Title).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.PostalCode).HasMaxLength(10);
+            });
+
+            // PersonFile
+            modelBuilder.Entity<PersonFile>(entity =>
+            {
+                entity.ToTable("PersonFile");
+                entity.HasKey(e => e.PersonFileId);
+                entity.Property(e => e.FileAddress).HasMaxLength(500).IsRequired();
+            });
+        }
+    }
+}
