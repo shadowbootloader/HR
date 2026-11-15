@@ -7,12 +7,16 @@ namespace HR.Services.Data.Mapping
 {
     public sealed class JobHistoryChildMapper : IEmployeeChildMapper
     {
+        private const string NoneItem = "—";
+
         public async Task MapAsync(EmployeeProfile profile, Employee entity, LookupResolver lookups)
         {
             if (profile.JobHistories == null) return;
 
             foreach (var job in profile.JobHistories)
             {
+                var reason = job.LeaveReason?.Trim();
+
                 entity.EmploymentHistories.Add(new EmploymentHistory
                 {
                     EmploymentHistoryId = Guid.NewGuid(),
@@ -22,7 +26,10 @@ namespace HR.Services.Data.Mapping
                     PhoneNumber = MapperHelpers.Required(job.CompanyPhone),
                     StartDate = job.StartDate ?? DateTime.Today,
                     EndDate = job.EndDate,
-                    Description = job.Note ?? job.LeaveReason ?? string.Empty
+                    EndReasonId = string.IsNullOrWhiteSpace(reason) || reason == NoneItem
+                        ? null
+                        : await lookups.ByteFromTitleAsync<EmploymentEndReason>(reason),
+                    Description = job.Note ?? string.Empty
                 });
             }
         }

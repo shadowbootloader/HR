@@ -4,11 +4,15 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using HR.Models;
+using HR.Services;
+using HR.Services.Data;
 
 namespace HR.Controls.AddEmployees
 {
     public partial class JobHistory : UserControl, IEmployeeSection
     {
+        private const string NoneItem = "—";
+
         private readonly ObservableCollection<JobHistoryRecord> _items = new();
 
         public string SectionTitle => "سوابق شغلی";
@@ -19,6 +23,29 @@ namespace HR.Controls.AddEmployees
 
             PersonaljobsList.ItemsSource = _items;
             _items.CollectionChanged += (_, __) => RowNumbering.Renumber(_items);
+
+            Loaded += JobHistory_Loaded;
+        }
+
+        private async void JobHistory_Loaded(object sender, RoutedEventArgs e)
+        {
+            Loaded -= JobHistory_Loaded;
+
+            try
+            {
+                var reasons = (await LookupCache.GetAsync())[nameof(HR.Data.Entities.EmploymentEndReason)];
+                if (reasons.Count == 0) return;
+
+                JobEndReasonCombo.ItemsSource = new[] { NoneItem }
+                    .Concat(reasons.Select(r => r.Title))
+                    .ToList();
+
+                JobEndReasonCombo.SelectedIndex = 0;
+            }
+            catch
+            {
+                // دیتابیس در دسترس نیست → لیست خالی می‌ماند
+            }
         }
 
         private void AddJobDataBtn_Click(object sender, RoutedEventArgs e)
@@ -56,6 +83,8 @@ namespace HR.Controls.AddEmployees
                 return;
             }
 
+            var reason = JobEndReasonCombo.SelectedItem as string;
+
             _items.Add(new JobHistoryRecord
             {
                 Company = company,
@@ -63,7 +92,7 @@ namespace HR.Controls.AddEmployees
                 CompanyPhone = NullIfEmpty(phone),
                 StartDate = start,
                 EndDate = end,
-                LeaveReason = NullIfEmpty(JobEndReasonTB.Text),
+                LeaveReason = string.IsNullOrWhiteSpace(reason) || reason == NoneItem ? null : reason,
                 Note = NullIfEmpty(JobNoteTB.Text)
             });
 
@@ -118,10 +147,10 @@ namespace HR.Controls.AddEmployees
             CompanyNameTB.Clear();
             PostNameTB.Clear();
             JobFoneNumberTB.Clear();
-            JobEndReasonTB.Clear();
             JobNoteTB.Clear();
             JobStartDateDP.SelectedDate = null;
             JobEndDateDP.SelectedDate = null;
+            if (JobEndReasonCombo.Items.Count > 0) JobEndReasonCombo.SelectedIndex = 0;
             CompanyNameTB.Focus();
         }
 
