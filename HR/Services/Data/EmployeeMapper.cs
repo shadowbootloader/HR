@@ -82,6 +82,7 @@ namespace HR.Services.Data
                         StartDate = edu.StartDate ?? DateTime.Today,
                         EndDate = edu.EndDate,
                         ThesisTitle = edu.ThesisTitle,
+                        EducationLocationNode = await lookups.EducationLocationAsync(edu.State, edu.City),
                         Description = null
                     });
                 }
@@ -158,7 +159,7 @@ namespace HR.Services.Data
                         PhoneNumber = j.CompanyPhone?.Trim() ?? "—",
                         StartDate = j.StartDate ?? DateTime.Today,
                         EndDate = j.EndDate,
-                        Description = j.Note ?? j.LeaveReason
+                        Description = j.Note ?? j.LeaveReason ?? string.Empty
                     });
                 }
             }
@@ -194,6 +195,23 @@ namespace HR.Services.Data
                         SoftwareId = await lookups.SoftwareAsync(s.SoftwareName),
                         SkillLevelId = await lookups.SkillLevelAsync(s.Level),
                         Description = s.Note
+                    });
+                }
+            }
+
+            // تابعیت
+            if (profile.Citizenships?.Count > 0)
+            {
+                foreach (var c in profile.Citizenships)
+                {
+                    entity.Citizenships.Add(new Citizenship
+                    {
+                        CitizenshipId = Guid.NewGuid(),
+                        EmployeeId = entity.EmployeeId,
+                        CountryId = await lookups.CountryAsync(c.Country),
+                        CitizenshipReasonId = await lookups.CitizenshipReasonAsync(c.Reason),
+                        StartDate = c.StartDate ?? DateTime.Today,
+                        Description = c.Note
                     });
                 }
             }

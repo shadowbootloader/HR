@@ -1,13 +1,18 @@
-﻿using System.Windows;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Windows;
 using System.Windows.Controls;
+using HR.Data.Entities;
 using HR.Models;
 using HR.Services;
+using HR.Services.Data;
 
 namespace HR.Controls.AddEmployees
 {
     public partial class Citizenship : UserControl, IEmployeeSection
     {
         private readonly SectionList<CitizenshipRecord> _list = new();
+        private readonly List<Geo> _countries = new();
 
         public string SectionTitle => "تابعیت";
 
@@ -16,13 +21,35 @@ namespace HR.Controls.AddEmployees
             InitializeComponent();
             _list.Attach(PersonalCitizenshipList);
 
-            Citizenship_CountryNameCombo.ItemsSource = Lookups.Countries;
-            Citizenship_CountryNameCombo.SelectedIndex = 0;
+            Loaded += Citizenship_Loaded;
+        }
+
+        private async void Citizenship_Loaded(object sender, RoutedEventArgs e)
+        {
+            Loaded -= Citizenship_Loaded;
+
+            try
+            {
+                using var geo = new GeoService();
+                var countries = await geo.GetCountriesAsync();
+                if (countries.Count == 0) return;
+
+                _countries.Clear();
+                _countries.AddRange(countries);
+
+                Citizenship_CountryNameCombo.ItemsSource = countries.Select(c => c.Name).ToList();
+                Citizenship_CountryNameCombo.SelectedIndex = 0;
+            }
+            catch
+            {
+                // دیتابیس در دسترس نیست → لیست خالی می‌ماند
+            }
         }
 
         private void AddCitizenshipDataBtn_Click(object sender, RoutedEventArgs e)
         {
-            var country = Citizenship_CountryNameCombo.Text?.Trim();
+            var country = Citizenship_CountryNameCombo.SelectedItem as string
+                          ?? Citizenship_CountryNameCombo.Text?.Trim();
 
             if (string.IsNullOrWhiteSpace(country))
             {
@@ -54,7 +81,8 @@ namespace HR.Controls.AddEmployees
             Citizenship_ReasonTB.Clear();
             Citizenship_NoteTB.Clear();
             Citizenship_StartDateDP.SelectedDate = null;
-            Citizenship_CountryNameCombo.SelectedIndex = 0;
+            if (Citizenship_CountryNameCombo.Items.Count > 0)
+                Citizenship_CountryNameCombo.SelectedIndex = 0;
         }
 
         private static string? NullIfEmpty(string? v) => string.IsNullOrWhiteSpace(v) ? null : v.Trim();

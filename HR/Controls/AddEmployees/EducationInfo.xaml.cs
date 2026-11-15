@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using HR.Data.Entities;
 using HR.Models;
 using HR.Services;
 using HR.Services.Data;
@@ -12,6 +14,7 @@ namespace HR.Controls.AddEmployees
     public partial class EducationInfo : UserControl, IEmployeeSection
     {
         private readonly ObservableCollection<EducationRecord> _items = new();
+        private readonly List<Geo> _provinces = new();
         private string _certificateImage = string.Empty;
 
         public string SectionTitle => "مشخصات تحصیلی";
@@ -26,11 +29,10 @@ namespace HR.Controls.AddEmployees
             Setup(EducationalStatusCombo);
             Setup(GradeCombo);
 
-            // استان‌ها فعلاً ثابت‌اند؛ بعداً به جدول Geo منتقل می‌شوند
-            EducationStateNameTB.ItemsSource = Provinces;
-            EducationStateNameTB.SelectedIndex = 0;
             EducationalCityNameTB.ItemsSource = new[] { "—" };
             EducationalCityNameTB.SelectedIndex = 0;
+
+            EducationStateNameTB.SelectionChanged += EducationStateNameTB_SelectionChanged;
 
             Loaded += EducationInfo_Loaded;
         }
@@ -41,14 +43,66 @@ namespace HR.Controls.AddEmployees
 
             await LookupBinder.FillAsync<EducationStatusKind>(EducationalStatusCombo, LookupKeys.EducationStatus);
             await LookupBinder.FillAsync<DegreeLevel>(GradeCombo, LookupKeys.EducationDegree);
+
+            await FillProvincesAsync();
         }
 
-        private static readonly string[] Provinces =
+        private async void EducationStateNameTB_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            "تهران", "البرز", "اصفهان", "فارس", "خراسان رضوی", "آذربایجان شرقی",
-            "آذربایجان غربی", "خوزستان", "گیلان", "مازندران", "کرمان", "یزد",
-            "قم", "قزوین", "مرکزی", "همدان", "کرمانشاه", "گلستان", "سایر"
-        };
+            await FillCitiesAsync();
+        }
+
+        // ==================== موقعیت جغرافیایی ====================
+
+        private async System.Threading.Tasks.Task FillProvincesAsync()
+        {
+            try
+            {
+                using var geo = new GeoService();
+                var provinces = await geo.GetProvincesAsync();
+                if (provinces.Count == 0) return;
+
+                _provinces.Clear();
+                _provinces.AddRange(provinces);
+
+                EducationStateNameTB.ItemsSource = provinces.Select(p => p.Name).ToList();
+                EducationStateNameTB.SelectedIndex = 0;
+
+                await FillCitiesAsync();
+            }
+            catch
+            {
+                // دیتابیس در دسترس نیست → لیست خالی می‌ماند
+            }
+        }
+
+        private async System.Threading.Tasks.Task FillCitiesAsync()
+        {
+            var province = _provinces.FirstOrDefault(p =>
+                p.Name == EducationStateNameTB.SelectedItem as string);
+
+            if (province == null)
+            {
+                EducationalCityNameTB.ItemsSource = new[] { "—" };
+                EducationalCityNameTB.SelectedIndex = 0;
+                return;
+            }
+
+            try
+            {
+                using var geo = new GeoService();
+                var cities = await geo.GetCitiesAsync(province.GeoId);
+
+                var names = cities.Select(c => c.Name).ToList();
+                EducationalCityNameTB.ItemsSource = names.Count > 0 ? names : new List<string> { "—" };
+                EducationalCityNameTB.SelectedIndex = 0;
+            }
+            catch
+            {
+                EducationalCityNameTB.ItemsSource = new[] { "—" };
+                EducationalCityNameTB.SelectedIndex = 0;
+            }
+        }
 
         private static void Setup(ComboBox combo)
         {

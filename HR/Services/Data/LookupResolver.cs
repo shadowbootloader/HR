@@ -10,18 +10,20 @@ namespace HR.Services.Data
 {
     /// <summary>
     /// تبدیل مقادیر فرم به کلید خارجی واقعی.
-    /// مقادیر enum با اندیس ردیف DB و فیلدهای متنی با عنوان حل می‌شوند.
+    /// مقادیر enum با اندیس ردیف DB، فیلدهای متنی با عنوان و موقعیت‌ها با جدول Geo حل می‌شوند.
     /// </summary>
     public sealed class LookupResolver : IDisposable
     {
         private readonly PersonnelDbContext _db;
         private readonly LookupCache _cache;
+        private readonly GeoService _geo;
         private bool _disposed;
 
         private LookupResolver(PersonnelDbContext db, LookupCache cache)
         {
             _db = db;
             _cache = cache;
+            _geo = new GeoService(db);
         }
 
         public static async Task<LookupResolver> LoadAsync(PersonnelDbContext db)
@@ -61,6 +63,10 @@ namespace HR.Services.Data
 
         public async Task<byte> CooperationTypeAsync(string? title) => ToByte(await _cache.ResolveOrCreateAsync(LookupKeys.CooperationType, title));
 
+        public async Task<byte> CitizenshipReasonAsync(string? title) => ToByte(await _cache.ResolveOrCreateAsync(LookupKeys.CitizenshipReason, title));
+
+        public async Task<byte> PhoneStatusAsync(string? title) => ToByte(await _cache.ResolveOrCreateAsync(LookupKeys.PhoneStatus, title));
+
         public async Task<short> BankAsync(string? title) => await _cache.ResolveOrCreateAsync(LookupKeys.Bank, title);
 
         public async Task<short> LanguageAsync(string? title) => await _cache.ResolveOrCreateAsync(LookupKeys.Language, title);
@@ -69,7 +75,21 @@ namespace HR.Services.Data
 
         public async Task<short> DepartmentAsync(string? title) => await _cache.ResolveOrCreateAsync(LookupKeys.Department, title);
 
-        public async Task<byte> PhoneStatusAsync(string? title) => ToByte(await _cache.ResolveOrCreateAsync(LookupKeys.PhoneStatus, title));
+        // ==================== موقعیت جغرافیایی ====================
+
+        public Task<HierarchyId?> EducationLocationAsync(string? province, string? city)
+            => _geo.ResolveLocationNodeAsync(province, city);
+
+        public async Task<int> CountryAsync(string? title)
+        {
+            var country = await _geo.FindCountryAsync(title);
+            if (country != null) return country.GeoId;
+
+            var first = (await _geo.GetCountriesAsync()).FirstOrDefault();
+            if (first != null) return first.GeoId;
+
+            throw new InvalidOperationException("جدول Geo هیچ کشوری ندارد؛ ابتدا کشورها را وارد کنید.");
+        }
 
         // ==================== هسته ====================
 
@@ -92,6 +112,7 @@ namespace HR.Services.Data
         {
             if (_disposed) return;
             _disposed = true;
+            _geo.Dispose();
             _db.Dispose();
         }
     }

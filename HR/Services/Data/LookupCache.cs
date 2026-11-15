@@ -156,6 +156,8 @@ namespace HR.Services.Data
                     { var r = new Language { Title = title }; _db.Languages.Add(r); await _db.SaveChangesAsync(); return new LookupItem(r.LanguageId, r.Title); }
                 case LookupKeys.Software:
                     { var r = new Software { Title = title }; _db.Softwares.Add(r); await _db.SaveChangesAsync(); return new LookupItem(r.SoftwareId, r.Title); }
+                case LookupKeys.CitizenshipReason:
+                    { var r = new CitizenshipReason { Title = title }; _db.CitizenshipReasons.Add(r); await _db.SaveChangesAsync(); return new LookupItem(r.CitizenshipReasonId, r.Title); }
                 case LookupKeys.Department:
                     { var r = new Department { Title = title }; _db.Departments.Add(r); await _db.SaveChangesAsync(); return new LookupItem(r.DepartmentId, r.Title); }
                 default:
