@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using HR.Models;
 using HR.Services;
+using HR.Services.Data;
 
 namespace HR.Controls.AddEmployees
 {
@@ -24,24 +25,10 @@ namespace HR.Controls.AddEmployees
 
         private void FillCombos()
         {
-            PersonalMaritalStatusTb.ItemsSource = new[]
-            {
-                new ComboItem(MaritalStatus.Single,   "مجرد"),
-                new ComboItem(MaritalStatus.Married,  "متأهل"),
-                new ComboItem(MaritalStatus.Divorced, "مطلقه"),
-                new ComboItem(MaritalStatus.Widowed,  "همسر فوت‌شده"),
-            };
             Setup(PersonalMaritalStatusTb);
-
-            PersonalSarbaziTb.ItemsSource = new[]
-            {
-                new ComboItem(MilitaryStatus.Done,          "پایان خدمت"),
-                new ComboItem(MilitaryStatus.InProgress,    "در حال خدمت"),
-                new ComboItem(MilitaryStatus.Exempt,        "معاف"),
-                new ComboItem(MilitaryStatus.NotApplicable, "مشمول نیست"),
-            };
             Setup(PersonalSarbaziTb);
 
+            // این دو مورد هنوز جدول Lookup مستقل ندارند
             PersonalMoafiatStatusTb.ItemsSource = new[]
             {
                 new ComboItem("دائم", "دائم"),
@@ -55,6 +42,16 @@ namespace HR.Controls.AddEmployees
                 "پزشکی", "کفالت", "تحصیلی", "فرزند", "سایر"
             };
             PersonalMoafiatTypeTb.SelectedIndex = 0;
+
+            Loaded += BasicInfo_Loaded;
+        }
+
+        private async void BasicInfo_Loaded(object sender, RoutedEventArgs e)
+        {
+            Loaded -= BasicInfo_Loaded;
+
+            await LookupBinder.FillAsync<MaritalStatus>(PersonalMaritalStatusTb, LookupKeys.MaritalStatus, valueOffset: 1);
+            await LookupBinder.FillAsync<MilitaryStatus>(PersonalSarbaziTb, LookupKeys.MilitaryStatus, valueOffset: 1);
         }
 
         private static void Setup(ComboBox combo)

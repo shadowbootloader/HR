@@ -4,6 +4,8 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using HR.Models;
+using HR.Services;
+using HR.Services.Data;
 
 namespace HR.Controls.AddEmployees
 {
@@ -20,24 +22,35 @@ namespace HR.Controls.AddEmployees
             PersonalBankList.ItemsSource = _items;
             _items.CollectionChanged += (_, __) => RowNumbering.Renumber(_items);
 
-            BankNameCB.ItemsSource = new[]
-            {
-                "ملی", "ملت", "صادرات", "تجارت", "سپه", "کشاورزی", "مسکن",
-                "پاسارگاد", "پارسیان", "سامان", "رفاه", "اقتصاد نوین", "سایر"
-            };
-            BankNameCB.SelectedIndex = 0;
-
-            BankAccountTypeCB.ItemsSource = new[]
-            {
-                new ComboItem(BankAccountType.Current,   "جاری"),
-                new ComboItem(BankAccountType.Savings,   "پس‌انداز"),
-                new ComboItem(BankAccountType.ShortTerm, "کوتاه‌مدت"),
-                new ComboItem(BankAccountType.LongTerm,  "بلندمدت"),
-                new ComboItem(BankAccountType.Other,     "سایر"),
-            };
             BankAccountTypeCB.DisplayMemberPath = nameof(ComboItem.Text);
             BankAccountTypeCB.SelectedValuePath = nameof(ComboItem.Value);
-            BankAccountTypeCB.SelectedIndex = 0;
+
+            Loaded += BankAccounts_Loaded;
+        }
+
+        private async void BankAccounts_Loaded(object sender, RoutedEventArgs e)
+        {
+            Loaded -= BankAccounts_Loaded;
+
+            await LookupBinder.FillAsync<BankAccountType>(BankAccountTypeCB, LookupKeys.AccountTypeBank);
+
+            try
+            {
+                var banks = (await LookupCache.GetAsync())[LookupKeys.Bank];
+                if (banks.Count == 0) return;
+
+                var titles = banks.Select(b => b.Title).ToList();
+                var current = BankNameCB.SelectedItem as string;
+
+                BankNameCB.ItemsSource = titles;
+                BankNameCB.SelectedItem = current != null && titles.Contains(current)
+                    ? current
+                    : titles[0];
+            }
+            catch
+            {
+                // دیتابیس در دسترس نیست → لیست پیش‌فرض خالی می‌ماند
+            }
         }
 
         // ==================== رویدادها ====================
@@ -156,7 +169,7 @@ namespace HR.Controls.AddEmployees
             BankAccountTB.Clear();
             ShebaNumberTB.Clear();
             CardNumberTB.Clear();
-            BankNameCB.SelectedIndex = 0;
+            if (BankNameCB.Items.Count > 0) BankNameCB.SelectedIndex = 0;
             BankAccountTypeCB.SelectedIndex = 0;
             BankAccountTB.Focus();
         }

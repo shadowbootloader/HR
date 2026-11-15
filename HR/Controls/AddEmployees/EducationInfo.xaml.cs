@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using HR.Models;
 using HR.Services;
+using HR.Services.Data;
 
 namespace HR.Controls.AddEmployees
 {
@@ -22,30 +23,24 @@ namespace HR.Controls.AddEmployees
             PersonalEducationsList.ItemsSource = _items;
             _items.CollectionChanged += (_, __) => RowNumbering.Renumber(_items);
 
-            EducationalStatusCombo.ItemsSource = new[]
-            {
-                new ComboItem(EducationStatusKind.Studying,   "در حال تحصیل"),
-                new ComboItem(EducationStatusKind.Graduated,  "فارغ‌التحصیل"),
-                new ComboItem(EducationStatusKind.DroppedOut, "انصراف"),
-                new ComboItem(EducationStatusKind.OnHold,     "مرخصی تحصیلی"),
-            };
             Setup(EducationalStatusCombo);
-
-            GradeCombo.ItemsSource = new[]
-            {
-                new ComboItem(DegreeLevel.Diploma,       "دیپلم"),
-                new ComboItem(DegreeLevel.Associate,     "کاردانی"),
-                new ComboItem(DegreeLevel.Bachelor,      "کارشناسی"),
-                new ComboItem(DegreeLevel.Master,        "کارشناسی ارشد"),
-                new ComboItem(DegreeLevel.Doctorate,     "دکتری"),
-                new ComboItem(DegreeLevel.PostDoctorate, "پس‌دکتری"),
-            };
             Setup(GradeCombo);
 
+            // استان‌ها فعلاً ثابت‌اند؛ بعداً به جدول Geo منتقل می‌شوند
             EducationStateNameTB.ItemsSource = Provinces;
             EducationStateNameTB.SelectedIndex = 0;
             EducationalCityNameTB.ItemsSource = new[] { "—" };
             EducationalCityNameTB.SelectedIndex = 0;
+
+            Loaded += EducationInfo_Loaded;
+        }
+
+        private async void EducationInfo_Loaded(object sender, RoutedEventArgs e)
+        {
+            Loaded -= EducationInfo_Loaded;
+
+            await LookupBinder.FillAsync<EducationStatusKind>(EducationalStatusCombo, LookupKeys.EducationStatus);
+            await LookupBinder.FillAsync<DegreeLevel>(GradeCombo, LookupKeys.EducationDegree);
         }
 
         private static readonly string[] Provinces =

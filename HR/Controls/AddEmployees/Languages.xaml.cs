@@ -3,6 +3,8 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using HR.Models;
+using HR.Services;
+using HR.Services.Data;
 
 namespace HR.Controls.AddEmployees
 {
@@ -12,12 +14,6 @@ namespace HR.Controls.AddEmployees
 
         public string SectionTitle => "زبان خارجی";
 
-        private static readonly string[] LanguageNames =
-        {
-            "انگلیسی", "عربی", "فرانسوی", "آلمانی", "اسپانیایی",
-            "ترکی", "روسی", "چینی", "ژاپنی", "سایر"
-        };
-
         public Languages()
         {
             InitializeComponent();
@@ -25,23 +21,43 @@ namespace HR.Controls.AddEmployees
             PersonalLangList.ItemsSource = _items;
             _items.CollectionChanged += (_, __) => RowNumbering.Renumber(_items);
 
-            LangNameTB.ItemsSource = LanguageNames;
-            LangNameTB.SelectedIndex = 0;
-
             foreach (var combo in new[] { ReadingCombo, WritingCombo, DarkMatlabCombo, SpeakingCombo })
             {
-                combo.ItemsSource = new[]
-                {
-                    new ComboItem(LanguageLevel.None,         "—"),
-                    new ComboItem(LanguageLevel.Basic,        "مبتدی"),
-                    new ComboItem(LanguageLevel.Intermediate, "متوسط"),
-                    new ComboItem(LanguageLevel.Good,         "خوب"),
-                    new ComboItem(LanguageLevel.Fluent,       "روان"),
-                    new ComboItem(LanguageLevel.Native,       "زبان مادری"),
-                };
                 combo.DisplayMemberPath = nameof(ComboItem.Text);
                 combo.SelectedValuePath = nameof(ComboItem.Value);
-                combo.SelectedIndex = 1;
+            }
+
+            Loaded += Languages_Loaded;
+        }
+
+        private async void Languages_Loaded(object sender, RoutedEventArgs e)
+        {
+            Loaded -= Languages_Loaded;
+
+            try
+            {
+                var languages = (await LookupCache.GetAsync())[LookupKeys.Language];
+                if (languages.Count > 0)
+                {
+                    var titles = languages.Select(l => l.Title).ToList();
+                    var current = LangNameTB.SelectedItem as string;
+
+                    LangNameTB.ItemsSource = titles;
+                    LangNameTB.SelectedItem = current != null && titles.Contains(current)
+                        ? current
+                        : titles[0];
+                }
+            }
+            catch
+            {
+                // دیتابیس در دسترس نیست → لیست پیش‌فرض خالی می‌ماند
+            }
+
+            // جدول جداگانه‌ای برای سطح زبان نیست؛ روی SkillLevel نگاشت می‌شود
+            foreach (var combo in new[] { ReadingCombo, WritingCombo, DarkMatlabCombo, SpeakingCombo })
+            {
+                await LookupBinder.FillAsync<LanguageLevel>(combo, LookupKeys.SkillLevel);
+                combo.SelectedIndex = 0;
             }
         }
 
@@ -72,11 +88,11 @@ namespace HR.Controls.AddEmployees
                 Speaking = ReadLevel(SpeakingCombo)
             });
 
-            LangNameTB.SelectedIndex = 0;
-            ReadingCombo.SelectedIndex = 1;
-            WritingCombo.SelectedIndex = 1;
-            DarkMatlabCombo.SelectedIndex = 1;
-            SpeakingCombo.SelectedIndex = 1;
+            if (LangNameTB.Items.Count > 0) LangNameTB.SelectedIndex = 0;
+            ReadingCombo.SelectedIndex = 0;
+            WritingCombo.SelectedIndex = 0;
+            DarkMatlabCombo.SelectedIndex = 0;
+            SpeakingCombo.SelectedIndex = 0;
         }
 
         private void DeleteLangDataBtn_Click(object sender, RoutedEventArgs e)

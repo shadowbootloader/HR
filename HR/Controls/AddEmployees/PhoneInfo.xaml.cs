@@ -4,6 +4,8 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using HR.Models;
+using HR.Services;
+using HR.Services.Data;
 
 namespace HR.Controls.AddEmployees
 {
@@ -20,17 +22,18 @@ namespace HR.Controls.AddEmployees
             PersonalPhoneList.ItemsSource = _items;
             _items.CollectionChanged += (_, __) => RowNumbering.Renumber(_items);
 
-            PhoneStatusCombo.ItemsSource = new[]
-            {
-                new ComboItem(PhoneKind.Mobile,    "همراه"),
-                new ComboItem(PhoneKind.Home,      "منزل"),
-                new ComboItem(PhoneKind.Work,      "کاری"),
-                new ComboItem(PhoneKind.Emergency, "اضطراری"),
-                new ComboItem(PhoneKind.Other,     "سایر"),
-            };
             PhoneStatusCombo.DisplayMemberPath = nameof(ComboItem.Text);
             PhoneStatusCombo.SelectedValuePath = nameof(ComboItem.Value);
-            PhoneStatusCombo.SelectedIndex = 0;
+
+            Loaded += PhoneInfo_Loaded;
+        }
+
+        private async void PhoneInfo_Loaded(object sender, RoutedEventArgs e)
+        {
+            Loaded -= PhoneInfo_Loaded;
+
+            PhoneStatusCombo.Items.Clear();
+            await LookupBinder.FillAsync<PhoneKind>(PhoneStatusCombo, LookupKeys.PhoneType);
         }
 
         // ==================== رویدادها ====================

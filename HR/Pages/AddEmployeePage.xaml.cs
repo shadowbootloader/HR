@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
 using HR.Controls.AddEmployees;
+using HR.Data;
 using HR.Models;
 using HR.Services;
 using HR.Services.Data;
@@ -130,7 +131,9 @@ namespace HR.Pages
 
             try
             {
-                var entity = EmployeeMapper.ToEntity(_profile);
+                using var lookups = await LookupResolver.LoadAsync(new PersonnelDbContext());
+
+                var entity = await EmployeeMapper.ToEntityAsync(_profile, lookups);
 
                 if (string.IsNullOrWhiteSpace(entity.NationalCode))
                 {

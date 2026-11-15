@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Globalization;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using HR.Models;
 using HR.Services;
+using HR.Services.Data;
 
 namespace HR.Controls.AddEmployees
 {
@@ -17,13 +19,34 @@ namespace HR.Controls.AddEmployees
         {
             InitializeComponent();
 
-            OragPlaceCombo.ItemsSource = Lookups.Positions;
-            InsuranceTypeCombo.ItemsSource = Lookups.InsuranceTypes;
-            CooperationTypeCombo.ItemsSource = Lookups.CooperationTypes;
-
+            // موقعیت سازمانی ستون متنی است و جدول Lookup ندارد
+            OragPlaceCombo.ItemsSource = HR.Models.Lookups.Positions;
             OragPlaceCombo.SelectedIndex = 0;
-            InsuranceTypeCombo.SelectedIndex = 0;
-            CooperationTypeCombo.SelectedIndex = 0;
+
+            Loaded += Supplementary_Loaded;
+        }
+
+        private async void Supplementary_Loaded(object sender, RoutedEventArgs e)
+        {
+            Loaded -= Supplementary_Loaded;
+
+            try
+            {
+                var cache = await LookupCache.GetAsync();
+
+                var insurance = cache[LookupKeys.InsuranceType].Select(x => x.Title).ToList();
+                if (insurance.Count > 0) InsuranceTypeCombo.ItemsSource = insurance;
+
+                var cooperation = cache[LookupKeys.CooperationType].Select(x => x.Title).ToList();
+                if (cooperation.Count > 0) CooperationTypeCombo.ItemsSource = cooperation;
+            }
+            catch
+            {
+                // دیتابیس در دسترس نیست → لیست پیش‌فرض خالی می‌ماند
+            }
+
+            if (InsuranceTypeCombo.Items.Count > 0) InsuranceTypeCombo.SelectedIndex = 0;
+            if (CooperationTypeCombo.Items.Count > 0) CooperationTypeCombo.SelectedIndex = 0;
         }
 
         private void CVImageBtn_Click(object sender, RoutedEventArgs e)

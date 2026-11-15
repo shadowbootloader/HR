@@ -1,7 +1,10 @@
 ﻿using System.Collections.ObjectModel;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using HR.Models;
+using HR.Services;
+using HR.Services.Data;
 
 namespace HR.Controls.AddEmployees
 {
@@ -17,7 +20,18 @@ namespace HR.Controls.AddEmployees
 
             PersonalSoftwareList.ItemsSource = _softwares;
 
-            SkillCombo.SelectedIndex = 1;
+            SkillCombo.DisplayMemberPath = nameof(ComboItem.Text);
+            SkillCombo.SelectedValuePath = nameof(ComboItem.Value);
+
+            Loaded += Skills_Loaded;
+        }
+
+        private async void Skills_Loaded(object sender, RoutedEventArgs e)
+        {
+            Loaded -= Skills_Loaded;
+
+            SkillCombo.Items.Clear();
+            await LookupBinder.FillAsync<SkillLevel>(SkillCombo, LookupKeys.SkillLevel);
         }
 
         private void AddSoftwareDataBtn_Click(object sender, RoutedEventArgs e)
@@ -42,17 +56,11 @@ namespace HR.Controls.AddEmployees
             _softwares.Add(new SoftwareSkillRecord
             {
                 SoftwareName = name,
-                Level = (SkillCombo.SelectedItem as ComboBoxItem)?.Content?.ToString() switch
-                {
-                    "ضعیف" => SkillLevel.Weak,
-                    "متوسط" => SkillLevel.Average,
-                    "خوب" => SkillLevel.Good,
-                    _ => SkillLevel.Excellent
-                }
+                Level = SkillCombo.SelectedValue is SkillLevel level ? level : SkillLevel.Average
             });
 
             SoftwareNameTB.Clear();
-            SkillCombo.SelectedIndex = 1;
+            if (SkillCombo.Items.Count > 1) SkillCombo.SelectedIndex = 1;
             SoftwareNameTB.Focus();
         }
 

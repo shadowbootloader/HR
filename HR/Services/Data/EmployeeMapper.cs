@@ -1,56 +1,67 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using HR.Data.Entities;
 using HR.Models;
 
 namespace HR.Services.Data
 {
     /// <summary>
-    /// نگاشت بین مدل UI (EmployeeProfile) و Entityهای دیتابیس
+    /// نگاشت بین مدل UI (EmployeeProfile) و Entityهای دیتابیس.
+    /// همه‌ی مقادیر Lookup از دیتابیس حل می‌شوند (بدون Id هاردکد).
     /// </summary>
     public static class EmployeeMapper
     {
-        public static Employee ToEntity(EmployeeProfile profile, Guid? existingId = null)
+        public static async Task<Employee> ToEntityAsync(
+            EmployeeProfile profile, LookupResolver lookups, Guid? existingId = null)
         {
+            if (profile == null) throw new ArgumentNullException(nameof(profile));
+            if (lookups == null) throw new ArgumentNullException(nameof(lookups));
+
+            var nationalCode = profile.NationalCode?.Trim() ?? string.Empty;
+
             var entity = new Employee
             {
                 EmployeeId = existingId ?? Guid.NewGuid(),
                 FirstName = profile.FirstName?.Trim() ?? string.Empty,
                 LastName = profile.LastName?.Trim() ?? string.Empty,
                 FatherName = profile.FatherName?.Trim() ?? string.Empty,
-                NationalCode = profile.NationalCode?.Trim() ?? string.Empty,
+                NationalCode = nationalCode,
                 BirthCertificateNumber = profile.IdNumber?.Trim() ?? string.Empty,
                 BirthDate = profile.BirthDate ?? DateTime.Today,
                 IssueDate = profile.IdIssueDate ?? DateTime.Today,
-                Email = $"{profile.NationalCode}@temp.local",
+                Email = BuildEmail(nationalCode),
                 ChildrenCount = (byte)Math.Clamp(profile.ChildrenCount ?? 0, 0, 255),
-                InsuranceNumber = "0000000000",
+                InsuranceNumber = BuildInsuranceNumber(),
                 Description = null,
                 IsDeleted = false,
-                GenderId = MapGender(profile.Gender),
-                MaritalStatusId = MapMaritalStatus(profile.MaritalStatus),
-                MilitaryStatusId = MapMilitaryStatus(profile.MilitaryStatus)
+                GenderId = await lookups.GenderAsync(profile.Gender),
+                MaritalStatusId = await lookups.MaritalStatusAsync(profile.MaritalStatus),
+                MilitaryStatusId = await lookups.MilitaryStatusAsync(profile.MilitaryStatus)
             };
 
-            // Supplement (اطلاعات شغلی)
+            var supp = profile.Supplementary;
+
+            // اطلاعات شغلی
             if (!string.IsNullOrWhiteSpace(profile.PersonnelCode) ||
                 !string.IsNullOrWhiteSpace(profile.Position) ||
+                !string.IsNullOrWhiteSpace(profile.DepartmentName) ||
                 profile.HireDate.HasValue)
             {
                 entity.Supplement = new EmployeeSupplement
                 {
                     EmployeeSupplementId = Guid.NewGuid(),
                     EmployeeId = entity.EmployeeId,
-                    PositionTitle = profile.Position?.Trim() ?? "—",
+                    PositionTitle = (profile.Position ?? supp?.Position)?.Trim() ?? "—",
                     PersonnelCode = string.IsNullOrWhiteSpace(profile.PersonnelCode)
-                        ? Guid.NewGuid().ToString("N")[..10]
+                        ? $"P{Guid.NewGuid():N}"[..10]
                         : profile.PersonnelCode.Trim(),
-                    StartDate = profile.HireDate ?? DateTime.Today,
-                    EndDate = null,
-                    Salary = 0,
-                    InsuranceTypeId = 1,
-                    CooperationTypeId = 1,
-                    DepartmentId = 1 // TODO: از فرم انتخاب شود
+                    StartDate = supp?.StartDate ?? profile.HireDate ?? DateTime.Today,
+                    EndDate = supp?.EndDate,
+                    Salary = supp?.Salary ?? 0,
+                    InsuranceTypeId = await lookups.InsuranceTypeAsync(supp?.InsuranceType),
+                    CooperationTypeId = await lookups.CooperationTypeAsync(supp?.CooperationType),
+                    DepartmentId = await lookups.DepartmentAsync(profile.DepartmentName)
                 };
             }
 
@@ -63,8 +74,8 @@ namespace HR.Services.Data
                     {
                         EducationId = Guid.NewGuid(),
                         EmployeeId = entity.EmployeeId,
-                        DegreeId = MapDegree(edu.Degree),
-                        StatusId = MapEducationStatus(edu.Status),
+                        DegreeId = await lookups.DegreeAsync(edu.Degree),
+                        StatusId = await lookups.EducationStatusAsync(edu.Status),
                         FieldOfStudy = edu.Field?.Trim() ?? "—",
                         InstitutionName = edu.University?.Trim() ?? "—",
                         GPA = (decimal)(edu.Gpa ?? 0),
@@ -102,11 +113,11 @@ namespace HR.Services.Data
                     {
                         BankAccountId = Guid.NewGuid(),
                         EmployeeId = entity.EmployeeId,
-                        BankId = 1, // TODO: نگاشت نام بانک به Id
+                        BankId = await lookups.BankAsync(b.BankName),
                         AccountNumber = b.AccountNumber?.Trim() ?? string.Empty,
-                        Sheba = (b.ShebaNumber ?? string.Empty).PadRight(26).Substring(0, 26),
-                        CardNumber = (b.CardNumber ?? string.Empty).PadRight(16).Substring(0, 16),
-                        AccountTypeId = MapAccountType(b.AccountType),
+                        Sheba = NormalizeSheba(b.ShebaNumber),
+                        CardNumber = NormalizeCard(b.CardNumber),
+                        AccountTypeId = await lookups.AccountTypeAsync(b.AccountType),
                         Description = null
                     });
                 }
@@ -124,8 +135,8 @@ namespace HR.Services.Data
                         Number = p.Number?.Trim() ?? string.Empty,
                         OwnerFirstName = profile.FirstName ?? "—",
                         OwnerLastName = profile.LastName ?? "—",
-                        PhoneNumberType = MapPhoneKind(p.Kind),
-                        PhoneNumberStatus = 1, // فعال
+                        PhoneNumberType = await lookups.PhoneKindAsync(p.Kind),
+                        PhoneNumberStatus = await lookups.PhoneStatusAsync("فعال"),
                         StartDate = p.StartDate,
                         EndDate = p.EndDate,
                         Description = p.Note
@@ -144,10 +155,10 @@ namespace HR.Services.Data
                         EmployeeId = entity.EmployeeId,
                         WorkplaceName = j.Company?.Trim() ?? "—",
                         JobTitle = j.JobTitle?.Trim() ?? "—",
-                        PhoneNumber = j.CompanyPhone?.Trim() ?? "00000000000",
+                        PhoneNumber = j.CompanyPhone?.Trim() ?? "—",
                         StartDate = j.StartDate ?? DateTime.Today,
                         EndDate = j.EndDate,
-                        Description = j.Note ?? j.LeaveReason ?? "—"
+                        Description = j.Note ?? j.LeaveReason
                     });
                 }
             }
@@ -161,11 +172,11 @@ namespace HR.Services.Data
                     {
                         EmployeeLanguageId = Guid.NewGuid(),
                         EmployeeId = entity.EmployeeId,
-                        LanguageId = 1, // TODO: نگاشت نام زبان
-                        ReadingLevelId = MapLanguageLevel(l.Reading),
-                        WritingLevelId = MapLanguageLevel(l.Writing),
-                        ComprehensionLevelId = MapLanguageLevel(l.Comprehension),
-                        SpeakingLevelId = MapLanguageLevel(l.Speaking),
+                        LanguageId = await lookups.LanguageAsync(l.Language),
+                        ReadingLevelId = await lookups.LanguageLevelAsync(l.Reading),
+                        WritingLevelId = await lookups.LanguageLevelAsync(l.Writing),
+                        ComprehensionLevelId = await lookups.LanguageLevelAsync(l.Comprehension),
+                        SpeakingLevelId = await lookups.LanguageLevelAsync(l.Speaking),
                         Description = null
                     });
                 }
@@ -180,100 +191,55 @@ namespace HR.Services.Data
                     {
                         EmployeeSoftwareId = Guid.NewGuid(),
                         EmployeeId = entity.EmployeeId,
-                        SoftwareId = 1, // TODO: نگاشت نام نرم‌افزار
-                        SkillLevelId = MapSkillLevel(s.Level),
+                        SoftwareId = await lookups.SoftwareAsync(s.SoftwareName),
+                        SkillLevelId = await lookups.SkillLevelAsync(s.Level),
                         Description = s.Note
                     });
                 }
             }
 
+            // اتصال حساب بانکی اصلی به اطلاعات شغلی
+            if (entity.Supplement != null && entity.BankAccounts.Count > 0)
+                entity.Supplement.BankAccountId = entity.BankAccounts.First().BankAccountId;
+
             return entity;
         }
 
-        // ==================== Helper Mappings ====================
+        // ==================== کمکی‌ها ====================
 
-        private static byte MapGender(Models.Gender g) => g switch
-        {
-            Models.Gender.Male => 1,
-            Models.Gender.Female => 2,
-            _ => 1
-        };
+        private static string BuildEmail(string nationalCode)
+            => string.IsNullOrWhiteSpace(nationalCode)
+                ? $"{Guid.NewGuid():N}@personnel.local"
+                : $"{nationalCode}@personnel.local";
 
-        private static byte MapMaritalStatus(Models.MaritalStatus m) => m switch
+        private static string BuildInsuranceNumber()
         {
-            Models.MaritalStatus.Single => 1,
-            Models.MaritalStatus.Married => 2,
-            Models.MaritalStatus.Divorced => 3,
-            Models.MaritalStatus.Widowed => 4,
-            _ => 1
-        };
+            var digits = new string(Guid.NewGuid().ToByteArray()
+                .Take(6)
+                .Select(b => (char)('0' + (b % 10)))
+                .ToArray());
 
-        private static byte? MapMilitaryStatus(Models.MilitaryStatus m) => m switch
-        {
-            Models.MilitaryStatus.Done => 1,
-            Models.MilitaryStatus.Exempt => 2,
-            Models.MilitaryStatus.InProgress => 3,
-            Models.MilitaryStatus.NotApplicable => 4,
-            _ => null
-        };
+            return digits.PadRight(10, '0')[..10];
+        }
 
-        private static byte MapDegree(DegreeLevel d) => d switch
-        {
-            DegreeLevel.Diploma => 1,
-            DegreeLevel.Associate => 2,
-            DegreeLevel.Bachelor => 3,
-            DegreeLevel.Master => 4,
-            DegreeLevel.Doctorate => 5,
-            DegreeLevel.PostDoctorate => 6,
-            _ => 3
-        };
+        private static string DigitsOnly(string? value)
+            => string.IsNullOrWhiteSpace(value) ? string.Empty : new string(value.Where(char.IsDigit).ToArray());
 
-        private static byte MapEducationStatus(EducationStatusKind s) => s switch
+        private static string NormalizeSheba(string? value)
         {
-            EducationStatusKind.Graduated => 1,
-            EducationStatusKind.Studying => 2,
-            EducationStatusKind.DroppedOut => 3,
-            EducationStatusKind.OnHold => 4,
-            _ => 1
-        };
+            var digits = DigitsOnly(value);
+            if (digits.Length == 0) return string.Empty;
+            if (digits.Length > 24) digits = digits[..24];
+            return "IR" + digits.PadLeft(24, '0');
+        }
 
-        private static byte MapAccountType(BankAccountType t) => t switch
+        private static string NormalizeCard(string? value)
         {
-            BankAccountType.Current => 1,
-            BankAccountType.Savings => 2,
-            BankAccountType.ShortTerm => 3,
-            BankAccountType.LongTerm => 4,
-            _ => 1
-        };
-
-        private static byte MapPhoneKind(PhoneKind k) => k switch
-        {
-            PhoneKind.Mobile => 1,
-            PhoneKind.Home => 2,
-            PhoneKind.Work => 3,
-            PhoneKind.Emergency => 4,
-            _ => 1
-        };
-
-        private static byte MapLanguageLevel(LanguageLevel l) => l switch
-        {
-            LanguageLevel.None => 1,
-            LanguageLevel.Basic => 2,
-            LanguageLevel.Intermediate => 3,
-            LanguageLevel.Good => 4,
-            LanguageLevel.Fluent => 5,
-            LanguageLevel.Native => 6,
-            _ => 1
-        };
-
-        private static byte MapSkillLevel(Models.SkillLevel s) => s switch
-        {
-            Models.SkillLevel.Weak => 1,
-            Models.SkillLevel.Average => 2,
-            Models.SkillLevel.Good => 3,
-            Models.SkillLevel.Excellent => 4,
-            _ => 2
-        };
+            var digits = DigitsOnly(value);
+            if (digits.Length == 0) return string.Empty;
+            if (digits.Length > 16) digits = digits[..16];
+            return digits.PadLeft(16, '0');
+        }
 
         private static int ParseDuration(string? text)
         {
