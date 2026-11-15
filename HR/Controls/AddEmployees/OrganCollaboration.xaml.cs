@@ -1,7 +1,9 @@
-﻿using System.Windows;
+﻿using System.Linq;
+using System.Windows;
 using System.Windows.Controls;
 using HR.Models;
 using HR.Services;
+using HR.Services.Data;
 
 namespace HR.Controls.AddEmployees
 {
@@ -16,8 +18,25 @@ namespace HR.Controls.AddEmployees
             InitializeComponent();
             _list.Attach(PersonalCooperationOrganList);
 
-            CooperationOrgan_OrganTypeCombo.ItemsSource = Lookups.InstitutionTypes;
-            CooperationOrgan_OrganTypeCombo.SelectedIndex = 0;
+            Loaded += OrganCollaboration_Loaded;
+        }
+
+        private async void OrganCollaboration_Loaded(object sender, RoutedEventArgs e)
+        {
+            Loaded -= OrganCollaboration_Loaded;
+
+            try
+            {
+                var types = (await LookupCache.GetAsync())[LookupKeys.SectorType];
+                if (types.Count == 0) return;
+
+                CooperationOrgan_OrganTypeCombo.ItemsSource = types.Select(t => t.Title).ToList();
+                CooperationOrgan_OrganTypeCombo.SelectedIndex = 0;
+            }
+            catch
+            {
+                // دیتابیس در دسترس نیست → لیست خالی می‌ماند
+            }
         }
 
         private void AddCooperationOrganDataBtn_Click(object sender, RoutedEventArgs e)
@@ -34,7 +53,7 @@ namespace HR.Controls.AddEmployees
             _list.Items.Add(new OrganCollaborationRecord
             {
                 OrganName = name,
-                OrganType = CooperationOrgan_OrganTypeCombo.Text?.Trim() ?? string.Empty,
+                OrganType = CooperationOrgan_OrganTypeCombo.SelectedItem as string ?? string.Empty,
                 Note = NullIfEmpty(CooperationOrgan_NoteTB.Text)
             });
 
@@ -53,7 +72,7 @@ namespace HR.Controls.AddEmployees
         {
             CooperationOrgan_OrganNameTB.Clear();
             CooperationOrgan_NoteTB.Clear();
-            CooperationOrgan_OrganTypeCombo.SelectedIndex = 0;
+            if (CooperationOrgan_OrganTypeCombo.Items.Count > 0) CooperationOrgan_OrganTypeCombo.SelectedIndex = 0;
             CooperationOrgan_OrganNameTB.Focus();
         }
 

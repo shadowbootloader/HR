@@ -60,7 +60,7 @@
                           materialDesign:HintAssist.Hint="نوع مرکز" />
 
                 <TextBox x:Name="Employment_OrganNameTB"
-                         Style="{StaticResource StaticResource}"
+                         Style="{StaticResource DarkOutlinedTextBox}"
                          Width="200"
                          materialDesign:HintAssist.Hint="نام مرکز" />
 
