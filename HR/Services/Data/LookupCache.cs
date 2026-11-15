@@ -54,7 +54,7 @@ namespace HR.Services.Data
 
     /// <summary>
     /// کش یک‌باره‌ی همه‌ی جداول Lookup.
-    /// جداول از مدل EF کشف می‌شوند: هر Entity که ستون متنی «Title» و کلید عددی تک‌ستونی دارد.
+    /// جداول از مدل EF کشف می‌شوند: هر Entity که ستون متنی «Title» و کلید عددی «{نامEntity}Id» دارد.
     /// با افزودن جدول Lookup جدید به دیتابیس، بدون تغییر کد در کش حاضر می‌شود.
     /// </summary>
     public sealed class LookupCache : IDisposable
@@ -134,19 +134,17 @@ namespace HR.Services.Data
             var title = clr.GetProperty("Title");
             if (title == null || title.PropertyType != typeof(string)) return false;
 
-            var key = KeyProperty(clr);
-            if (key == null) return false;
-
-            return IsInteger(key.PropertyType);
+            return KeyProperty(clr) != null;
         }
 
+        /// <summary>
+        /// کلید جدول Lookup. در این دیتابیس همه‌ی این جداول الگوی «{نامEntity}Id» دارند،
+        /// پس ستون‌های عددی دیگر (مثل DurationHours در Course) کلید حساب نمی‌شوند.
+        /// </summary>
         private static PropertyInfo? KeyProperty(Type clr)
         {
             var byName = clr.GetProperty(clr.Name + "Id");
-            if (byName != null && IsInteger(byName.PropertyType)) return byName;
-
-            var integers = clr.GetProperties().Where(p => IsInteger(p.PropertyType)).ToArray();
-            return integers.Length == 1 ? integers[0] : null;
+            return byName != null && IsInteger(byName.PropertyType) ? byName : null;
         }
 
         private static bool IsInteger(Type type)

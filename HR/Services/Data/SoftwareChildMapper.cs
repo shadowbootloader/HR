@@ -18,7 +18,7 @@ namespace HR.Services.Data.Mapping
                     EmployeeSoftwareId = Guid.NewGuid(),
                     EmployeeId = entity.EmployeeId,
                     SoftwareId = await lookups.IdFromTitleAsync<Software>(software.SoftwareName),
-                    SkillLevelId = await lookups.FromEnumAsync<SkillLevel, HR.Models.SkillLevel>(software.Level),
+                    SkillLevelId = await lookups.FromEnumAsync<HR.Data.Entities.SkillLevel, HR.Models.SkillLevel>(software.Level),
                     Description = software.Note
                 });
             }
