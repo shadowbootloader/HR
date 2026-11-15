@@ -1,5 +1,4 @@
 ﻿using HR.Data;
-using HR.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
@@ -9,7 +8,7 @@ namespace HR.Services.Data
 {
     /// <summary>
     /// تبدیل مقادیر فرم به کلید خارجی واقعی.
-    /// مقادیر enum با اندیس ردیف DB، فیلدهای متنی با عنوان و موقعیت‌ها با جدول Geo حل می‌شوند.
+    /// عمومی است: برای هر جدول Lookup بدون افزودن متد جدید کار می‌کند.
     /// </summary>
     public sealed class LookupResolver : IDisposable
     {
@@ -31,55 +30,48 @@ namespace HR.Services.Data
             return new LookupResolver(db, await LookupCache.GetAsync());
         }
 
-        // ==================== enum‌ها → اندیس ردیف DB ====================
+        // ==================== enum → Id بر اساس اندیس ردیف DB ====================
 
-        public async Task<byte> GenderAsync(Models.Gender v) => ToByte(await ByIndexAsync(LookupKeys.Gender, (int)v - 1));
-
-        public async Task<byte> MaritalStatusAsync(Models.MaritalStatus v) => ToByte(await ByIndexAsync(LookupKeys.MaritalStatus, (int)v - 1));
-
-        public async Task<byte?> MilitaryStatusAsync(Models.MilitaryStatus v)
+        /// <summary>
+        /// مقدار enum را به Id ردیف هم‌اندیس تبدیل می‌کند.
+        /// <paramref name="offset"/> برای enumهایی است که اولین عضوشان «نامشخص» است.
+        /// </summary>
+        public Task<byte> FromEnumAsync<TEntity, TEnum>(TEnum value, int offset = 0)
+            where TEntity : class
+            where TEnum : struct, Enum
         {
-            if (v == Models.MilitaryStatus.Unspecified) return null;
-            return ToByte(await ByIndexAsync(LookupKeys.MilitaryStatus, (int)v - 1));
+            var index = Convert.ToInt32(value) - offset;
+            return FromIndexAsync<TEntity>(index);
         }
 
-        public async Task<byte> DegreeAsync(DegreeLevel v) => ToByte(await ByIndexAsync(LookupKeys.EducationDegree, (int)v));
+        public Task<byte> FromIndexAsync<TEntity>(int index) where TEntity : class
+        {
+            var rows = _cache.Get<TEntity>();
 
-        public async Task<byte> EducationStatusAsync(EducationStatusKind v) => ToByte(await ByIndexAsync(LookupKeys.EducationStatus, (int)v));
+            if (rows.Count == 0)
+                throw new InvalidOperationException($"جدول «{typeof(TEntity).Name}» خالی است؛ ابتدا آن را پر کنید.");
 
-        public async Task<byte> AccountTypeAsync(BankAccountType v) => ToByte(await ByIndexAsync(LookupKeys.AccountTypeBank, (int)v));
+            if (index < 0) index = 0;
+            if (index >= rows.Count) index = rows.Count - 1;
 
-        public async Task<byte> PhoneKindAsync(PhoneKind v) => ToByte(await ByIndexAsync(LookupKeys.PhoneType, (int)v));
+            return Task.FromResult(checked((byte)rows[index].Id));
+        }
 
-        public async Task<byte> SkillLevelAsync(Models.SkillLevel v) => ToByte(await ByIndexAsync(LookupKeys.SkillLevel, (int)v));
+        // ==================== عنوان متنی → Id ====================
 
-        /// <summary>جدول جداگانه‌ای برای سطح زبان نیست؛ روی SkillLevel نگاشت می‌شود.</summary>
-        public async Task<byte> LanguageLevelAsync(LanguageLevel v) => ToByte(await ByIndexAsync(LookupKeys.SkillLevel, (int)v));
+        public async Task<byte> ByteFromTitleAsync<TEntity>(string? title) where TEntity : class
+            => checked((byte)await _cache.ResolveOrCreateAsync<TEntity>(title));
 
-        // ==================== فیلدهای متنی آزاد ====================
-
-        public async Task<byte> InsuranceTypeAsync(string? title) => ToByte(await _cache.ResolveOrCreateAsync(LookupKeys.InsuranceType, title));
-
-        public async Task<byte> CooperationTypeAsync(string? title) => ToByte(await _cache.ResolveOrCreateAsync(LookupKeys.CooperationType, title));
-
-        public async Task<byte> CitizenshipReasonAsync(string? title) => ToByte(await _cache.ResolveOrCreateAsync(LookupKeys.CitizenshipReason, title));
-
-        public async Task<byte> RecordTypeAsync(string? title) => ToByte(await _cache.ResolveOrCreateAsync(LookupKeys.RecordType, title));
-
-        public async Task<byte> PhoneStatusAsync(string? title) => ToByte(await _cache.ResolveOrCreateAsync(LookupKeys.PhoneStatus, title));
-
-        public async Task<short> BankAsync(string? title) => await _cache.ResolveOrCreateAsync(LookupKeys.Bank, title);
-
-        public async Task<short> LanguageAsync(string? title) => await _cache.ResolveOrCreateAsync(LookupKeys.Language, title);
-
-        public async Task<short> SoftwareAsync(string? title) => await _cache.ResolveOrCreateAsync(LookupKeys.Software, title);
-
-        public async Task<short> DepartmentAsync(string? title) => await _cache.ResolveOrCreateAsync(LookupKeys.Department, title);
+        public Task<short> IdFromTitleAsync<TEntity>(string? title) where TEntity : class
+            => _cache.ResolveOrCreateAsync<TEntity>(title);
 
         // ==================== موقعیت جغرافیایی ====================
 
         public Task<HierarchyId?> EducationLocationAsync(string? province, string? city)
             => _geo.ResolveLocationNodeAsync(province, city);
+
+        public Task<HierarchyId?> CountryNodeAsync(string? country)
+            => _geo.FindCountryNodeAsync(country);
 
         public async Task<int> CountryAsync(string? title)
         {
@@ -91,23 +83,6 @@ namespace HR.Services.Data
 
             throw new InvalidOperationException("جدول Geo هیچ کشوری ندارد؛ ابتدا کشورها را وارد کنید.");
         }
-
-        // ==================== هسته ====================
-
-        private Task<short> ByIndexAsync(string tableKey, int index)
-        {
-            var rows = _cache[tableKey];
-
-            if (rows.Count == 0)
-                throw new InvalidOperationException($"جدول «{tableKey}» خالی است؛ ابتدا آن را پر کنید.");
-
-            if (index < 0) return Task.FromResult(rows[0].Id);
-            if (index >= rows.Count) return Task.FromResult(rows[^1].Id);
-
-            return Task.FromResult(rows[index].Id);
-        }
-
-        private static byte ToByte(short value) => checked((byte)value);
 
         public void Dispose()
         {

@@ -100,6 +100,13 @@ namespace HR.Services.Data
                 .FirstOrDefaultAsync(g => g.Level == CountryLevel && g.Name == text);
         }
 
+        /// <summary>کشور را به گره‌ی Geo تبدیل می‌کند.</summary>
+        public async Task<HierarchyId?> FindCountryNodeAsync(string? name)
+        {
+            var country = await FindCountryAsync(name);
+            return country?.Node;
+        }
+
         /// <summary>استان/شهر را به گره‌ی Geo تبدیل می‌کند؛ شهر اولویت دارد و در نبودش استان برمی‌گردد.</summary>
         public async Task<HierarchyId?> ResolveLocationNodeAsync(string? provinceName, string? cityName)
         {

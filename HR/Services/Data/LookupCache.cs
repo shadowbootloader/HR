@@ -1,9 +1,9 @@
 ﻿using HR.Data;
-using HR.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,43 +15,62 @@ namespace HR.Services.Data
         public override string ToString() => Title;
     }
 
+    /// <summary>
+    /// نام کلاس‌های Entity که به‌عنوان Lookup استفاده می‌شوند.
+    /// کلیدها با نام تایپ یکی هستند تا از سمت UI قابل ارجاع باشند.
+    /// </summary>
     public static class LookupKeys
     {
-        public const string Gender = "Gender";
-        public const string MaritalStatus = "MaritalStatus";
-        public const string MilitaryStatus = "MilitaryStatus";
-        public const string EducationDegree = "EducationDegree";
-        public const string EducationStatus = "EducationStatus";
-        public const string AccountTypeBank = "AccountTypeBank";
-        public const string PhoneType = "PhoneType";
-        public const string PhoneStatus = "PhoneStatus";
-        public const string SkillLevel = "SkillLevel";
-        public const string InsuranceType = "InsuranceType";
-        public const string CooperationType = "CooperationType";
-        public const string Bank = "Bank";
-        public const string Language = "Language";
-        public const string Software = "Software";
-        public const string Department = "Department";
-        public const string RecordType = "RecordType";
-        public const string TransportType = "TransportType";
-        public const string SacrificeType = "SacrificeType";
-        public const string CenterType = "CenterType";
-        public const string SectorType = "SectorType";
-        public const string CitizenshipReason = "CitizenshipReason";
-        public const string HiringResult = "HiringResult";
+        public const string Gender = nameof(HR.Data.Entities.Gender);
+        public const string MaritalStatus = nameof(HR.Data.Entities.MaritalStatus);
+        public const string MilitaryStatus = nameof(HR.Data.Entities.MilitaryStatus);
+        public const string EducationDegree = nameof(HR.Data.Entities.EducationDegree);
+        public const string EducationStatus = nameof(HR.Data.Entities.EducationStatus);
+        public const string AccountTypeBank = nameof(HR.Data.Entities.AccountTypeBank);
+        public const string PhoneType = nameof(HR.Data.Entities.PhoneType);
+        public const string PhoneStatus = nameof(HR.Data.Entities.PhoneStatus);
+        public const string SkillLevel = nameof(HR.Data.Entities.SkillLevel);
+        public const string InsuranceType = nameof(HR.Data.Entities.InsuranceType);
+        public const string CooperationType = nameof(HR.Data.Entities.CooperationType);
+        public const string Bank = nameof(HR.Data.Entities.Bank);
+        public const string Language = nameof(HR.Data.Entities.Language);
+        public const string Software = nameof(HR.Data.Entities.Software);
+        public const string Department = nameof(HR.Data.Entities.Department);
+        public const string RecordType = nameof(HR.Data.Entities.RecordType);
+        public const string TransportType = nameof(HR.Data.Entities.TransportType);
+        public const string TravelReason = nameof(HR.Data.Entities.TravelReason);
+        public const string AbroadReason = nameof(HR.Data.Entities.AbroadReason);
+        public const string SacrificeType = nameof(HR.Data.Entities.SacrificeType);
+        public const string SacrificeRelationship = nameof(HR.Data.Entities.SacrificeRelationship);
+        public const string AmountUnit = nameof(HR.Data.Entities.AmountUnit);
+        public const string CenterType = nameof(HR.Data.Entities.CenterType);
+        public const string SectorType = nameof(HR.Data.Entities.SectorType);
+        public const string CitizenshipReason = nameof(HR.Data.Entities.CitizenshipReason);
+        public const string HiringResult = nameof(HR.Data.Entities.HiringResult);
+        public const string ExemptionType = nameof(HR.Data.Entities.ExemptionType);
+        public const string ExemptionReason = nameof(HR.Data.Entities.ExemptionReason);
+        public const string Religion = nameof(HR.Data.Entities.Religion);
     }
 
     /// <summary>
-    /// کش یک‌باره‌ی همه‌ی جداول Lookup از دیتابیس.
-    /// منبع واحد عنوان‌ها و Idها — هیچ لیستی در کد نگه داشته نمی‌شود.
+    /// کش یک‌باره‌ی همه‌ی جداول Lookup.
+    /// جداول از مدل EF کشف می‌شوند: هر Entity که ستون متنی «Title» و کلید عددی تک‌ستونی دارد.
+    /// با افزودن جدول Lookup جدید به دیتابیس، بدون تغییر کد در کش حاضر می‌شود.
     /// </summary>
     public sealed class LookupCache : IDisposable
     {
         private static LookupCache? _current;
         private static readonly SemaphoreSlim _gate = new(1, 1);
 
+        private static readonly MethodInfo LoaderMethod =
+            typeof(LookupCache).GetMethod(nameof(LoadTableAsync), BindingFlags.NonPublic | BindingFlags.Static)!;
+
+        private static readonly MethodInfo CreatorMethod =
+            typeof(LookupCache).GetMethod(nameof(CreateRowAsync), BindingFlags.NonPublic | BindingFlags.Static)!;
+
         private readonly PersonnelDbContext _db;
-        private readonly Dictionary<string, List<LookupItem>> _tables = new(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<Type, List<LookupItem>> _tables = new();
+        private readonly Dictionary<string, Type> _typesByName = new(StringComparer.OrdinalIgnoreCase);
         private bool _disposed;
 
         private LookupCache(PersonnelDbContext db) => _db = db;
@@ -93,76 +112,111 @@ namespace HR.Services.Data
             var db = new PersonnelDbContext();
             var cache = new LookupCache(db);
 
-            cache._tables[LookupKeys.Gender] = await db.Genders.AsNoTracking().OrderBy(x => x.GenderId).Select(x => new LookupItem(x.GenderId, x.Title)).ToListAsync();
-            cache._tables[LookupKeys.MaritalStatus] = await db.MaritalStatuses.AsNoTracking().OrderBy(x => x.MaritalStatusId).Select(x => new LookupItem(x.MaritalStatusId, x.Title)).ToListAsync();
-            cache._tables[LookupKeys.MilitaryStatus] = await db.MilitaryStatuses.AsNoTracking().OrderBy(x => x.MilitaryStatusId).Select(x => new LookupItem(x.MilitaryStatusId, x.Title)).ToListAsync();
-            cache._tables[LookupKeys.EducationDegree] = await db.EducationDegrees.AsNoTracking().OrderBy(x => x.DegreeId).Select(x => new LookupItem(x.DegreeId, x.Title)).ToListAsync();
-            cache._tables[LookupKeys.EducationStatus] = await db.EducationStatuses.AsNoTracking().OrderBy(x => x.StatusId).Select(x => new LookupItem(x.StatusId, x.Title)).ToListAsync();
-            cache._tables[LookupKeys.AccountTypeBank] = await db.AccountTypeBanks.AsNoTracking().OrderBy(x => x.AccountTypeId).Select(x => new LookupItem(x.AccountTypeId, x.Title)).ToListAsync();
-            cache._tables[LookupKeys.PhoneType] = await db.PhoneTypes.AsNoTracking().OrderBy(x => x.PhoneTypeId).Select(x => new LookupItem(x.PhoneTypeId, x.Title)).ToListAsync();
-            cache._tables[LookupKeys.PhoneStatus] = await db.PhoneStatuses.AsNoTracking().OrderBy(x => x.PhoneStatusId).Select(x => new LookupItem(x.PhoneStatusId, x.Title)).ToListAsync();
-            cache._tables[LookupKeys.SkillLevel] = await db.SkillLevels.AsNoTracking().OrderBy(x => x.SkillLevelId).Select(x => new LookupItem(x.SkillLevelId, x.Title)).ToListAsync();
-            cache._tables[LookupKeys.InsuranceType] = await db.InsuranceTypes.AsNoTracking().OrderBy(x => x.InsuranceTypeId).Select(x => new LookupItem(x.InsuranceTypeId, x.Title)).ToListAsync();
-            cache._tables[LookupKeys.CooperationType] = await db.CooperationTypes.AsNoTracking().OrderBy(x => x.CooperationTypeId).Select(x => new LookupItem(x.CooperationTypeId, x.Title)).ToListAsync();
-            cache._tables[LookupKeys.Bank] = await db.Banks.AsNoTracking().OrderBy(x => x.Title).Select(x => new LookupItem(x.BankId, x.Title)).ToListAsync();
-            cache._tables[LookupKeys.Language] = await db.Languages.AsNoTracking().OrderBy(x => x.Title).Select(x => new LookupItem(x.LanguageId, x.Title)).ToListAsync();
-            cache._tables[LookupKeys.Software] = await db.Softwares.AsNoTracking().OrderBy(x => x.Title).Select(x => new LookupItem(x.SoftwareId, x.Title)).ToListAsync();
-            cache._tables[LookupKeys.Department] = await db.Departments.AsNoTracking().OrderBy(x => x.Title).Select(x => new LookupItem(x.DepartmentId, x.Title)).ToListAsync();
-            cache._tables[LookupKeys.RecordType] = await db.RecordTypes.AsNoTracking().OrderBy(x => x.RecordTypeId).Select(x => new LookupItem(x.RecordTypeId, x.Title)).ToListAsync();
-            cache._tables[LookupKeys.TransportType] = await db.TransportTypes.AsNoTracking().OrderBy(x => x.TransportTypeId).Select(x => new LookupItem(x.TransportTypeId, x.Title)).ToListAsync();
-            cache._tables[LookupKeys.SacrificeType] = await db.SacrificeTypes.AsNoTracking().OrderBy(x => x.SacrificeTypeId).Select(x => new LookupItem(x.SacrificeTypeId, x.Title)).ToListAsync();
-            cache._tables[LookupKeys.CenterType] = await db.CenterTypes.AsNoTracking().OrderBy(x => x.CenterTypeId).Select(x => new LookupItem(x.CenterTypeId, x.Title)).ToListAsync();
-            cache._tables[LookupKeys.SectorType] = await db.SectorTypes.AsNoTracking().OrderBy(x => x.SectorTypeId).Select(x => new LookupItem(x.SectorTypeId, x.Title)).ToListAsync();
-            cache._tables[LookupKeys.CitizenshipReason] = await db.CitizenshipReasons.AsNoTracking().OrderBy(x => x.CitizenshipReasonId).Select(x => new LookupItem(x.CitizenshipReasonId, x.Title)).ToListAsync();
-            cache._tables[LookupKeys.HiringResult] = await db.HiringResults.AsNoTracking().OrderBy(x => x.HiringResultId).Select(x => new LookupItem(x.HiringResultId, x.Title)).ToListAsync();
+            foreach (var clr in db.Model.GetEntityTypes().Select(e => e.ClrType).Distinct())
+            {
+                if (!IsLookup(clr)) continue;
+
+                var task = (Task<List<LookupItem>>)LoaderMethod
+                    .MakeGenericMethod(clr)
+                    .Invoke(null, new object[] { db })!;
+
+                cache._tables[clr] = await task;
+                cache._typesByName[clr.Name] = clr;
+            }
 
             return cache;
         }
 
-        public IReadOnlyList<LookupItem> this[string tableKey]
-            => _tables.TryGetValue(tableKey, out var rows) ? rows : Array.Empty<LookupItem>();
+        // ==================== کشف ساختار جدول ====================
 
-        /// <summary>ردیف را با عنوان پیدا می‌کند و اگر نبود در همان جدول می‌سازد.</summary>
-        public async Task<short> ResolveOrCreateAsync(string tableKey, string? title)
+        private static bool IsLookup(Type clr)
         {
-            var text = title?.Trim();
-            if (string.IsNullOrEmpty(text)) return this[tableKey].FirstOrDefault()?.Id ?? 0;
+            var title = clr.GetProperty("Title");
+            if (title == null || title.PropertyType != typeof(string)) return false;
 
-            var existing = this[tableKey]
-                .FirstOrDefault(x => string.Equals(x.Title, text, StringComparison.OrdinalIgnoreCase));
+            var key = KeyProperty(clr);
+            if (key == null) return false;
 
-            if (existing != null) return existing.Id;
-
-            var created = await CreateAsync(tableKey, text);
-            if (created != null)
-            {
-                if (!_tables.TryGetValue(tableKey, out var rows))
-                    _tables[tableKey] = rows = new List<LookupItem>();
-
-                rows.Add(created);
-                return created.Id;
-            }
-
-            return this[tableKey].FirstOrDefault()?.Id ?? 0;
+            return IsInteger(key.PropertyType);
         }
 
-        private async Task<LookupItem?> CreateAsync(string tableKey, string title)
+        private static PropertyInfo? KeyProperty(Type clr)
         {
-            switch (tableKey)
-            {
-                case LookupKeys.Bank:
-                    { var r = new Bank { Title = title }; _db.Banks.Add(r); await _db.SaveChangesAsync(); return new LookupItem(r.BankId, r.Title); }
-                case LookupKeys.Language:
-                    { var r = new Language { Title = title }; _db.Languages.Add(r); await _db.SaveChangesAsync(); return new LookupItem(r.LanguageId, r.Title); }
-                case LookupKeys.Software:
-                    { var r = new Software { Title = title }; _db.Softwares.Add(r); await _db.SaveChangesAsync(); return new LookupItem(r.SoftwareId, r.Title); }
-                case LookupKeys.CitizenshipReason:
-                    { var r = new CitizenshipReason { Title = title }; _db.CitizenshipReasons.Add(r); await _db.SaveChangesAsync(); return new LookupItem(r.CitizenshipReasonId, r.Title); }
-                case LookupKeys.Department:
-                    { var r = new Department { Title = title }; _db.Departments.Add(r); await _db.SaveChangesAsync(); return new LookupItem(r.DepartmentId, r.Title); }
-                default:
-                    return null;
-            }
+            var byName = clr.GetProperty(clr.Name + "Id");
+            if (byName != null && IsInteger(byName.PropertyType)) return byName;
+
+            var integers = clr.GetProperties().Where(p => IsInteger(p.PropertyType)).ToArray();
+            return integers.Length == 1 ? integers[0] : null;
+        }
+
+        private static bool IsInteger(Type type)
+            => type == typeof(byte) || type == typeof(short) || type == typeof(int);
+
+        private static async Task<List<LookupItem>> LoadTableAsync<T>(PersonnelDbContext db) where T : class
+        {
+            var key = KeyProperty(typeof(T))!;
+            var title = typeof(T).GetProperty("Title")!;
+
+            var rows = await db.Set<T>().AsNoTracking().ToListAsync();
+
+            return rows
+                .Select(row => new LookupItem(
+                    Convert.ToInt16(key.GetValue(row)),
+                    (string?)title.GetValue(row) ?? string.Empty))
+                .Where(x => !string.IsNullOrWhiteSpace(x.Title))
+                .OrderBy(x => x.Id)
+                .ToList();
+        }
+
+        private static async Task<LookupItem?> CreateRowAsync<T>(PersonnelDbContext db, string title) where T : class, new()
+        {
+            var row = new T();
+            typeof(T).GetProperty("Title")!.SetValue(row, title);
+
+            db.Set<T>().Add(row);
+            await db.SaveChangesAsync();
+
+            var id = Convert.ToInt16(KeyProperty(typeof(T))!.GetValue(row));
+            return new LookupItem(id, title);
+        }
+
+        // ==================== خواندن ====================
+
+        public IReadOnlyList<LookupItem> Get<TEntity>() where TEntity : class
+            => _tables.TryGetValue(typeof(TEntity), out var rows) ? rows : Array.Empty<LookupItem>();
+
+        public IReadOnlyList<LookupItem> this[string tableKey]
+            => _typesByName.TryGetValue(tableKey, out var clr) && _tables.TryGetValue(clr, out var rows)
+                ? rows
+                : Array.Empty<LookupItem>();
+
+        // ==================== حل یا ساخت ====================
+
+        public Task<short> ResolveOrCreateAsync<TEntity>(string? title) where TEntity : class
+            => ResolveOrCreateAsync(typeof(TEntity), title);
+
+        public async Task<short> ResolveOrCreateAsync(Type clrType, string? title)
+        {
+            var rows = _tables.TryGetValue(clrType, out var existing) ? existing : new List<LookupItem>();
+            var text = title?.Trim();
+
+            if (string.IsNullOrEmpty(text)) return rows.FirstOrDefault()?.Id ?? 0;
+
+            var match = rows.FirstOrDefault(x => string.Equals(x.Title, text, StringComparison.OrdinalIgnoreCase));
+            if (match != null) return match.Id;
+
+            if (KeyProperty(clrType) == null) return rows.FirstOrDefault()?.Id ?? 0;
+
+            var task = (Task<LookupItem?>)CreatorMethod
+                .MakeGenericMethod(clrType)
+                .Invoke(null, new object[] { _db, text })!;
+
+            var created = await task;
+            if (created == null) return rows.FirstOrDefault()?.Id ?? 0;
+
+            rows.Add(created);
+            _tables[clrType] = rows;
+            return created.Id;
         }
 
         public void Dispose()
