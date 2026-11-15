@@ -343,8 +343,10 @@ namespace HR.Models
     {
         public int Id { get; set; }
         public string FullName { get; set; } = string.Empty;
+        public string SacrificeRelationship { get; set; } = string.Empty;
         public string SacrificeType { get; set; } = string.Empty;
         public string? Amount { get; set; }
+        public string? AmountUnit { get; set; }
         public string? Note { get; set; }
     }
 

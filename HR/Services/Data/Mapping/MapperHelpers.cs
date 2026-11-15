@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Globalization;
+using System.Linq;
 
 namespace HR.Services.Data.Mapping
 {
@@ -39,5 +40,10 @@ namespace HR.Services.Data.Mapping
             var digits = DigitsOnly(text);
             return int.TryParse(digits, out var hours) ? hours : 0;
         }
+
+        public static decimal Decimal(string? text)
+            => decimal.TryParse(text?.Trim(), NumberStyles.Number, CultureInfo.InvariantCulture, out var value)
+                ? value
+                : 0m;
     }
 }

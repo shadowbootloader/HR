@@ -1,7 +1,10 @@
-﻿using System.Windows;
+﻿using System.Globalization;
+using System.Linq;
+using System.Windows;
 using System.Windows.Controls;
 using HR.Models;
 using HR.Services;
+using HR.Services.Data;
 
 namespace HR.Controls.AddEmployees
 {
@@ -16,8 +19,33 @@ namespace HR.Controls.AddEmployees
             InitializeComponent();
             _list.Attach(PersonalSacrificeList);
 
-            Sacrifice_TypeCombo.ItemsSource = Lookups.SacrificeTypes;
-            Sacrifice_TypeCombo.SelectedIndex = 0;
+            Loaded += Sacrifice_Loaded;
+        }
+
+        private async void Sacrifice_Loaded(object sender, RoutedEventArgs e)
+        {
+            Loaded -= Sacrifice_Loaded;
+
+            try
+            {
+                var cache = await LookupCache.GetAsync();
+
+                Fill(Sacrifice_RelationshipCombo, cache[LookupKeys.SacrificeRelationship].Select(x => x.Title).ToList());
+                Fill(Sacrifice_TypeCombo, cache[LookupKeys.SacrificeType].Select(x => x.Title).ToList());
+                Fill(Sacrifice_UnitCombo, cache[LookupKeys.AmountUnit].Select(x => x.Title).ToList());
+            }
+            catch
+            {
+                // دیتابیس در دسترس نیست → لیست خالی می‌ماند
+            }
+        }
+
+        private static void Fill(ComboBox combo, System.Collections.Generic.List<string> items)
+        {
+            if (items.Count == 0) return;
+
+            combo.ItemsSource = items;
+            combo.SelectedIndex = 0;
         }
 
         private void AddSacrificeDataBtn_Click(object sender, RoutedEventArgs e)
@@ -31,11 +59,22 @@ namespace HR.Controls.AddEmployees
                 return;
             }
 
+            var amount = Sacrifice_MuchTB.Text?.Trim();
+            if (!string.IsNullOrWhiteSpace(amount) &&
+                !decimal.TryParse(amount, NumberStyles.Number, CultureInfo.InvariantCulture, out _))
+            {
+                Warn("میزان باید عددی باشد.");
+                Sacrifice_MuchTB.Focus();
+                return;
+            }
+
             _list.Items.Add(new SacrificeRecord
             {
                 FullName = name,
-                SacrificeType = Sacrifice_TypeCombo.Text?.Trim() ?? string.Empty,
-                Amount = NullIfEmpty(Sacrifice_MuchTB.Text),
+                SacrificeRelationship = Sacrifice_RelationshipCombo.SelectedItem as string ?? string.Empty,
+                SacrificeType = Sacrifice_TypeCombo.SelectedItem as string ?? string.Empty,
+                Amount = NullIfEmpty(amount),
+                AmountUnit = Sacrifice_UnitCombo.SelectedItem as string,
                 Note = NullIfEmpty(Sacrifice_NoteTB.Text)
             });
 
@@ -55,7 +94,9 @@ namespace HR.Controls.AddEmployees
             Sacrifice_FullNameTB.Clear();
             Sacrifice_MuchTB.Clear();
             Sacrifice_NoteTB.Clear();
-            Sacrifice_TypeCombo.SelectedIndex = 0;
+            if (Sacrifice_RelationshipCombo.Items.Count > 0) Sacrifice_RelationshipCombo.SelectedIndex = 0;
+            if (Sacrifice_TypeCombo.Items.Count > 0) Sacrifice_TypeCombo.SelectedIndex = 0;
+            if (Sacrifice_UnitCombo.Items.Count > 0) Sacrifice_UnitCombo.SelectedIndex = 0;
             Sacrifice_FullNameTB.Focus();
         }
 
