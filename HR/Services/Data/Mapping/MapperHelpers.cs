@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
 using System.Linq;
 
 namespace HR.Services.Data.Mapping
@@ -45,5 +46,24 @@ namespace HR.Services.Data.Mapping
             => decimal.TryParse(text?.Trim(), NumberStyles.Number, CultureInfo.InvariantCulture, out var value)
                 ? value
                 : 0m;
+
+        /// <summary>نام کامل را به نام و نام خانوادگی می‌شکند (آخرین فاصله).</summary>
+        public static (string First, string Last) SplitName(string? fullName)
+        {
+            var text = fullName?.Trim();
+            if (string.IsNullOrEmpty(text)) return ("—", "—");
+
+            var index = text.LastIndexOf(' ');
+            if (index <= 0) return (text, "—");
+
+            return (text[..index].Trim(), text[(index + 1)..].Trim());
+        }
+
+        /// <summary>کد ملی ساختگی ۱۰ رقمی برای بستگانی که کد ملی ندارند.</summary>
+        public static string SyntheticNationalCode()
+            => new string(Guid.NewGuid().ToByteArray()
+                .Take(5)
+                .Select(b => (char)('0' + (b % 10)))
+                .ToArray());
     }
 }

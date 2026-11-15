@@ -1,7 +1,9 @@
-﻿using System.Windows;
+﻿using System.Linq;
+using System.Windows;
 using System.Windows.Controls;
 using HR.Models;
 using HR.Services;
+using HR.Services.Data;
 
 namespace HR.Controls.AddEmployees
 {
@@ -16,8 +18,26 @@ namespace HR.Controls.AddEmployees
             InitializeComponent();
             _list.Attach(PersonalForeignFamilyList);
 
-            ForeignFamily_CountryNameCombo.ItemsSource = Lookups.Countries;
-            ForeignFamily_CountryNameCombo.SelectedIndex = 0;
+            Loaded += ForeignRelatives_Loaded;
+        }
+
+        private async void ForeignRelatives_Loaded(object sender, RoutedEventArgs e)
+        {
+            Loaded -= ForeignRelatives_Loaded;
+
+            try
+            {
+                using var geo = new GeoService();
+                var countries = await geo.GetCountriesAsync();
+                if (countries.Count == 0) return;
+
+                ForeignFamily_CountryNameCombo.ItemsSource = countries.Select(c => c.Name).ToList();
+                ForeignFamily_CountryNameCombo.SelectedIndex = 0;
+            }
+            catch
+            {
+                // دیتابیس در دسترس نیست → لیست خالی می‌ماند
+            }
         }
 
         private void AddForeignFamilyDataBtn_Click(object sender, RoutedEventArgs e)
@@ -33,7 +53,9 @@ namespace HR.Controls.AddEmployees
             _list.Items.Add(new ForeignRelativeRecord
             {
                 FullName = name,
-                Country = ForeignFamily_CountryNameCombo.Text?.Trim() ?? string.Empty,
+                Country = ForeignFamily_CountryNameCombo.SelectedItem as string
+                          ?? ForeignFamily_CountryNameCombo.Text?.Trim()
+                          ?? string.Empty,
                 DepartureDate = ForeignFamily_StartDateDP.SelectedDate,
                 Reason = NullIfEmpty(ForeignFamily_ReasonTB.Text),
                 Note = NullIfEmpty(ForeignFamily_NoteTB.Text)
@@ -56,7 +78,8 @@ namespace HR.Controls.AddEmployees
             ForeignFamily_ReasonTB.Clear();
             ForeignFamily_NoteTB.Clear();
             ForeignFamily_StartDateDP.SelectedDate = null;
-            ForeignFamily_CountryNameCombo.SelectedIndex = 0;
+            if (ForeignFamily_CountryNameCombo.Items.Count > 0)
+                ForeignFamily_CountryNameCombo.SelectedIndex = 0;
         }
 
         private static string? NullIfEmpty(string? v) => string.IsNullOrWhiteSpace(v) ? null : v.Trim();

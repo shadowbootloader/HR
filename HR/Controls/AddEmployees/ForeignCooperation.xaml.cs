@@ -1,7 +1,9 @@
-﻿using System.Windows;
+﻿using System.Linq;
+using System.Windows;
 using System.Windows.Controls;
 using HR.Models;
 using HR.Services;
+using HR.Services.Data;
 
 namespace HR.Controls.AddEmployees
 {
@@ -16,11 +18,42 @@ namespace HR.Controls.AddEmployees
             InitializeComponent();
             _list.Attach(PersonalForeignCooperationList);
 
-            ForeignCooperation_CountryCombo.ItemsSource = Lookups.Countries;
-            ForeignCooperation_InstitueTypeCombo.ItemsSource = Lookups.InstitutionTypes;
+            Loaded += ForeignCooperation_Loaded;
+        }
 
-            ForeignCooperation_CountryCombo.SelectedIndex = 0;
-            ForeignCooperation_InstitueTypeCombo.SelectedIndex = 0;
+        private async void ForeignCooperation_Loaded(object sender, RoutedEventArgs e)
+        {
+            Loaded -= ForeignCooperation_Loaded;
+
+            try
+            {
+                using var geo = new GeoService();
+                var countries = await geo.GetCountriesAsync();
+
+                if (countries.Count > 0)
+                {
+                    ForeignCooperation_CountryCombo.ItemsSource = countries.Select(c => c.Name).ToList();
+                    ForeignCooperation_CountryCombo.SelectedIndex = 0;
+                }
+            }
+            catch
+            {
+                // دیتابیس در دسترس نیست → لیست خالی می‌ماند
+            }
+
+            try
+            {
+                var types = (await LookupCache.GetAsync())[LookupKeys.CenterType];
+                if (types.Count > 0)
+                {
+                    ForeignCooperation_InstitueTypeCombo.ItemsSource = types.Select(t => t.Title).ToList();
+                    ForeignCooperation_InstitueTypeCombo.SelectedIndex = 0;
+                }
+            }
+            catch
+            {
+                // دیتابیس در دسترس نیست → لیست خالی می‌ماند
+            }
         }
 
         private void AddForeignCooperationDataBtn_Click(object sender, RoutedEventArgs e)
@@ -52,9 +85,13 @@ namespace HR.Controls.AddEmployees
             _list.Items.Add(new ForeignCooperationRecord
             {
                 PersonName = person,
-                Country = ForeignCooperation_CountryCombo.Text?.Trim() ?? string.Empty,
+                Country = ForeignCooperation_CountryCombo.SelectedItem as string
+                          ?? ForeignCooperation_CountryCombo.Text?.Trim()
+                          ?? string.Empty,
                 InstitutionName = institute,
-                InstitutionType = ForeignCooperation_InstitueTypeCombo.Text?.Trim() ?? string.Empty,
+                InstitutionType = ForeignCooperation_InstitueTypeCombo.SelectedItem as string
+                                  ?? ForeignCooperation_InstitueTypeCombo.Text?.Trim()
+                                  ?? string.Empty,
                 StartDate = start,
                 EndDate = end,
                 Note = NullIfEmpty(ForeignCooperation_NoteTB.Text)
@@ -90,8 +127,8 @@ namespace HR.Controls.AddEmployees
             ForeignCooperation_NoteTB.Clear();
             ForeignCooperation_StartDateDP.SelectedDate = null;
             TForeignCooperation_EndDateDP.SelectedDate = null;
-            ForeignCooperation_CountryCombo.SelectedIndex = 0;
-            ForeignCooperation_InstitueTypeCombo.SelectedIndex = 0;
+            if (ForeignCooperation_CountryCombo.Items.Count > 0) ForeignCooperation_CountryCombo.SelectedIndex = 0;
+            if (ForeignCooperation_InstitueTypeCombo.Items.Count > 0) ForeignCooperation_InstitueTypeCombo.SelectedIndex = 0;
         }
 
         private static string? NullIfEmpty(string? v) => string.IsNullOrWhiteSpace(v) ? null : v.Trim();
