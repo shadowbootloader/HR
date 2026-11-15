@@ -1,8 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using HR.Data.Entities;
 using HR.Models;
 using HR.Services;
 using HR.Services.Data;
@@ -12,7 +10,6 @@ namespace HR.Controls.AddEmployees
     public partial class Citizenship : UserControl, IEmployeeSection
     {
         private readonly SectionList<CitizenshipRecord> _list = new();
-        private readonly List<Geo> _countries = new();
 
         public string SectionTitle => "تابعیت";
 
@@ -33,9 +30,6 @@ namespace HR.Controls.AddEmployees
                 using var geo = new GeoService();
                 var countries = await geo.GetCountriesAsync();
                 if (countries.Count == 0) return;
-
-                _countries.Clear();
-                _countries.AddRange(countries);
 
                 Citizenship_CountryNameCombo.ItemsSource = countries.Select(c => c.Name).ToList();
                 Citizenship_CountryNameCombo.SelectedIndex = 0;

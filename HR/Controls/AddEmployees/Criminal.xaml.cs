@@ -1,7 +1,9 @@
-﻿using System.Windows;
+﻿using System.Linq;
+using System.Windows;
 using System.Windows.Controls;
 using HR.Models;
 using HR.Services;
+using HR.Services.Data;
 
 namespace HR.Controls.AddEmployees
 {
@@ -16,8 +18,25 @@ namespace HR.Controls.AddEmployees
             InitializeComponent();
             _list.Attach(PersonalCriminalList);
 
-            Criminal_TypeCombo.ItemsSource = Lookups.CriminalRecordTypes;
-            Criminal_TypeCombo.SelectedIndex = 0;
+            Loaded += Criminal_Loaded;
+        }
+
+        private async void Criminal_Loaded(object sender, RoutedEventArgs e)
+        {
+            Loaded -= Criminal_Loaded;
+
+            try
+            {
+                var types = (await LookupCache.GetAsync())[LookupKeys.RecordType];
+                if (types.Count == 0) return;
+
+                Criminal_TypeCombo.ItemsSource = types.Select(t => t.Title).ToList();
+                Criminal_TypeCombo.SelectedIndex = 0;
+            }
+            catch
+            {
+                // دیتابیس در دسترس نیست → لیست خالی می‌ماند
+            }
         }
 
         private void AddCriminalDataBtn_Click(object sender, RoutedEventArgs e)
@@ -34,7 +53,9 @@ namespace HR.Controls.AddEmployees
             _list.Items.Add(new CriminalRecord
             {
                 PersonName = Criminal_FamilyNameCombo.Text?.Trim() ?? string.Empty,
-                RecordType = Criminal_TypeCombo.Text?.Trim() ?? string.Empty,
+                RecordType = Criminal_TypeCombo.SelectedItem as string
+                             ?? Criminal_TypeCombo.Text?.Trim()
+                             ?? string.Empty,
                 Title = title,
                 Note = NullIfEmpty(Criminal_NoteTB.Text)
             });
@@ -55,7 +76,7 @@ namespace HR.Controls.AddEmployees
             Criminal_CriminalTitleTB.Clear();
             Criminal_NoteTB.Clear();
             Criminal_FamilyNameCombo.Text = string.Empty;
-            Criminal_TypeCombo.SelectedIndex = 0;
+            if (Criminal_TypeCombo.Items.Count > 0) Criminal_TypeCombo.SelectedIndex = 0;
         }
 
         private static string? NullIfEmpty(string? v) => string.IsNullOrWhiteSpace(v) ? null : v.Trim();

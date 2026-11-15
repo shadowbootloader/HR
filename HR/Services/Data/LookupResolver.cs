@@ -2,7 +2,6 @@
 using HR.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -64,6 +63,8 @@ namespace HR.Services.Data
         public async Task<byte> CooperationTypeAsync(string? title) => ToByte(await _cache.ResolveOrCreateAsync(LookupKeys.CooperationType, title));
 
         public async Task<byte> CitizenshipReasonAsync(string? title) => ToByte(await _cache.ResolveOrCreateAsync(LookupKeys.CitizenshipReason, title));
+
+        public async Task<byte> RecordTypeAsync(string? title) => ToByte(await _cache.ResolveOrCreateAsync(LookupKeys.RecordType, title));
 
         public async Task<byte> PhoneStatusAsync(string? title) => ToByte(await _cache.ResolveOrCreateAsync(LookupKeys.PhoneStatus, title));
 

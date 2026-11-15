@@ -67,8 +67,6 @@ namespace HR.Controls.AddEmployees
 
                 EducationStateNameTB.ItemsSource = provinces.Select(p => p.Name).ToList();
                 EducationStateNameTB.SelectedIndex = 0;
-
-                await FillCitiesAsync();
             }
             catch
             {

@@ -216,6 +216,22 @@ namespace HR.Services.Data
                 }
             }
 
+            // سوابق کیفری / سیاسی
+            if (profile.CriminalRecords?.Count > 0)
+            {
+                foreach (var r in profile.CriminalRecords)
+                {
+                    entity.BackgroundRecords.Add(new BackgroundRecord
+                    {
+                        BackgroundRecordId = Guid.NewGuid(),
+                        EmployeeId = entity.EmployeeId,
+                        RecordTypeId = await lookups.RecordTypeAsync(r.RecordType),
+                        Title = r.Title?.Trim() ?? "—",
+                        Description = JoinNote(r.PersonName, r.Note)
+                    });
+                }
+            }
+
             // اتصال حساب بانکی اصلی به اطلاعات شغلی
             if (entity.Supplement != null && entity.BankAccounts.Count > 0)
                 entity.Supplement.BankAccountId = entity.BankAccounts.First().BankAccountId;
@@ -238,6 +254,15 @@ namespace HR.Services.Data
                 .ToArray());
 
             return digits.PadRight(10, '0')[..10];
+        }
+
+        private static string? JoinNote(string? first, string? second)
+        {
+            var parts = new[] { first?.Trim(), second?.Trim() }
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .ToArray();
+
+            return parts.Length == 0 ? null : string.Join(" — ", parts);
         }
 
         private static string DigitsOnly(string? value)

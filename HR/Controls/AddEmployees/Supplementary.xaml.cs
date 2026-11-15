@@ -20,7 +20,7 @@ namespace HR.Controls.AddEmployees
             InitializeComponent();
 
             // موقعیت سازمانی ستون متنی است و جدول Lookup ندارد
-            OragPlaceCombo.ItemsSource = HR.Models.Lookups.Positions;
+            OragPlaceCombo.ItemsSource = Lookups.Positions;
             OragPlaceCombo.SelectedIndex = 0;
 
             Loaded += Supplementary_Loaded;
