@@ -1,12 +1,17 @@
-﻿using System.Windows;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Windows;
 using System.Windows.Controls;
 using HR.Models;
 using HR.Services;
+using HR.Services.Data;
 
 namespace HR.Controls.AddEmployees
 {
     public partial class Recruitment : UserControl, IEmployeeSection
     {
+        private const string NoneItem = "—";
+
         private readonly SectionList<RecruitmentRecord> _list = new();
 
         public string SectionTitle => "استخدام";
@@ -16,8 +21,34 @@ namespace HR.Controls.AddEmployees
             InitializeComponent();
             _list.Attach(PersonalEmploymentList);
 
-            Employment_OrganTypeCombo.ItemsSource = Lookups.InstitutionTypes;
-            Employment_OrganTypeCombo.SelectedIndex = 0;
+            Loaded += Recruitment_Loaded;
+        }
+
+        private async void Recruitment_Loaded(object sender, RoutedEventArgs e)
+        {
+            Loaded -= Recruitment_Loaded;
+
+            try
+            {
+                var cache = await LookupCache.GetAsync();
+
+                Fill(Employment_OrganTypeCombo, cache[LookupKeys.SectorType].Select(x => x.Title).ToList(), withNone: false);
+                Fill(Employment_ResaltCombo, cache[LookupKeys.HiringResult].Select(x => x.Title).ToList(), withNone: true);
+            }
+            catch
+            {
+                // دیتابیس در دسترس نیست → لیست خالی می‌ماند
+            }
+        }
+
+        private static void Fill(ComboBox combo, List<string> items, bool withNone)
+        {
+            if (items.Count == 0) return;
+
+            var source = withNone ? new[] { NoneItem }.Concat(items).ToList() : items;
+
+            combo.ItemsSource = source;
+            combo.SelectedIndex = 0;
         }
 
         private void AddEmploymentDataBtn_Click(object sender, RoutedEventArgs e)
@@ -31,11 +62,13 @@ namespace HR.Controls.AddEmployees
                 return;
             }
 
+            var result = Employment_ResaltCombo.SelectedItem as string;
+
             _list.Items.Add(new RecruitmentRecord
             {
                 InstitutionName = name,
-                InstitutionType = Employment_OrganTypeCombo.Text?.Trim() ?? string.Empty,
-                Result = NullIfEmpty(Employment_ResaltTB.Text),
+                InstitutionType = Employment_OrganTypeCombo.SelectedItem as string ?? string.Empty,
+                Result = string.IsNullOrWhiteSpace(result) || result == NoneItem ? null : result.Trim(),
                 Note = NullIfEmpty(Employment_NoteTB.Text)
             });
 
@@ -53,9 +86,9 @@ namespace HR.Controls.AddEmployees
         private void ClearForm()
         {
             Employment_OrganNameTB.Clear();
-            Employment_ResaltTB.Clear();
             Employment_NoteTB.Clear();
-            Employment_OrganTypeCombo.SelectedIndex = 0;
+            if (Employment_OrganTypeCombo.Items.Count > 0) Employment_OrganTypeCombo.SelectedIndex = 0;
+            if (Employment_ResaltCombo.Items.Count > 0) Employment_ResaltCombo.SelectedIndex = 0;
             Employment_OrganNameTB.Focus();
         }
 
