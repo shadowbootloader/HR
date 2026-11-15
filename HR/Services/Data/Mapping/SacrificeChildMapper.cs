@@ -13,7 +13,7 @@ namespace HR.Services.Data.Mapping
 
             foreach (var record in profile.Sacrifices)
             {
-                entity.SacrificeRecords.Add(new SacrificeRecord
+                entity.SacrificeRecords.Add(new HR.Data.Entities.SacrificeRecord
                 {
                     SacrificeRecordId = Guid.NewGuid(),
                     EmployeeId = entity.EmployeeId,
