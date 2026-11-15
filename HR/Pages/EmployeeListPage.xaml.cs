@@ -4,11 +4,12 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using HR.Controls;
-using HR.Models;
+using HR.Services.Data;
 using MaterialDesignThemes.Wpf;
 
 namespace HR.Pages
@@ -21,6 +22,7 @@ namespace HR.Pages
 
         private readonly List<EmployeeModel> _all = new();
         private readonly ObservableCollection<EmployeeModel> _visible = new();
+        private readonly IEmployeeService _employeeService = new EmployeeService();
 
         private int _currentPage = 1;
         private int _totalPages = 1;
@@ -47,11 +49,10 @@ namespace HR.Pages
             DataContext = this;
 
             EmployeeItems.ItemsSource = _visible;
-            LoadSampleData();
-            ApplyFilter(resetPage: true);
 
             Loaded += OnLoaded;
             Unloaded += OnUnloaded;
+            Loaded += async (_, _) => await LoadEmployeesAsync();
         }
 
         // ==================== چرخه عمر ====================
@@ -69,35 +70,37 @@ namespace HR.Pages
 
         // ==================== داده ====================
 
-        private void LoadSampleData()
+        private async Task LoadEmployeesAsync()
         {
-            _all.Clear();
-
-            string[] firstNames = { "امیرحسین", "محمدرضا", "سعید", "رضا", "علی", "مهدی", "پارسا", "نیما", "حسین", "زهرا", "مریم", "سارا", "الهام", "مینا", "فاطمه", "نازنین" };
-            string[] lastNames = { "رضایی", "احمدی", "کریمی", "محمدی", "اکبری", "حسینی", "نادری", "نوری", "موسوی", "صالحی", "شریفی", "جعفری", "رستمی", "کاظمی" };
-            string[] positions = { "مهندس نرم‌افزار", "کارشناس جذب", "تحلیلگر مالی", "طراح رابط کاربری", "مدیر بازاریابی", "سرپرست تیم", "کارشناس فروش", "حسابدار", "برنامه‌نویس بک‌اند", "لید تست" };
-            string[] departments = { "منابع انسانی", "فناوری اطلاعات", "امور مالی", "بازاریابی", "پشتیبانی", "آموزش و توسعه" };
-            string[] statuses = { "فعال", "مرخصی", "غیرفعال" };
-
-            var random = new Random(1404);
-
-            for (int i = 1; i <= 148; i++)
+            try
             {
-                var first = firstNames[random.Next(firstNames.Length)];
-                var last = lastNames[random.Next(lastNames.Length)];
+                var employees = await _employeeService.GetAllAsync();
 
-                _all.Add(new EmployeeModel
+                _all.Clear();
+
+                foreach (var e in employees)
                 {
-                    FullName = $"{first} {last}",
-                    Email = $"user{i}@company.com",
-                    Position = positions[random.Next(positions.Length)],
-                    Department = departments[random.Next(departments.Length)],
-                    DepartmentIcon = "👤",
-                    Status = statuses[random.Next(statuses.Length)],
-                    PerformanceValue = random.Next(45, 100),
-                    PerformanceLabel = "—",
-                    AvatarUrl = PackIconKind.Account
-                });
+                    _all.Add(new EmployeeModel
+                    {
+                        Id = e.EmployeeId,
+                        FullName = $"{e.FirstName} {e.LastName}".Trim(),
+                        Email = e.Email,
+                        Position = e.Supplement?.PositionTitle ?? "—",
+                        Department = e.Supplement?.Department?.Title ?? "—",
+                        DepartmentIcon = "👤",
+                        Status = e.IsDeleted ? "حذف‌شده" : "فعال",
+                        PerformanceValue = 0,
+                        PerformanceLabel = "—",
+                        AvatarUrl = PackIconKind.Account
+                    });
+                }
+
+                ApplyFilter(resetPage: true);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("خطا در بارگذاری لیست کارکنان:\n" + ex.Message, "خطا",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -199,6 +202,7 @@ namespace HR.Pages
 
     public class EmployeeModel
     {
+        public Guid Id { get; set; }
         public string FullName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Position { get; set; } = string.Empty;

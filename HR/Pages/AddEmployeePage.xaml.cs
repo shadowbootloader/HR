@@ -8,6 +8,7 @@ using System.Windows.Threading;
 using HR.Controls.AddEmployees;
 using HR.Models;
 using HR.Services;
+using HR.Services.Data;
 
 namespace HR.Pages
 {
@@ -26,6 +27,7 @@ namespace HR.Pages
         private readonly Dictionary<string, UserControl> _sectionCache = new();
         private bool _lazyLoaded;
         private EmployeeProfile _profile = new();
+        private readonly IEmployeeService _employeeService = new EmployeeService();
 
         public AddEmployeePage()
         {
@@ -69,17 +71,17 @@ namespace HR.Pages
             {
                 "Abilities" => new Abilities(),
                 "Bank" => new BankAccounts(),
-                "Citizenship" => new Citizenship(),
+                "Citizenship" => new HR.Controls.AddEmployees.Citizenship(),
                 "Criminal" => new Criminal(),
                 "Family" => new Family(),
-                "ForeignCooperation" => new ForeignCooperation(),
+                "ForeignCooperation" => new HR.Controls.AddEmployees.ForeignCooperation(),
                 "ForeignRelatives" => new ForeignRelatives(),
                 "Lang" => new Languages(),
                 "Skills" => new Skills(),
                 "Organ" => new OrganCollaboration(),
                 "WorkInterests" => new WorkInterests(),
                 "SelfAssessment" => new SelfAssessment(),
-                "Other" => new OtherActivity(),
+                "Other" => new HR.Controls.AddEmployees.OtherActivity(),
                 "Recruitment" => new Recruitment(),
                 "Sacrifice" => new Sacrifice(),
                 "Supplementary" => new Supplementary(),
@@ -104,7 +106,7 @@ namespace HR.Pages
 
         // ==================== رویدادها ====================
 
-        private void SaveBtn_Click(object sender, RoutedEventArgs e)
+        private async void SaveBtn_Click(object sender, RoutedEventArgs e)
         {
             var sections = EnumerateSections().ToList();
 
@@ -126,9 +128,42 @@ namespace HR.Pages
             foreach (var section in sections)
                 section.SaveTo(_profile);
 
-            NotificationService.Success(
-                "ثبت موفق",
-                $"اطلاعات «{(_profile.FullName.Length > 0 ? _profile.FullName : "کارمند جدید")}» آماده ذخیره شد.");
+            try
+            {
+                var entity = EmployeeMapper.ToEntity(_profile);
+
+                if (string.IsNullOrWhiteSpace(entity.NationalCode))
+                {
+                    NotificationService.Warning("خطا", "کد ملی الزامی است.");
+                    return;
+                }
+
+                if (await _employeeService.ExistsNationalCodeAsync(entity.NationalCode))
+                {
+                    NotificationService.Warning("خطا", "کد ملی تکراری است.");
+                    return;
+                }
+
+                if (entity.Supplement != null &&
+                    await _employeeService.ExistsPersonnelCodeAsync(entity.Supplement.PersonnelCode))
+                {
+                    NotificationService.Warning("خطا", "کد پرسنلی تکراری است.");
+                    return;
+                }
+
+                await _employeeService.CreateAsync(entity);
+
+                NotificationService.Success(
+                    "ثبت موفق",
+                    $"کارمند «{entity.FirstName} {entity.LastName}» با موفقیت ذخیره شد.");
+
+                _profile = new EmployeeProfile();
+                LoadProfileIntoForm();
+            }
+            catch (Exception ex)
+            {
+                NotificationService.Warning("خطا در ذخیره", ex.Message);
+            }
         }
 
         private void CancelBtn_Click(object sender, RoutedEventArgs e)

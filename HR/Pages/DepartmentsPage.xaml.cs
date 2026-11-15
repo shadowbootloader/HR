@@ -1,80 +1,95 @@
-﻿using System.Collections.ObjectModel;
+using System;
+using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using HR.Controls;
+using HR.Services.Data;
 using MaterialDesignThemes.Wpf;
-using System.Windows;
 using static HR.Controls.DepartmentCardControl;
 
 namespace HR.Pages
 {
     public partial class DepartmentsPage : Page
     {
-        public event Action<Page> NavigationRequested;
+        public event Action<Page>? NavigationRequested;
 
-        public ObservableCollection<DepartmentModel> Departments { get; set; }
+        public ObservableCollection<DepartmentModel> Departments { get; set; } = new();
+
+        private readonly IDepartmentService _departmentService = new DepartmentService();
 
         public DepartmentsPage()
         {
             InitializeComponent();
-            LoadSampleData();
             DepartmentItems.ItemsSource = Departments;
-            UpdateSideCards();
+            Loaded += async (_, _) => await LoadDepartmentsAsync();
         }
 
-        private void DeptTabs_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private async Task LoadDepartmentsAsync()
         {
-            //if (!ReferenceEquals(e.OriginalSource, DeptTabs)) return;
-
-            // محتوای تبها فعلاً در همین صفحه نمایش داده میشود.
-            // اگر بعداً خواستی هر تب محتوای جداگانه لود کند، اینجا فیلتر/بارگذاری را انجام بده.
-        }
-
-        private void LoadSampleData()
-        {
-            Departments = new ObservableCollection<DepartmentModel>
+            try
             {
-                Make("منابع انسانی", "سارا محمدی", 12, 5, 88, 75, 70, "پایدار", "#14532D", "#86EFAC", PackIconKind.AccountGroup,CircleColor.LawnGreen),
-                Make("فناوری اطلاعات", "علی رضایی", 24, 9, 91, 82, 85, "رشد", "#1E3A5F", "#93C5FD", PackIconKind.DesktopClassic,CircleColor.Blue),
-                Make("مالی و حسابداری", "مریم کاظمی", 9, 3, 79, 60, 55, "پایدار", "#14532D", "#86EFAC", PackIconKind.Cash,CircleColor.LawnGreen),
-                Make("فروش", "حسین نوری", 18, 7, 64, 45, 40, "نیاز به توجه", "#7F1D1D", "#FECACA", PackIconKind.CartOutline,CircleColor.Red),
-                Make("پشتیبانی", "زهرا احمدی", 15, 4, 85, 70, 68, "پایدار", "#14532D", "#86EFAC", PackIconKind.Headset, CircleColor.LawnGreen),
-                Make("آموزش و توسعه", "رضا کریمی", 8, 6, 87, 90, 78, "رشد", "#1E3A5F", "#93C5FD", PackIconKind.School,CircleColor.Blue),
-            };
-        }
+                var list = await _departmentService.GetAllAsync();
 
-        private static DepartmentModel Make(
-            string name, string manager, int members, int projects,
-            double perf, double eval, double proj, string status,
-            string bg, string fg, PackIconKind icon, CircleColor _StatusCircle)
-        {
-            
-            return new DepartmentModel
+                Departments.Clear();
+
+                // رنگ‌ها و آیکون‌ها را بر اساس نام یا به صورت چرخشی اختصاص می‌دهیم
+                var styles = new[]
+                {
+                    (PackIconKind.AccountGroup, CircleColor.LawnGreen, "#14532D", "#86EFAC"),
+                    (PackIconKind.DesktopClassic, CircleColor.Blue, "#1E3A5F", "#93C5FD"),
+                    (PackIconKind.Cash, CircleColor.LawnGreen, "#14532D", "#86EFAC"),
+                    (PackIconKind.CartOutline, CircleColor.Red, "#7F1D1D", "#FECACA"),
+                    (PackIconKind.Headset, CircleColor.LawnGreen, "#14532D", "#86EFAC"),
+                    (PackIconKind.School, CircleColor.Blue, "#1E3A5F", "#93C5FD"),
+                };
+
+                int i = 0;
+                foreach (var d in list)
+                {
+                    var style = styles[i % styles.Length];
+                    i++;
+
+                    Departments.Add(new DepartmentModel
+                    {
+                        Id = d.DepartmentId,
+                        Name = d.Title,
+                        Manager = "—",                 // فعلاً مدیر را نداریم
+                        MembersCount = 0,              // بعداً از EmployeeSupplement می‌گیریم
+                        ProjectsCount = 0,
+                        Performance = 0,
+                        EvaluationProgress = 0,
+                        ProjectProgress = 0,
+                        Status = "فعال",
+                        StatusBackground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(style.Item3)),
+                        StatusForeground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(style.Item4)),
+                        IconKind = style.Item1,
+                        StatusCircle = style.Item2
+                    });
+                }
+
+                UpdateSideCards();
+            }
+            catch (Exception ex)
             {
-                Name = name,
-                Manager = manager,
-                MembersCount = members,
-                ProjectsCount = projects,
-                Performance = perf,
-                EvaluationProgress = eval,
-                ProjectProgress = proj,
-                Status = status,
-                StatusBackground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(bg)),
-                StatusForeground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(fg)),
-                IconKind = icon,
-                StatusCircle = _StatusCircle,
-
-            };
+                MessageBox.Show("خطا در بارگذاری دپارتمان‌ها:\n" + ex.Message, "خطا", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void UpdateSideCards()
         {
             CardDepartmentsCount.ValueText = Departments.Count.ToString();
             CardTotalMembers.ValueText = Departments.Sum(d => d.MembersCount).ToString();
-            CardAveragePerformance.ValueText = Departments.Average(d => d.Performance).ToString("0") + "%";
+            CardAveragePerformance.ValueText = Departments.Any()
+                ? Departments.Average(d => d.Performance).ToString("0") + "%"
+                : "0%";
+        }
+
+        private void DeptTabs_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
         }
 
         private void DepartmentCard_Click(object sender, MouseButtonEventArgs e)
@@ -82,6 +97,8 @@ namespace HR.Pages
             if (sender is not FrameworkElement element) return;
 
             var model = element.DataContext as DepartmentModel;
+            if (model == null) return;
+
             NavigationRequested?.Invoke(new DepartmentDetailPage(model));
         }
 
@@ -91,16 +108,17 @@ namespace HR.Pages
 
     public class DepartmentModel
     {
-        public string Name { get; set; }
-        public string Manager { get; set; }
+        public short Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Manager { get; set; } = string.Empty;
         public int MembersCount { get; set; }
         public int ProjectsCount { get; set; }
         public double Performance { get; set; }
         public double EvaluationProgress { get; set; }
         public double ProjectProgress { get; set; }
-        public string Status { get; set; }
-        public Brush StatusBackground { get; set; }
-        public Brush StatusForeground { get; set; }
+        public string Status { get; set; } = string.Empty;
+        public Brush StatusBackground { get; set; } = Brushes.Transparent;
+        public Brush StatusForeground { get; set; } = Brushes.Black;
         public PackIconKind IconKind { get; set; }
         public CircleColor StatusCircle { get; set; }
     }
