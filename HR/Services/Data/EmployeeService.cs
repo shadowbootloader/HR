@@ -169,30 +169,83 @@ namespace HR.Services.Data
 
         public async Task<Employee> UpdateAsync(Employee employee)
         {
+            if (employee == null)
+                throw new ArgumentNullException(nameof(employee));
+
+            if (employee.EmployeeId == Guid.Empty)
+                throw new InvalidOperationException("شناسه کارمند برای ویرایش نامعتبر است.");
+
             var existing = await _db.Employees
                 .Include(e => e.Supplement)
+                .Include(e => e.Educations)
+                .Include(e => e.Courses)
+                .Include(e => e.BankAccounts)
+                .Include(e => e.PhoneNumbers)
+                .Include(e => e.RelatedPersons)
+                .Include(e => e.Languages)
+                .Include(e => e.Softwares)
+                .Include(e => e.EmploymentHistories)
+                .Include(e => e.Citizenships)
+                .Include(e => e.ForeignTravels)
+                .Include(e => e.ForeignRelatives)
+                .Include(e => e.ForeignCooperations)
+                .Include(e => e.OrganizationCooperations)
+                .Include(e => e.OtherActivities)
+                .Include(e => e.SacrificeRecords)
+                .Include(e => e.HiringRecords)
+                .Include(e => e.BackgroundRecords)
                 .FirstOrDefaultAsync(e => e.EmployeeId == employee.EmployeeId);
 
             if (existing == null)
                 throw new InvalidOperationException("کارمند یافت نشد.");
 
+            // فیلدهای اصلی (کلید را دست نمی‌زنیم)
+            var id = existing.EmployeeId;
             _db.Entry(existing).CurrentValues.SetValues(employee);
+            existing.EmployeeId = id;
+            existing.IsDeleted = false;
 
+            // Supplement
             if (employee.Supplement != null)
             {
+                employee.Supplement.EmployeeId = id;
                 if (existing.Supplement == null)
                 {
-                    employee.Supplement.EmployeeId = employee.EmployeeId;
                     if (employee.Supplement.EmployeeSupplementId == Guid.Empty)
                         employee.Supplement.EmployeeSupplementId = Guid.NewGuid();
-
                     _db.EmployeeSupplements.Add(employee.Supplement);
                 }
                 else
                 {
+                    var sid = existing.Supplement.EmployeeSupplementId;
                     _db.Entry(existing.Supplement).CurrentValues.SetValues(employee.Supplement);
+                    existing.Supplement.EmployeeSupplementId = sid;
+                    existing.Supplement.EmployeeId = id;
                 }
             }
+
+            // جایگزینی کامل مجموعه‌های فرزند
+            ReplaceChildren(existing.Educations, employee.Educations, id, (x, empId) => { x.EmployeeId = empId; if (x.EducationId == Guid.Empty) x.EducationId = Guid.NewGuid(); });
+            ReplaceChildren(existing.Courses, employee.Courses, id, (x, empId) => { x.EmployeeId = empId; if (x.CourseId == Guid.Empty) x.CourseId = Guid.NewGuid(); });
+            ReplaceChildren(existing.BankAccounts, employee.BankAccounts, id, (x, empId) => { x.EmployeeId = empId; if (x.BankAccountId == Guid.Empty) x.BankAccountId = Guid.NewGuid(); });
+            ReplaceChildren(existing.PhoneNumbers, employee.PhoneNumbers, id, (x, empId) => { x.EmployeeId = empId; if (x.PhoneNumberId == Guid.Empty) x.PhoneNumberId = Guid.NewGuid(); });
+            ReplaceChildren(existing.RelatedPersons, employee.RelatedPersons, id, (x, empId) => { x.EmployeeId = empId; if (x.RelatedPersonId == Guid.Empty) x.RelatedPersonId = Guid.NewGuid(); });
+            ReplaceChildren(existing.Languages, employee.Languages, id, (x, empId) => { x.EmployeeId = empId; if (x.EmployeeLanguageId == Guid.Empty) x.EmployeeLanguageId = Guid.NewGuid(); });
+            ReplaceChildren(existing.Softwares, employee.Softwares, id, (x, empId) => { x.EmployeeId = empId; if (x.EmployeeSoftwareId == Guid.Empty) x.EmployeeSoftwareId = Guid.NewGuid(); });
+            ReplaceChildren(existing.EmploymentHistories, employee.EmploymentHistories, id, (x, empId) => { x.EmployeeId = empId; if (x.EmploymentHistoryId == Guid.Empty) x.EmploymentHistoryId = Guid.NewGuid(); });
+            ReplaceChildren(existing.Citizenships, employee.Citizenships, id, (x, empId) => { x.EmployeeId = empId; if (x.CitizenshipId == Guid.Empty) x.CitizenshipId = Guid.NewGuid(); });
+            ReplaceChildren(existing.ForeignTravels, employee.ForeignTravels, id, (x, empId) => { x.EmployeeId = empId; if (x.ForeignTravelId == Guid.Empty) x.ForeignTravelId = Guid.NewGuid(); });
+            ReplaceChildren(existing.ForeignRelatives, employee.ForeignRelatives, id, (x, empId) => { x.EmployeeId = empId; if (x.ForeignRelativeId == Guid.Empty) x.ForeignRelativeId = Guid.NewGuid(); });
+            ReplaceChildren(existing.ForeignCooperations, employee.ForeignCooperations, id, (x, empId) => { x.EmployeeId = empId; if (x.ForeignCooperationId == Guid.Empty) x.ForeignCooperationId = Guid.NewGuid(); });
+            ReplaceChildren(existing.OrganizationCooperations, employee.OrganizationCooperations, id, (x, empId) => { x.EmployeeId = empId; if (x.OrganizationCooperationId == Guid.Empty) x.OrganizationCooperationId = Guid.NewGuid(); });
+            ReplaceChildren(existing.OtherActivities, employee.OtherActivities, id, (x, empId) => { x.EmployeeId = empId; if (x.OtherActivityId == Guid.Empty) x.OtherActivityId = Guid.NewGuid(); });
+            ReplaceChildren(existing.SacrificeRecords, employee.SacrificeRecords, id, (x, empId) => { x.EmployeeId = empId; if (x.SacrificeRecordId == Guid.Empty) x.SacrificeRecordId = Guid.NewGuid(); });
+            ReplaceChildren(existing.HiringRecords, employee.HiringRecords, id, (x, empId) => { x.EmployeeId = empId; if (x.HiringRecordId == Guid.Empty) x.HiringRecordId = Guid.NewGuid(); });
+            ReplaceChildren(existing.BackgroundRecords, employee.BackgroundRecords, id, (x, empId) => { x.EmployeeId = empId; if (x.BackgroundRecordId == Guid.Empty) x.BackgroundRecordId = Guid.NewGuid(); });
+
+            // لینک حساب بانکی به Supplement
+            if (existing.Supplement != null && existing.BankAccounts.Count > 0)
+                existing.Supplement.BankAccountId = existing.BankAccounts.First().BankAccountId;
 
             try
             {
@@ -204,6 +257,21 @@ namespace HR.Services.Data
             }
 
             return existing;
+        }
+
+        private static void ReplaceChildren<T>(
+            ICollection<T> existing,
+            ICollection<T> incoming,
+            Guid employeeId,
+            Action<T, Guid> prepare) where T : class
+        {
+            existing.Clear();
+            if (incoming == null) return;
+            foreach (var item in incoming)
+            {
+                prepare(item, employeeId);
+                existing.Add(item);
+            }
         }
 
         public async Task<bool> SoftDeleteAsync(Guid employeeId)

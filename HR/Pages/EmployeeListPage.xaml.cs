@@ -60,10 +60,18 @@ namespace HR.Pages
         {
             EmployeeRowControl.NavigationRequested -= OnRowNavigationRequested;
             EmployeeRowControl.NavigationRequested += OnRowNavigationRequested;
+            EmployeeRowControl.ListRefreshRequested -= OnListRefreshRequested;
+            EmployeeRowControl.ListRefreshRequested += OnListRefreshRequested;
         }
 
         private void OnUnloaded(object sender, RoutedEventArgs e)
-            => EmployeeRowControl.NavigationRequested -= OnRowNavigationRequested;
+        {
+            EmployeeRowControl.NavigationRequested -= OnRowNavigationRequested;
+            EmployeeRowControl.ListRefreshRequested -= OnListRefreshRequested;
+        }
+
+        private async void OnListRefreshRequested()
+            => await LoadEmployeesAsync();
 
         private void OnRowNavigationRequested(Page page) => NavigationRequested?.Invoke(page);
 

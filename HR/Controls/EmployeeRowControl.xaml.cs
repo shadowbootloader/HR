@@ -1,24 +1,70 @@
-﻿using System.Windows;
+using System;
+using System.Windows;
 using System.Windows.Controls;
 using HR.Pages;
+using HR.Services;
+using HR.Services.Data;
 
 namespace HR.Controls
 {
     public partial class EmployeeRowControl : UserControl
     {
         public EmployeeModel? Employee => DataContext as EmployeeModel;
-        private void ViewBtn_Click(object sender, RoutedEventArgs e)
-        {
-            NavigationRequested?.Invoke(new EmployeOverview(Employee));
-        }
 
+        public static event Action<Page>? NavigationRequested;
+        public static event Action? ListRefreshRequested;
 
-        public static event Action<Page> NavigationRequested;
+        private readonly IEmployeeService _employeeService = new EmployeeService();
+
         public EmployeeRowControl()
         {
             InitializeComponent();
-
         }
+
+        private void ViewBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (Employee == null) return;
+            NavigationRequested?.Invoke(new EmployeOverview(Employee));
+        }
+
+        private void EditBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (Employee == null || Employee.Id == Guid.Empty) return;
+            NavigationRequested?.Invoke(new AddEmployeePage(Employee.Id));
+        }
+
+        private async void DeleteBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (Employee == null || Employee.Id == Guid.Empty) return;
+
+            var answer = MessageBox.Show(
+                $"آیا از حذف «{Employee.FullName}» مطمئن هستید؟\n(حذف به‌صورت نرم انجام می‌شود و قابل بازگردانی است)",
+                "حذف کارمند",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (answer != MessageBoxResult.Yes) return;
+
+            try
+            {
+                var ok = await _employeeService.SoftDeleteAsync(Employee.Id);
+                if (ok)
+                {
+                    NotificationService.Success("حذف شد", $"«{Employee.FullName}» حذف شد.");
+                    ListRefreshRequested?.Invoke();
+                }
+                else
+                {
+                    NotificationService.Warning("خطا", "کارمند یافت نشد.");
+                }
+            }
+            catch (Exception ex)
+            {
+                NotificationService.Warning("خطا در حذف", ex.Message);
+            }
+        }
+
+        // ==================== Dependency Properties ====================
 
         public static readonly DependencyProperty FullNameProperty =
             DependencyProperty.Register(nameof(FullName), typeof(string), typeof(EmployeeRowControl));
@@ -63,11 +109,7 @@ namespace HR.Controls
         public string Status
         {
             get => (string)GetValue(StatusProperty);
-            set
-            {
-                SetValue(StatusProperty, value);
-                
-            }
+            set => SetValue(StatusProperty, value);
         }
 
         public static readonly DependencyProperty PerformanceValueProperty =
@@ -110,7 +152,5 @@ namespace HR.Controls
 
         public static readonly DependencyProperty DepartmentIconProperty =
             DependencyProperty.Register(nameof(DepartmentIcon), typeof(string), typeof(EmployeeRowControl));
-
-        
     }
 }

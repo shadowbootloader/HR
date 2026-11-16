@@ -15,7 +15,6 @@ namespace HR.Pages
 {
     public partial class AddEmployeePage : Page
     {
-        /// <summary>بخش‌هایی که در XAML نیستند و تنبل (lazy) ساخته می‌شوند.</summary>
         private static readonly string[] LazySections =
         {
             "Bank", "Family", "Lang", "Skills", "Abilities",
@@ -30,11 +29,19 @@ namespace HR.Pages
         private EmployeeProfile _profile = new();
         private readonly IEmployeeService _employeeService = new EmployeeService();
         private bool _isSaving;
+        private Guid? _editingId;
 
+        /// <summary>حالت ایجاد کارمند جدید.</summary>
         public AddEmployeePage()
         {
             InitializeComponent();
             Loaded += AddEmployeePage_Loaded;
+        }
+
+        /// <summary>حالت ویرایش کارمند موجود.</summary>
+        public AddEmployeePage(Guid employeeId) : this()
+        {
+            _editingId = employeeId;
         }
 
         private async void AddEmployeePage_Loaded(object sender, RoutedEventArgs e)
@@ -42,7 +49,37 @@ namespace HR.Pages
             Loaded -= AddEmployeePage_Loaded;
 
             await LoadRemainingSectionsAsync();
-            LoadProfileIntoForm();
+
+            if (_editingId.HasValue)
+            {
+                await LoadEmployeeForEditAsync(_editingId.Value);
+            }
+            else
+            {
+                LoadProfileIntoForm();
+            }
+        }
+
+        private async Task LoadEmployeeForEditAsync(Guid employeeId)
+        {
+            try
+            {
+                var entity = await _employeeService.GetByIdAsync(employeeId, includeDetails: true);
+                if (entity == null)
+                {
+                    NotificationService.Warning("خطا", "کارمند یافت نشد.");
+                    _editingId = null;
+                    LoadProfileIntoForm();
+                    return;
+                }
+
+                _profile = EmployeeMapper.ToProfile(entity);
+                LoadProfileIntoForm();
+            }
+            catch (Exception ex)
+            {
+                NotificationService.Warning("خطا در بارگذاری", ex.Message);
+            }
         }
 
         // ==================== ساخت بخش‌ها ====================
@@ -94,8 +131,6 @@ namespace HR.Pages
             return section;
         }
 
-        // ==================== اتصال به پرونده ====================
-
         private IEnumerable<IEmployeeSection> EnumerateSections()
             => DataContainerST.Children.OfType<IEmployeeSection>();
 
@@ -105,7 +140,7 @@ namespace HR.Pages
                 section.LoadFrom(_profile);
         }
 
-        // ==================== رویدادها ====================
+        // ==================== ذخیره ====================
 
         private async void SaveBtn_Click(object sender, RoutedEventArgs e)
         {
@@ -154,29 +189,38 @@ namespace HR.Pages
             {
                 using var lookups = await LookupResolver.LoadAsync(new PersonnelDbContext());
 
-                var entity = await EmployeeMapper.ToEntityAsync(_profile, lookups);
+                var entity = await EmployeeMapper.ToEntityAsync(_profile, lookups, _editingId);
 
-                if (await _employeeService.ExistsNationalCodeAsync(entity.NationalCode))
+                if (await _employeeService.ExistsNationalCodeAsync(entity.NationalCode, _editingId))
                 {
                     NotificationService.Warning("خطا", "کد ملی تکراری است.");
                     return;
                 }
 
                 if (entity.Supplement != null &&
-                    await _employeeService.ExistsPersonnelCodeAsync(entity.Supplement.PersonnelCode))
+                    await _employeeService.ExistsPersonnelCodeAsync(entity.Supplement.PersonnelCode, _editingId))
                 {
                     NotificationService.Warning("خطا", "کد پرسنلی تکراری است.");
                     return;
                 }
 
-                await _employeeService.CreateAsync(entity);
+                if (_editingId.HasValue)
+                {
+                    await _employeeService.UpdateAsync(entity);
+                    NotificationService.Success(
+                        "ویرایش موفق",
+                        $"کارمند «{entity.FirstName} {entity.LastName}» با موفقیت به‌روز شد.");
+                }
+                else
+                {
+                    await _employeeService.CreateAsync(entity);
+                    NotificationService.Success(
+                        "ثبت موفق",
+                        $"کارمند «{entity.FirstName} {entity.LastName}» با موفقیت ذخیره شد.");
 
-                NotificationService.Success(
-                    "ثبت موفق",
-                    $"کارمند «{entity.FirstName} {entity.LastName}» با موفقیت ذخیره شد.");
-
-                _profile = new EmployeeProfile();
-                LoadProfileIntoForm();
+                    _profile = new EmployeeProfile();
+                    LoadProfileIntoForm();
+                }
             }
             catch (Exception ex)
             {
@@ -205,8 +249,16 @@ namespace HR.Pages
 
             if (answer != MessageBoxResult.Yes) return;
 
-            _profile = new EmployeeProfile();
-            LoadProfileIntoForm();
+            if (_editingId.HasValue)
+            {
+                // بازگشت به لیست در صورت تمایل می‌تواند از بیرون هندل شود
+                _ = LoadEmployeeForEditAsync(_editingId.Value);
+            }
+            else
+            {
+                _profile = new EmployeeProfile();
+                LoadProfileIntoForm();
+            }
 
             NotificationService.Info("انصراف", "فرم به حالت اولیه بازگشت.");
         }

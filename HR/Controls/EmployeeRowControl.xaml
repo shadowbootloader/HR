@@ -74,9 +74,9 @@ TargetType="{x:Type materialDesign:PackIcon}">
 
             <!-- Actions -->
             <StackPanel Grid.Column="6" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
-                <Button x:Name="ViewBtn" Click="ViewBtn_Click" materialDesign:ButtonAssist.CornerRadius="8" Content="👁" Width="35" Padding="0" Background="#222C3C" BorderBrush="#FF354256" BorderThickness="1.5" Foreground="White" Margin="0,0,5,0"/>
-                <Button materialDesign:ButtonAssist.CornerRadius="8" Content="✎" Width="35" Padding="0" Background="#222C3C" BorderBrush="#FF354256" BorderThickness="1.5" Foreground="White" Margin="0,0,5,0"/>
-                <Button materialDesign:ButtonAssist.CornerRadius="8" Content="⋮" Width="30" Padding="0" Background="#222C3C" BorderBrush="#FF354256" BorderThickness="1.5" Foreground="White" FontSize="20" FontWeight="Bold"/>
+                <Button x:Name="ViewBtn" Click="ViewBtn_Click" materialDesign:ButtonAssist.CornerRadius="8" Content="👁" ToolTip="مشاهده" Width="35" Padding="0" Background="#222C3C" BorderBrush="#FF354256" BorderThickness="1.5" Foreground="White" Margin="0,0,5,0"/>
+                <Button x:Name="EditBtn" Click="EditBtn_Click" materialDesign:ButtonAssist.CornerRadius="8" Content="✎" ToolTip="ویرایش" Width="35" Padding="0" Background="#222C3C" BorderBrush="#FF354256" BorderThickness="1.5" Foreground="White" Margin="0,0,5,0"/>
+                <Button x:Name="DeleteBtn" Click="DeleteBtn_Click" materialDesign:ButtonAssist.CornerRadius="8" Content="🗑" ToolTip="حذف" Width="35" Padding="0" Background="#3C2222" BorderBrush="#563535" BorderThickness="1.5" Foreground="White"/>
             </StackPanel>
         </Grid>
     </Border>
