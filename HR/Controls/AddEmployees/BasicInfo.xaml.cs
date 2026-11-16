@@ -115,8 +115,10 @@ namespace HR.Controls.AddEmployees
 
             SelectByValue(PersonalMaritalStatusTb, profile.MaritalStatus);
             SelectByValue(PersonalSarbaziTb, profile.MilitaryStatus);
-            PersonalMoafiatTypeTb.Text = profile.ExemptionType = PersonalMoafiatStatusTb.Text;
-            profile.ExemptionReason;
+
+            SelectText(PersonalMoafiatStatusTb, profile.ExemptionType);
+            SelectText(PersonalMoafiatTypeTb, profile.ExemptionReason);
+            SelectText(PersonalReligionCombo, profile.Religion);
 
             _photo = profile.PhotoPath;
             _nationalCardImage = profile.NationalCardImagePath;
@@ -147,8 +149,9 @@ namespace HR.Controls.AddEmployees
             profile.Gender = PersonalGenderList.SelectedIndex == 1 ? Gender.Female : Gender.Male;
             profile.MaritalStatus = ValueOf(PersonalMaritalStatusTb, MaritalStatus.Unspecified);
             profile.MilitaryStatus = ValueOf(PersonalSarbaziTb, MilitaryStatus.Unspecified);
-            profile.ExemptionType = PersonalMoafiatStatusTb.Text;
-            profile.ExemptionReason = PersonalMoafiatTypeTb.Text?.Trim() ?? string.Empty;
+            profile.ExemptionType = ComboText(PersonalMoafiatStatusTb);
+            profile.ExemptionReason = ComboText(PersonalMoafiatTypeTb);
+            profile.Religion = ComboText(PersonalReligionCombo);
 
             profile.PhotoPath = _photo;
             profile.NationalCardImagePath = _nationalCardImage;
@@ -196,5 +199,45 @@ namespace HR.Controls.AddEmployees
 
         private static T ValueOf<T>(ComboBox combo, T fallback) where T : struct
             => combo.SelectedValue is T value ? value : fallback;
+
+
+        private static void SelectText(ComboBox combo, string? value)
+        {
+            if (combo == null) return;
+            var text = value?.Trim();
+            if (string.IsNullOrEmpty(text) || text == "—")
+            {
+                if (combo.Items.Count > 0) combo.SelectedIndex = 0;
+                return;
+            }
+
+            foreach (var item in combo.Items)
+            {
+                var label = item switch
+                {
+                    string s => s,
+                    ComboBoxItem cbi => cbi.Content?.ToString(),
+                    ComboItem ci => ci.Text,
+                    _ => item?.ToString()
+                };
+                if (string.Equals(label, text, StringComparison.OrdinalIgnoreCase))
+                {
+                    combo.SelectedItem = item;
+                    return;
+                }
+            }
+
+            combo.Text = text;
+        }
+
+        private static string ComboText(ComboBox combo)
+        {
+            if (combo == null) return string.Empty;
+            if (combo.SelectedItem is string s) return s.Trim();
+            if (combo.SelectedItem is ComboBoxItem cbi) return cbi.Content?.ToString()?.Trim() ?? string.Empty;
+            if (combo.SelectedItem is ComboItem ci) return ci.Text?.Trim() ?? string.Empty;
+            return combo.Text?.Trim() ?? string.Empty;
+        }
+
     }
 }

@@ -208,6 +208,8 @@ namespace HR.Services.Data
                     FatherName = r.FatherName,
                     NationalCode = r.NationalCode,
                     Relation = r.Relationship,
+                    PhoneNumber = r.PhoneNumber,
+                    Address = r.Address,
                     Note = r.JobTitle
                 });
             }
@@ -396,8 +398,7 @@ namespace HR.Services.Data
                 profile.WorkInterests.Add(new WorkInterestRecord
                 {
                     Title = w.Title,
-                    Level = MapInterestBack(w.InterestLevelId, w.InterestLevel?.Title),
-                    Note = w.Description
+                    Level = MapInterestBack(w.InterestLevelId, w.InterestLevel?.Title)
                 });
             }
 
@@ -662,20 +663,5 @@ namespace HR.Services.Data
             };
         }
 
-
-        private static string BuildEmail(string nationalCode)
-            => string.IsNullOrWhiteSpace(nationalCode)
-                ? $"{Guid.NewGuid():N}@personnel.local"
-                : $"{nationalCode}@personnel.local";
-
-        private static string BuildInsuranceNumber()
-        {
-            var digits = new string(Guid.NewGuid().ToByteArray()
-                .Take(6)
-                .Select(b => (char)('0' + (b % 10)))
-                .ToArray());
-
-            return digits.PadRight(10, '0')[..10];
-        }
     }
 }

@@ -31,7 +31,8 @@
                         <GridViewColumn Header="نسبت" Width="100" DisplayMemberBinding="{Binding Relation}"/>
                         <GridViewColumn Header="نام پدر" Width="130" DisplayMemberBinding="{Binding FatherName}"/>
                         <GridViewColumn Header="کد ملی" Width="140" DisplayMemberBinding="{Binding NationalCode}"/>
-                        <GridViewColumn Header="تلفن همراه" Width="150" DisplayMemberBinding="{Binding PhoneNumber}"/>
+                        <GridViewColumn Header="تلفن همراه" Width="120" DisplayMemberBinding="{Binding PhoneNumber}"/>
+                        <GridViewColumn Header="آدرس" Width="180" DisplayMemberBinding="{Binding Address}"/>
                         <GridViewColumn Header="توضیحات" Width="200" DisplayMemberBinding="{Binding Note}"/>
                     </GridView>
                 </ListView.View>
@@ -63,6 +64,8 @@
                          Width="150" materialDesign:HintAssist.Hint="نام پدر"/>
                 <TextBox x:Name="Family_NationalIDNumberTB" Style="{StaticResource DarkOutlinedTextBox}"
                          Width="150" MaxLength="10" materialDesign:HintAssist.Hint="کد ملی"/>
+                <TextBox x:Name="Family_AddressTB" Style="{StaticResource DarkOutlinedTextBox}"
+                         materialDesign:HintAssist.Hint="آدرس" Width="220"/>
                 <TextBox x:Name="Family_PhoneNumberTB" Style="{StaticResource DarkOutlinedTextBox}"
                          Width="150" MaxLength="11" materialDesign:HintAssist.Hint="تلفن همراه"/>
                 <TextBox x:Name="Family_NoteTB" Style="{StaticResource DarkOutlinedTextBox}"

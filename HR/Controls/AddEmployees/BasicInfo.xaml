@@ -158,6 +158,11 @@
             materialDesign:HintAssist.Hint="علت معافیت" >
 
                 </ComboBox>
+                <ComboBox x:Name="PersonalReligionCombo" Style="{StaticResource DarkOutlinedComboBox}"
+            Width="120"
+            materialDesign:HintAssist.Hint="مذهب" >
+
+                </ComboBox>
             </WrapPanel>
 
         </Grid>

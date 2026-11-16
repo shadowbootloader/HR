@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using HR.Data.Entities;
 using HR.Models;
@@ -28,7 +28,9 @@ namespace HR.Services.Data.Mapping
                     IssueDate = DateTime.Now,
                     JobTitle = string.IsNullOrWhiteSpace(member.Note) ? "—" : member.Note.Trim(),
                     Relationship = MapperHelpers.Required(member.Relation),
-                    PersonRole = 0
+                    PersonRole = 0,
+                    PhoneNumber = string.IsNullOrWhiteSpace(member.PhoneNumber) ? null : member.PhoneNumber.Trim(),
+                    Address = string.IsNullOrWhiteSpace(member.Address) ? null : member.Address.Trim()
                 });
             }
 

@@ -1,8 +1,10 @@
-﻿using System;
+using System;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using HR.Models;
 using HR.Services;
+using HR.Services.Data;
 
 namespace HR.Controls.AddEmployees
 {
@@ -16,24 +18,52 @@ namespace HR.Controls.AddEmployees
         {
             InitializeComponent();
             _list.Attach(PersonalForenTravelList);
+            Loaded += TripAbroad_Loaded;
+        }
 
-            OriginCountryCombo.ItemsSource = Lookups.Countries;
-            DestinationCountryCombo.ItemsSource = Lookups.Countries;
-            TransportCombo.ItemsSource = Lookups.TransportModes;
+        private async void TripAbroad_Loaded(object sender, RoutedEventArgs e)
+        {
+            Loaded -= TripAbroad_Loaded;
 
-            OriginCountryCombo.SelectedIndex = 0;
-            DestinationCountryCombo.SelectedIndex = 0;
-            TransportCombo.SelectedIndex = 0;
+            try
+            {
+                using var geo = new GeoService();
+                var countries = await geo.GetCountriesAsync();
+                var names = countries.Select(c => c.Name).ToList();
+                if (names.Count == 0) names.Add("—");
+
+                OriginCountryCombo.ItemsSource = names;
+                DestinationCountryCombo.ItemsSource = names.ToList();
+                OriginCountryCombo.SelectedIndex = 0;
+                DestinationCountryCombo.SelectedIndex = 0;
+
+                await LookupBinder.FillTitlesAsync(TransportCombo, LookupKeys.TransportType, addEmptyItem: true);
+            }
+            catch
+            {
+                OriginCountryCombo.ItemsSource = new[] { "—" };
+                DestinationCountryCombo.ItemsSource = new[] { "—" };
+                TransportCombo.ItemsSource = new[] { "—" };
+                OriginCountryCombo.SelectedIndex = 0;
+                DestinationCountryCombo.SelectedIndex = 0;
+                TransportCombo.SelectedIndex = 0;
+            }
         }
 
         private void AddForenTravelDataBtn_Click(object sender, RoutedEventArgs e)
         {
-            var origin = OriginCountryCombo.Text?.Trim();
-            var destination = DestinationCountryCombo.Text?.Trim();
+            var origin = OriginCountryCombo.SelectedItem as string ?? OriginCountryCombo.Text;
+            var dest = DestinationCountryCombo.SelectedItem as string ?? DestinationCountryCombo.Text;
+            var transport = TransportCombo.SelectedItem as string ?? TransportCombo.Text;
 
-            if (string.IsNullOrWhiteSpace(origin) || string.IsNullOrWhiteSpace(destination))
+            if (string.IsNullOrWhiteSpace(origin) || origin == "—")
             {
-                Warn("کشور مبدأ و مقصد را انتخاب کنید.");
+                Warn("کشور مبدأ را انتخاب کنید.");
+                return;
+            }
+            if (string.IsNullOrWhiteSpace(dest) || dest == "—")
+            {
+                Warn("کشور مقصد را انتخاب کنید.");
                 return;
             }
 
@@ -41,15 +71,15 @@ namespace HR.Controls.AddEmployees
             var back = TravelEndDateDP.SelectedDate;
             if (depart.HasValue && back.HasValue && back < depart)
             {
-                Warn("تاریخ برگشت نمی‌تواند قبل از تاریخ رفت باشد.");
+                Warn("تاریخ بازگشت نمی‌تواند قبل از تاریخ رفت باشد.");
                 return;
             }
 
             _list.Items.Add(new TripAbroadRecord
             {
-                OriginCountry = origin,
-                DestinationCountry = destination,
-                Transport = TransportCombo.Text?.Trim() ?? string.Empty,
+                OriginCountry = origin.Trim(),
+                DestinationCountry = dest.Trim(),
+                Transport = string.IsNullOrWhiteSpace(transport) || transport == "—" ? string.Empty : transport.Trim(),
                 Reason = ReasonNameTB.Text?.Trim() ?? string.Empty,
                 DepartDate = depart,
                 ReturnDate = back,

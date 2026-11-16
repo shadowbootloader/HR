@@ -17,9 +17,9 @@ namespace HR.Services.Data.Mapping
 
                 var levelTitle = item.Level switch
                 {
-                    InterestLevel.Low => "کم",
-                    InterestLevel.Medium => "متوسط",
-                    InterestLevel.High => "زیاد",
+                    HR.Models.InterestLevel.Low => "کم",
+                    HR.Models.InterestLevel.Medium => "متوسط",
+                    HR.Models.InterestLevel.High => "زیاد",
                     _ => "متوسط"
                 };
 
@@ -29,7 +29,7 @@ namespace HR.Services.Data.Mapping
                     EmployeeId = entity.EmployeeId,
                     InterestLevelId = await lookups.ByteFromTitleAsync<HR.Data.Entities.InterestLevel>(levelTitle),
                     Title = item.Title.Trim(),
-                    Description = item.Note
+                    Description = null
                 });
             }
         }

@@ -68,6 +68,7 @@ namespace HR.Controls.AddEmployees
                 FatherName = NullIfEmpty(Family_FatherNameTB.Text),
                 NationalCode = NullIfEmpty(nationalCode),
                 PhoneNumber = NullIfEmpty(phone),
+                Address = NullIfEmpty(Family_AddressTB.Text),
                 Note = NullIfEmpty(Family_NoteTB.Text)
             });
 
@@ -125,6 +126,7 @@ namespace HR.Controls.AddEmployees
             Family_FatherNameTB.Clear();
             Family_NationalIDNumberTB.Clear();
             Family_PhoneNumberTB.Clear();
+            Family_AddressTB.Clear();
             Family_NoteTB.Clear();
             FamilyRelationCombo.SelectedIndex = 0;
             FamilyNameTB.Focus();

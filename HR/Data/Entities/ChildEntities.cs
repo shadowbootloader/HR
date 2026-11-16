@@ -90,6 +90,8 @@ namespace HR.Data.Entities
         public string Relationship { get; set; } = string.Empty;
         /// <summary>۰ = بستگان، ۱ = همکاری خارجی</summary>
         public byte PersonRole { get; set; }
+        public string? PhoneNumber { get; set; }
+        public string? Address { get; set; }
         public HierarchyId? IssueCity { get; set; }
         public HierarchyId? BirthCity { get; set; }
 

@@ -176,8 +176,10 @@ namespace HR.Services.Data
 
             try
             {
+                await using var tx = await _db.Database.BeginTransactionAsync();
                 _db.Employees.Add(employee);
                 await _db.SaveChangesAsync();
+                await tx.CommitAsync();
                 return employee;
             }
             catch (DbUpdateException ex)
@@ -221,6 +223,8 @@ namespace HR.Services.Data
 
             if (existing == null)
                 throw new InvalidOperationException("کارمند یافت نشد.");
+
+            await ValidateAsync(employee);
 
             // فیلدهای اصلی (کلید را دست نمی‌زنیم)
             var id = existing.EmployeeId;
@@ -299,7 +303,9 @@ namespace HR.Services.Data
 
             try
             {
+                await using var tx = await _db.Database.BeginTransactionAsync();
                 await _db.SaveChangesAsync();
+                await tx.CommitAsync();
             }
             catch (DbUpdateException ex)
             {
