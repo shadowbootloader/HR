@@ -28,20 +28,8 @@ namespace HR.Controls.AddEmployees
             Setup(PersonalMaritalStatusTb);
             Setup(PersonalSarbaziTb);
 
-            // این دو مورد هنوز جدول Lookup مستقل ندارند
-            PersonalMoafiatStatusTb.ItemsSource = new[]
-            {
-                new ComboItem("دائم", "دائم"),
-                new ComboItem("موقت", "موقت"),
-                new ComboItem("—",    "ندارد"),
-            };
             Setup(PersonalMoafiatStatusTb);
-
-            PersonalMoafiatTypeTb.ItemsSource = new[]
-            {
-                "پزشکی", "کفالت", "تحصیلی", "فرزند", "سایر"
-            };
-            PersonalMoafiatTypeTb.SelectedIndex = 0;
+            Setup(PersonalMoafiatTypeTb);
 
             Loaded += BasicInfo_Loaded;
         }
@@ -52,6 +40,11 @@ namespace HR.Controls.AddEmployees
 
             await LookupBinder.FillAsync<MaritalStatus>(PersonalMaritalStatusTb, LookupKeys.MaritalStatus, valueOffset: 1);
             await LookupBinder.FillAsync<MilitaryStatus>(PersonalSarbaziTb, LookupKeys.MilitaryStatus, valueOffset: 1);
+            await LookupBinder.FillTitlesAsync(PersonalMoafiatStatusTb, LookupKeys.ExemptionType, addEmptyItem: true);
+            await LookupBinder.FillTitlesAsync(PersonalMoafiatTypeTb, LookupKeys.ExemptionReason, addEmptyItem: true);
+
+            if (FindName("PersonalReligionCombo") is ComboBox religionCombo)
+                await LookupBinder.FillTitlesAsync(religionCombo, LookupKeys.Religion, addEmptyItem: true);
         }
 
         private static void Setup(ComboBox combo)
@@ -122,7 +115,8 @@ namespace HR.Controls.AddEmployees
 
             SelectByValue(PersonalMaritalStatusTb, profile.MaritalStatus);
             SelectByValue(PersonalSarbaziTb, profile.MilitaryStatus);
-            PersonalMoafiatTypeTb.Text = profile.ExemptionReason;
+            PersonalMoafiatTypeTb.Text = profile.ExemptionType = PersonalMoafiatStatusTb.Text;
+            profile.ExemptionReason;
 
             _photo = profile.PhotoPath;
             _nationalCardImage = profile.NationalCardImagePath;
@@ -153,6 +147,7 @@ namespace HR.Controls.AddEmployees
             profile.Gender = PersonalGenderList.SelectedIndex == 1 ? Gender.Female : Gender.Male;
             profile.MaritalStatus = ValueOf(PersonalMaritalStatusTb, MaritalStatus.Unspecified);
             profile.MilitaryStatus = ValueOf(PersonalSarbaziTb, MilitaryStatus.Unspecified);
+            profile.ExemptionType = PersonalMoafiatStatusTb.Text;
             profile.ExemptionReason = PersonalMoafiatTypeTb.Text?.Trim() ?? string.Empty;
 
             profile.PhotoPath = _photo;

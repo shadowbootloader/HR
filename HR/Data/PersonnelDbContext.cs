@@ -36,6 +36,7 @@ namespace HR.Data
         public DbSet<Employee> Employees => Set<Employee>();
         public DbSet<EmployeeSupplement> EmployeeSupplements => Set<EmployeeSupplement>();
         public DbSet<Department> Departments => Set<Department>();
+        public DbSet<DepartmentOffice> DepartmentOffices => Set<DepartmentOffice>();
         public DbSet<Geo> Geos => Set<Geo>();
 
         // Child tables
@@ -58,6 +59,11 @@ namespace HR.Data
         public DbSet<PersonFile> PersonFiles => Set<PersonFile>();
         public DbSet<Address> Addresses => Set<Address>();
         public DbSet<BackgroundRecord> BackgroundRecords => Set<BackgroundRecord>();
+        public DbSet<Ability> AbilitiesLookup => Set<Ability>();
+        public DbSet<InterestLevel> InterestLevels => Set<InterestLevel>();
+        public DbSet<EmployeeAbility> EmployeeAbilities => Set<EmployeeAbility>();
+        public DbSet<EmployeeWorkInterest> EmployeeWorkInterests => Set<EmployeeWorkInterest>();
+        public DbSet<EmployeeSelfAssessment> EmployeeSelfAssessments => Set<EmployeeSelfAssessment>();
 
         // Lookups
         public DbSet<Gender> Genders => Set<Gender>();
@@ -95,6 +101,77 @@ namespace HR.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+
+            // ==================== Ability / WorkInterest / SelfAssessment ====================
+            modelBuilder.Entity<Ability>(entity =>
+            {
+                entity.ToTable("Ability");
+                entity.HasKey(e => e.AbilityId);
+                entity.Property(e => e.Title).HasMaxLength(100).IsRequired();
+                entity.HasIndex(e => e.Title).IsUnique();
+            });
+
+            modelBuilder.Entity<InterestLevel>(entity =>
+            {
+                entity.ToTable("InterestLevel");
+                entity.HasKey(e => e.InterestLevelId);
+                entity.Property(e => e.Title).HasMaxLength(50).IsRequired();
+                entity.HasIndex(e => e.Title).IsUnique();
+            });
+
+            modelBuilder.Entity<EmployeeAbility>(entity =>
+            {
+                entity.ToTable("EmployeeAbility");
+                entity.HasKey(e => e.EmployeeAbilityId);
+                entity.Property(e => e.Description).HasMaxLength(500);
+
+                entity.HasOne(e => e.Employee)
+                      .WithMany(emp => emp.Abilities)
+                      .HasForeignKey(e => e.EmployeeId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.Ability)
+                      .WithMany()
+                      .HasForeignKey(e => e.AbilityId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.SkillLevel)
+                      .WithMany()
+                      .HasForeignKey(e => e.SkillLevelId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<EmployeeWorkInterest>(entity =>
+            {
+                entity.ToTable("EmployeeWorkInterest");
+                entity.HasKey(e => e.EmployeeWorkInterestId);
+                entity.Property(e => e.Title).HasMaxLength(150).IsRequired();
+                entity.Property(e => e.Description).HasMaxLength(500);
+
+                entity.HasOne(e => e.Employee)
+                      .WithMany(emp => emp.WorkInterests)
+                      .HasForeignKey(e => e.EmployeeId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.InterestLevel)
+                      .WithMany()
+                      .HasForeignKey(e => e.InterestLevelId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<EmployeeSelfAssessment>(entity =>
+            {
+                entity.ToTable("EmployeeSelfAssessment");
+                entity.HasKey(e => e.EmployeeSelfAssessmentId);
+                entity.Property(e => e.Description).HasMaxLength(500);
+                entity.HasIndex(e => e.EmployeeId).IsUnique();
+            });
+
+            modelBuilder.Entity<RelatedPerson>(entity =>
+            {
+                entity.Property(e => e.PersonRole).HasDefaultValue((byte)0);
+            });
+
             base.OnModelCreating(modelBuilder);
 
             // ==================== Employee ====================
@@ -121,6 +198,22 @@ namespace HR.Data
                 entity.HasOne(e => e.Supplement)
                       .WithOne(s => s.Employee)
                       .HasForeignKey<EmployeeSupplement>(s => s.EmployeeId);
+
+                entity.HasOne(e => e.ExemptionType)
+                      .WithMany()
+                      .HasForeignKey(e => e.ExemptionTypeId)
+                      .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne(e => e.ExemptionReason)
+                      .WithMany()
+                      .HasForeignKey(e => e.ExemptionReasonId)
+                      .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne(e => e.SelfAssessment)
+                      .WithOne(s => s.Employee)
+                      .HasForeignKey<EmployeeSelfAssessment>(s => s.EmployeeId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
             });
 
             // ==================== EmployeeSupplement ====================
@@ -146,13 +239,51 @@ namespace HR.Data
             {
                 entity.ToTable("Department");
                 entity.HasKey(e => e.DepartmentId);
+
                 entity.Property(e => e.Title).HasMaxLength(100).IsRequired();
-                entity.HasIndex(e => e.Title).IsUnique();
+                entity.Property(e => e.SecurityLevel).HasMaxLength(50);
+                entity.Property(e => e.LogoPath).HasMaxLength(500);
+                entity.Property(e => e.CostCenterCode).HasMaxLength(50);
+                entity.Property(e => e.Description).HasMaxLength(500);
+                entity.Property(e => e.AnnualBudget).HasColumnType("decimal(18,0)");
+                entity.Property(e => e.PettyCashLimit).HasColumnType("decimal(18,0)");
+                entity.Property(e => e.IsActive).HasDefaultValue(true);
+
+                entity.HasIndex(e => new { e.Title, e.ParentDepartmentId }).IsUnique();
 
                 entity.HasOne(e => e.Parent)
                       .WithMany(d => d.Children)
-                      .HasForeignKey(e => e.ParentDepartment)
+                      .HasForeignKey(e => e.ParentDepartmentId)
                       .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.Manager)
+                      .WithMany()
+                      .HasForeignKey(e => e.ManagerEmployeeId)
+                      .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne(e => e.Deputy)
+                      .WithMany()
+                      .HasForeignKey(e => e.DeputyEmployeeId)
+                      .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne(e => e.CashCustodian)
+                      .WithMany()
+                      .HasForeignKey(e => e.CashCustodianEmployeeId)
+                      .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<DepartmentOffice>(entity =>
+            {
+                entity.ToTable("DepartmentOffice");
+                entity.HasKey(e => e.OfficeId);
+                entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
+                entity.Property(e => e.City).HasMaxLength(100);
+                entity.Property(e => e.Address).HasMaxLength(500);
+
+                entity.HasOne(e => e.Department)
+                      .WithMany(d => d.Offices)
+                      .HasForeignKey(e => e.DepartmentId)
+                      .OnDelete(DeleteBehavior.Cascade);
             });
 
             // ==================== Geo ====================

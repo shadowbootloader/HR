@@ -39,6 +39,8 @@ namespace HR.Models
         public DateTime? IdIssueDate { get; set; }
         public string IdIssuePlace { get; set; } = string.Empty;
         public string ExemptionReason { get; set; } = string.Empty;
+        public string ExemptionType { get; set; } = string.Empty;
+        public string Religion { get; set; } = string.Empty;
         public int? ChildrenCount { get; set; }
         public MilitaryStatus MilitaryStatus { get; set; }
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.Linq;
 
@@ -34,6 +34,13 @@ namespace HR.Services.Data.Mapping
                 .ToArray();
 
             return parts.Length == 0 ? null : string.Join(" — ", parts);
+        }
+
+        public static (string? First, string? Second) SplitJoined(string? joined)
+        {
+            if (string.IsNullOrWhiteSpace(joined)) return (null, null);
+            var parts = joined.Split(" — ", 2, StringSplitOptions.None);
+            return parts.Length == 2 ? (parts[0], parts[1]) : (joined, null);
         }
 
         public static int Duration(string? text)

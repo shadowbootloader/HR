@@ -57,8 +57,8 @@ namespace HR.Pages
                     {
                         Id = d.DepartmentId,
                         Name = d.Title,
-                        Manager = "—",                 // فعلاً مدیر را نداریم
-                        MembersCount = 0,              // بعداً از EmployeeSupplement می‌گیریم
+                        Manager = d.Manager != null ? $"{d.Manager.FirstName} {d.Manager.LastName}".Trim() : "—",
+                        MembersCount = 0,
                         ProjectsCount = 0,
                         Performance = 0,
                         EvaluationProgress = 0,

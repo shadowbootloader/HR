@@ -130,6 +130,32 @@ namespace HR.Services.Data
             return province.Node;
         }
 
+        public async Task<HierarchyId?> FindLocationNodeByNameAsync(string? name)
+        {
+            var text = name?.Trim();
+            if (string.IsNullOrEmpty(text)) return null;
+
+            var row = await _db.Geos.AsNoTracking()
+                .Where(g => (g.Level == ProvinceLevel || g.Level == CityLevel) && g.Name == text)
+                .OrderByDescending(g => g.Level)
+                .FirstOrDefaultAsync();
+            return row?.Node;
+        }
+
+        public async Task<string?> FindLocationNameByNodeAsync(HierarchyId? node)
+        {
+            if (node == null) return null;
+            var row = await _db.Geos.AsNoTracking().FirstOrDefaultAsync(g => g.Node == node);
+            return row?.Name;
+        }
+
+        public async Task<string?> FindCountryNameByIdAsync(int countryId)
+        {
+            var row = await _db.Geos.AsNoTracking()
+                .FirstOrDefaultAsync(g => g.GeoId == countryId);
+            return row?.Name;
+        }
+
         public void Dispose() => _db.Dispose();
     }
 }

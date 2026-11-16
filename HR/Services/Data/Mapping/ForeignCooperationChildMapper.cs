@@ -27,7 +27,8 @@ namespace HR.Services.Data.Mapping
                     BirthDate = DateTime.Today,
                     IssueDate = DateTime.Today,
                     JobTitle = "—",
-                    Relationship = "همکار خارجی"
+                    Relationship = "همکار خارجی",
+                    PersonRole = 1
                 };
 
                 entity.RelatedPersons.Add(person);

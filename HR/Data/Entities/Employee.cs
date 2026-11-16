@@ -29,17 +29,18 @@ namespace HR.Data.Entities
         public byte? ReligionId { get; set; }
         public byte? DenominationId { get; set; }
 
-        // hierarchyid columns
         public HierarchyId? IssueNode { get; set; }
         public HierarchyId? BirthNode { get; set; }
         public HierarchyId? ResidenceNode { get; set; }
 
-        // Navigation properties
         public Gender Gender { get; set; } = null!;
         public MaritalStatus MaritalStatus { get; set; } = null!;
         public MilitaryStatus? MilitaryStatus { get; set; }
         public Religion? Religion { get; set; }
+        public ExemptionType? ExemptionType { get; set; }
+        public ExemptionReason? ExemptionReason { get; set; }
         public EmployeeSupplement? Supplement { get; set; }
+        public EmployeeSelfAssessment? SelfAssessment { get; set; }
 
         public ICollection<Education> Educations { get; set; } = new List<Education>();
         public ICollection<Course> Courses { get; set; } = new List<Course>();
@@ -60,5 +61,63 @@ namespace HR.Data.Entities
         public ICollection<PersonFile> PersonFiles { get; set; } = new List<PersonFile>();
         public ICollection<Address> Addresses { get; set; } = new List<Address>();
         public ICollection<BackgroundRecord> BackgroundRecords { get; set; } = new List<BackgroundRecord>();
+        public ICollection<EmployeeAbility> Abilities { get; set; } = new List<EmployeeAbility>();
+        public ICollection<EmployeeWorkInterest> WorkInterests { get; set; } = new List<EmployeeWorkInterest>();
+    }
+
+    public class Ability
+    {
+        public int AbilityId { get; set; }
+        public string Title { get; set; } = string.Empty;
+    }
+
+    public class InterestLevel
+    {
+        public byte InterestLevelId { get; set; }
+        public string Title { get; set; } = string.Empty;
+    }
+
+    public class EmployeeAbility
+    {
+        public Guid EmployeeAbilityId { get; set; }
+        public Guid EmployeeId { get; set; }
+        public int AbilityId { get; set; }
+        public byte SkillLevelId { get; set; }
+        public string? Description { get; set; }
+
+        public Employee Employee { get; set; } = null!;
+        public Ability Ability { get; set; } = null!;
+        public SkillLevel SkillLevel { get; set; } = null!;
+    }
+
+    public class EmployeeWorkInterest
+    {
+        public Guid EmployeeWorkInterestId { get; set; }
+        public Guid EmployeeId { get; set; }
+        public byte InterestLevelId { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string? Description { get; set; }
+
+        public Employee Employee { get; set; } = null!;
+        public InterestLevel InterestLevel { get; set; } = null!;
+    }
+
+    public class EmployeeSelfAssessment
+    {
+        public Guid EmployeeSelfAssessmentId { get; set; }
+        public Guid EmployeeId { get; set; }
+        public byte Discipline { get; set; }
+        public byte Speed { get; set; }
+        public byte Effort { get; set; }
+        public byte Negotiation { get; set; }
+        public byte Patience { get; set; }
+        public byte Creativity { get; set; }
+        public byte Punctuality { get; set; }
+        public byte Teamwork { get; set; }
+        public byte Accuracy { get; set; }
+        public byte Planning { get; set; }
+        public string? Description { get; set; }
+
+        public Employee Employee { get; set; } = null!;
     }
 }

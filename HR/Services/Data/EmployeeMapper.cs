@@ -1,8 +1,10 @@
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using HR.Data.Entities;
 using HR.Models;
+using HR.Services.Data.Mapping;
 
 namespace HR.Services.Data
 {
@@ -50,7 +52,12 @@ namespace HR.Services.Data
                 MaritalStatusId = await lookups.FromEnumAsync<HR.Data.Entities.MaritalStatus, HR.Models.MaritalStatus>(profile.MaritalStatus, offset: 1),
                 MilitaryStatusId = profile.MilitaryStatus == HR.Models.MilitaryStatus.Unspecified
                     ? null
-                    : await lookups.FromEnumAsync<HR.Data.Entities.MilitaryStatus, HR.Models.MilitaryStatus>(profile.MilitaryStatus, offset: 1)
+                    : await lookups.FromEnumAsync<HR.Data.Entities.MilitaryStatus, HR.Models.MilitaryStatus>(profile.MilitaryStatus, offset: 1),
+                ExemptionTypeId = await lookups.ByteFromTitleOrNullAsync<ExemptionType>(profile.ExemptionType),
+                ExemptionReasonId = await lookups.ByteFromTitleOrNullAsync<ExemptionReason>(profile.ExemptionReason),
+                ReligionId = await lookups.ByteFromTitleOrNullAsync<Religion>(profile.Religion),
+                BirthNode = await lookups.LocationByNameAsync(profile.BirthPlace),
+                IssueNode = await lookups.LocationByNameAsync(profile.IdIssuePlace)
             };
 
             var supp = profile.Supplementary;
@@ -97,9 +104,9 @@ namespace HR.Services.Data
             return entity;
         }
 
-
         /// <summary>
-        /// نگاشت معکوس Entity → EmployeeProfile برای بارگذاری فرم ویرایش.
+        /// نگاشت معکوس Entity → EmployeeProfile (همزمان؛ بدون Geo نام‌ها).
+        /// برای بارگذاری کامل فرم از <see cref="ToProfileAsync"/> استفاده شود.
         /// </summary>
         public static EmployeeProfile ToProfile(Employee entity)
         {
@@ -118,6 +125,9 @@ namespace HR.Services.Data
                 Gender = MapGenderBack(entity.GenderId, entity.Gender?.Title),
                 MaritalStatus = MapMaritalBack(entity.MaritalStatusId, entity.MaritalStatus?.Title),
                 MilitaryStatus = MapMilitaryBack(entity.MilitaryStatusId, entity.MilitaryStatus?.Title),
+                ExemptionType = entity.ExemptionType?.Title ?? string.Empty,
+                ExemptionReason = entity.ExemptionReason?.Title ?? string.Empty,
+                Religion = entity.Religion?.Title ?? string.Empty,
                 PersonnelCode = entity.Supplement?.PersonnelCode ?? string.Empty,
                 Position = entity.Supplement?.PositionTitle,
                 DepartmentName = entity.Supplement?.Department?.Title,
@@ -188,7 +198,8 @@ namespace HR.Services.Data
                 });
             }
 
-            foreach (var r in entity.RelatedPersons ?? Enumerable.Empty<RelatedPerson>())
+            // بستگان (PersonRole == 0)
+            foreach (var r in (entity.RelatedPersons ?? Enumerable.Empty<RelatedPerson>()).Where(x => x.PersonRole == 0))
             {
                 profile.Family.Add(new FamilyMemberRecord
                 {
@@ -237,7 +248,248 @@ namespace HR.Services.Data
                 });
             }
 
+            // —— مجموعه‌های تکمیل‌شده ——
+
+            foreach (var c in entity.Citizenships ?? Enumerable.Empty<Citizenship>())
+            {
+                profile.Citizenships.Add(new CitizenshipRecord
+                {
+                    Country = string.Empty, // در ToProfileAsync پر می‌شود
+                    Reason = c.Reason?.Title ?? string.Empty,
+                    StartDate = c.StartDate,
+                    Note = c.Description
+                });
+            }
+
+            foreach (var b in entity.BackgroundRecords ?? Enumerable.Empty<BackgroundRecord>())
+            {
+                var (person, note) = MapperHelpers.SplitJoined(b.Description);
+                profile.CriminalRecords.Add(new CriminalRecord
+                {
+                    RecordType = b.RecordType?.Title ?? string.Empty,
+                    Title = b.Title,
+                    PersonName = person ?? string.Empty,
+                    Note = note
+                });
+            }
+
+            foreach (var t in entity.ForeignTravels ?? Enumerable.Empty<ForeignTravel>())
+            {
+                var (companions, note) = MapperHelpers.SplitJoined(t.Description);
+                profile.TripsAbroad.Add(new TripAbroadRecord
+                {
+                    Reason = t.TravelReason?.Title ?? string.Empty,
+                    Transport = t.TransportType?.Title ?? string.Empty,
+                    DepartDate = t.DepartureDate,
+                    ReturnDate = t.ReturnDate,
+                    OriginCountry = string.Empty,
+                    DestinationCountry = string.Empty,
+                    Companions = companions,
+                    Note = note
+                });
+            }
+
+            foreach (var s in entity.SacrificeRecords ?? Enumerable.Empty<HR.Data.Entities.SacrificeRecord>())
+            {
+                var (fullName, note) = MapperHelpers.SplitJoined(s.Description);
+                profile.Sacrifices.Add(new HR.Models.SacrificeRecord
+                {
+                    SacrificeRelationship = s.Relationship?.Title ?? string.Empty,
+                    SacrificeType = s.Type?.Title ?? string.Empty,
+                    Amount = s.Amount.ToString(CultureInfo.InvariantCulture),
+                    AmountUnit = s.AmountUnit?.Title,
+                    FullName = fullName ?? string.Empty,
+                    Note = note
+                });
+            }
+
+            foreach (var h in entity.HiringRecords ?? Enumerable.Empty<HiringRecord>())
+            {
+                profile.Recruitments.Add(new RecruitmentRecord
+                {
+                    InstitutionType = h.SectorType?.Title ?? string.Empty,
+                    InstitutionName = h.OrganizationName,
+                    Result = h.Result?.Title,
+                    Note = h.Description
+                });
+            }
+
+            foreach (var o in entity.OrganizationCooperations ?? Enumerable.Empty<OrganizationCooperation>())
+            {
+                profile.OrganCollaborations.Add(new OrganCollaborationRecord
+                {
+                    OrganName = o.OrganizationName,
+                    OrganType = o.SectorType?.Title ?? string.Empty,
+                    Note = o.Description
+                });
+            }
+
+            foreach (var o in entity.OtherActivities ?? Enumerable.Empty<HR.Data.Entities.OtherActivity>())
+            {
+                profile.OtherActivities.Add(new OtherActivityRecord
+                {
+                    Title = o.Title,
+                    Place = o.ExecutionPlace,
+                    Note = o.Description
+                });
+            }
+
+            foreach (var f in entity.ForeignRelatives ?? Enumerable.Empty<ForeignRelative>())
+            {
+                profile.ForeignRelatives.Add(new ForeignRelativeRecord
+                {
+                    FullName = $"{f.FirstName} {f.LastName}".Trim(),
+                    Reason = f.AbroadReason?.Title,
+                    DepartureDate = f.StartDate,
+                    Country = string.Empty,
+                    Note = f.Description
+                });
+            }
+
+            // همکاری خارجی — از RelatedPerson با نقش ۱
+            var coopPeople = (entity.RelatedPersons ?? Enumerable.Empty<RelatedPerson>())
+                .Where(r => r.PersonRole == 1)
+                .ToDictionary(r => r.RelatedPersonId);
+
+            foreach (var fc in entity.ForeignCooperations ?? Enumerable.Empty<HR.Data.Entities.ForeignCooperation>())
+            {
+                coopPeople.TryGetValue(fc.RelatedPersonId, out var person);
+                var (country, note) = MapperHelpers.SplitJoined(fc.Description);
+                profile.ForeignCooperations.Add(new ForeignCooperationRecord
+                {
+                    PersonName = person != null ? $"{person.FirstName} {person.LastName}".Trim() : string.Empty,
+                    InstitutionName = fc.CenterName,
+                    InstitutionType = fc.CenterType?.Title ?? string.Empty,
+                    StartDate = fc.StartDate,
+                    EndDate = fc.EndDate,
+                    Country = country ?? string.Empty,
+                    Note = note
+                });
+            }
+
+            // PersonFile paths
+            foreach (var pf in entity.PersonFiles ?? Enumerable.Empty<PersonFile>())
+            {
+                var title = pf.FileType?.Title ?? string.Empty;
+                var path = pf.FileAddress ?? string.Empty;
+                if (title.Contains("عکس")) profile.PhotoPath = path;
+                else if (title.Contains("کارت ملی")) profile.NationalCardImagePath = path;
+                else if (title.Contains("شناسنامه")) profile.IdCardImagePath = path;
+                else if (title.Contains("پایان خدمت") || title.Contains("خدمت")) profile.MilitaryImagePath = path;
+                else if (title.Contains("رزومه") && profile.Supplementary != null)
+                    profile.Supplementary.ResumePath = path;
+            }
+
+            // Abilities
+            foreach (var a in entity.Abilities ?? Enumerable.Empty<EmployeeAbility>())
+            {
+                profile.Abilities.Add(new AbilityRecord
+                {
+                    Title = a.Ability?.Title ?? string.Empty,
+                    Level = MapSkillBack(a.SkillLevelId, a.SkillLevel?.Title)
+                });
+            }
+
+            // Work interests
+            foreach (var w in entity.WorkInterests ?? Enumerable.Empty<EmployeeWorkInterest>())
+            {
+                profile.WorkInterests.Add(new WorkInterestRecord
+                {
+                    Title = w.Title,
+                    Level = MapInterestBack(w.InterestLevelId, w.InterestLevel?.Title),
+                    Note = w.Description
+                });
+            }
+
+            // Self assessment
+            if (entity.SelfAssessment != null)
+            {
+                var sa = entity.SelfAssessment;
+                profile.SelfAssessment = new SelfAssessmentRecord
+                {
+                    Discipline = sa.Discipline,
+                    Speed = sa.Speed,
+                    Effort = sa.Effort,
+                    Negotiation = sa.Negotiation,
+                    Patience = sa.Patience,
+                    Creativity = sa.Creativity,
+                    Punctuality = sa.Punctuality,
+                    Teamwork = sa.Teamwork,
+                    Accuracy = sa.Accuracy,
+                    Planning = sa.Planning
+                };
+            }
+
             return profile;
+        }
+
+        /// <summary>
+        /// نگاشت معکوس کامل با پر کردن نام‌های Geo.
+        /// </summary>
+        public static async Task<EmployeeProfile> ToProfileAsync(Employee entity, LookupResolver lookups)
+        {
+            var profile = ToProfile(entity);
+
+            profile.BirthPlace = await lookups.LocationNameByNodeAsync(entity.BirthNode) ?? string.Empty;
+            profile.IdIssuePlace = await lookups.LocationNameByNodeAsync(entity.IssueNode) ?? string.Empty;
+
+            // Citizenship countries
+            var citizenships = (entity.Citizenships ?? Enumerable.Empty<Citizenship>()).ToList();
+            for (int i = 0; i < citizenships.Count && i < profile.Citizenships.Count; i++)
+            {
+                profile.Citizenships[i].Country =
+                    await lookups.CountryNameByIdAsync(citizenships[i].CountryId) ?? string.Empty;
+            }
+
+            // Foreign travels origin/destination
+            var travels = (entity.ForeignTravels ?? Enumerable.Empty<ForeignTravel>()).ToList();
+            for (int i = 0; i < travels.Count && i < profile.TripsAbroad.Count; i++)
+            {
+                profile.TripsAbroad[i].OriginCountry =
+                    await lookups.LocationNameByNodeAsync(travels[i].GeoOrigin) ?? string.Empty;
+                profile.TripsAbroad[i].DestinationCountry =
+                    await lookups.LocationNameByNodeAsync(travels[i].GeoDestination) ?? string.Empty;
+            }
+
+            // Foreign relatives country
+            var relatives = (entity.ForeignRelatives ?? Enumerable.Empty<ForeignRelative>()).ToList();
+            for (int i = 0; i < relatives.Count && i < profile.ForeignRelatives.Count; i++)
+            {
+                profile.ForeignRelatives[i].Country =
+                    await lookups.LocationNameByNodeAsync(relatives[i].GeoLocation) ?? string.Empty;
+            }
+
+            return profile;
+        }
+
+        private static HR.Models.InterestLevel MapInterestBack(byte id, string? title)
+        {
+            if (!string.IsNullOrWhiteSpace(title))
+            {
+                if (title.Contains("کم")) return HR.Models.InterestLevel.Low;
+                if (title.Contains("زیاد") || title.Contains("بالا")) return HR.Models.InterestLevel.High;
+            }
+            return id switch
+            {
+                1 => HR.Models.InterestLevel.Low,
+                2 => HR.Models.InterestLevel.Medium,
+                3 => HR.Models.InterestLevel.High,
+                _ => HR.Models.InterestLevel.Medium
+            };
+        }
+
+        private static string BuildEmail(string nationalCode)
+            => string.IsNullOrWhiteSpace(nationalCode)
+                ? $"{Guid.NewGuid():N}@personnel.local"
+                : $"{nationalCode}@personnel.local";
+
+        private static string BuildInsuranceNumber()
+        {
+            var digits = new string(Guid.NewGuid().ToByteArray()
+                .Take(6)
+                .Select(b => (char)('0' + (b % 10)))
+                .ToArray());
+            return digits.PadRight(10, '0')[..10];
         }
 
         private static HR.Models.Gender MapGenderBack(byte id, string? title)

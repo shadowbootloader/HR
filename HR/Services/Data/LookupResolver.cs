@@ -62,6 +62,12 @@ namespace HR.Services.Data
         public async Task<byte> ByteFromTitleAsync<TEntity>(string? title) where TEntity : class
             => checked((byte)await _cache.ResolveOrCreateAsync<TEntity>(title));
 
+        public async Task<byte?> ByteFromTitleOrNullAsync<TEntity>(string? title) where TEntity : class
+        {
+            if (string.IsNullOrWhiteSpace(title) || title.Trim() == "—") return null;
+            return await ByteFromTitleAsync<TEntity>(title);
+        }
+
         public Task<short> IdFromTitleAsync<TEntity>(string? title) where TEntity : class
             => _cache.ResolveOrCreateAsync<TEntity>(title);
 
@@ -83,6 +89,15 @@ namespace HR.Services.Data
 
             throw new InvalidOperationException("جدول Geo هیچ کشوری ندارد؛ ابتدا کشورها را وارد کنید.");
         }
+
+        public Task<HierarchyId?> LocationByNameAsync(string? name)
+            => _geo.FindLocationNodeByNameAsync(name);
+
+        public Task<string?> LocationNameByNodeAsync(HierarchyId? node)
+            => _geo.FindLocationNameByNodeAsync(node);
+
+        public Task<string?> CountryNameByIdAsync(int countryId)
+            => _geo.FindCountryNameByIdAsync(countryId);
 
         public void Dispose()
         {

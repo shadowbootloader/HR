@@ -92,7 +92,26 @@ namespace HR.Services.Data
                     .Include(e => e.HiringRecords)
                     .Include(e => e.PersonFiles)
                     .Include(e => e.Addresses)
-                    .Include(e => e.BackgroundRecords);
+                    .Include(e => e.BackgroundRecords)
+                    .Include(e => e.ExemptionType)
+                    .Include(e => e.ExemptionReason)
+                    .Include(e => e.SelfAssessment)
+                    .Include(e => e.Abilities).ThenInclude(a => a.Ability)
+                    .Include(e => e.Abilities).ThenInclude(a => a.SkillLevel)
+                    .Include(e => e.WorkInterests).ThenInclude(w => w.InterestLevel)
+                    .Include(e => e.PersonFiles).ThenInclude(p => p.FileType)
+                    .Include(e => e.Citizenships).ThenInclude(c => c.Reason)
+                    .Include(e => e.BackgroundRecords).ThenInclude(b => b.RecordType)
+                    .Include(e => e.ForeignTravels).ThenInclude(t => t.TravelReason)
+                    .Include(e => e.ForeignTravels).ThenInclude(t => t.TransportType)
+                    .Include(e => e.ForeignRelatives).ThenInclude(f => f.AbroadReason)
+                    .Include(e => e.ForeignCooperations).ThenInclude(f => f.CenterType)
+                    .Include(e => e.SacrificeRecords).ThenInclude(s => s.Relationship)
+                    .Include(e => e.SacrificeRecords).ThenInclude(s => s.Type)
+                    .Include(e => e.SacrificeRecords).ThenInclude(s => s.AmountUnit)
+                    .Include(e => e.HiringRecords).ThenInclude(h => h.SectorType)
+                    .Include(e => e.HiringRecords).ThenInclude(h => h.Result)
+                    .Include(e => e.OrganizationCooperations).ThenInclude(o => o.SectorType);
             }
 
             return await query
@@ -153,7 +172,7 @@ namespace HR.Services.Data
             employee.IsDeleted = false;
 
             NormalizeForInsert(employee);
-            await ValidateForCreateAsync(employee);
+            await ValidateAsync(employee);
 
             try
             {
@@ -194,6 +213,10 @@ namespace HR.Services.Data
                 .Include(e => e.SacrificeRecords)
                 .Include(e => e.HiringRecords)
                 .Include(e => e.BackgroundRecords)
+                .Include(e => e.PersonFiles)
+                .Include(e => e.Abilities)
+                .Include(e => e.WorkInterests)
+                .Include(e => e.SelfAssessment)
                 .FirstOrDefaultAsync(e => e.EmployeeId == employee.EmployeeId);
 
             if (existing == null)
@@ -242,10 +265,37 @@ namespace HR.Services.Data
             ReplaceChildren(existing.SacrificeRecords, employee.SacrificeRecords, id, (x, empId) => { x.EmployeeId = empId; if (x.SacrificeRecordId == Guid.Empty) x.SacrificeRecordId = Guid.NewGuid(); });
             ReplaceChildren(existing.HiringRecords, employee.HiringRecords, id, (x, empId) => { x.EmployeeId = empId; if (x.HiringRecordId == Guid.Empty) x.HiringRecordId = Guid.NewGuid(); });
             ReplaceChildren(existing.BackgroundRecords, employee.BackgroundRecords, id, (x, empId) => { x.EmployeeId = empId; if (x.BackgroundRecordId == Guid.Empty) x.BackgroundRecordId = Guid.NewGuid(); });
+            ReplaceChildren(existing.PersonFiles, employee.PersonFiles, id, (x, empId) => { x.EmployeeId = empId; if (x.PersonFileId == Guid.Empty) x.PersonFileId = Guid.NewGuid(); });
+            ReplaceChildren(existing.Abilities, employee.Abilities, id, (x, empId) => { x.EmployeeId = empId; if (x.EmployeeAbilityId == Guid.Empty) x.EmployeeAbilityId = Guid.NewGuid(); });
+            ReplaceChildren(existing.WorkInterests, employee.WorkInterests, id, (x, empId) => { x.EmployeeId = empId; if (x.EmployeeWorkInterestId == Guid.Empty) x.EmployeeWorkInterestId = Guid.NewGuid(); });
 
-            // لینک حساب بانکی به Supplement
-            if (existing.Supplement != null && existing.BankAccounts.Count > 0)
-                existing.Supplement.BankAccountId = existing.BankAccounts.First().BankAccountId;
+            // SelfAssessment 1:1
+            if (employee.SelfAssessment != null)
+            {
+                if (existing.SelfAssessment == null)
+                {
+                    employee.SelfAssessment.EmployeeId = id;
+                    if (employee.SelfAssessment.EmployeeSelfAssessmentId == Guid.Empty)
+                        employee.SelfAssessment.EmployeeSelfAssessmentId = Guid.NewGuid();
+                    _db.Set<EmployeeSelfAssessment>().Add(employee.SelfAssessment);
+                }
+                else
+                {
+                    var sid = existing.SelfAssessment.EmployeeSelfAssessmentId;
+                    _db.Entry(existing.SelfAssessment).CurrentValues.SetValues(employee.SelfAssessment);
+                    existing.SelfAssessment.EmployeeSelfAssessmentId = sid;
+                    existing.SelfAssessment.EmployeeId = id;
+                }
+            }
+
+
+            // لینک حساب بانکی به Supplement (حتی اگر خالی شد null شود)
+            if (existing.Supplement != null)
+            {
+                existing.Supplement.BankAccountId = existing.BankAccounts.Count > 0
+                    ? existing.BankAccounts.First().BankAccountId
+                    : null;
+            }
 
             try
             {
@@ -451,7 +501,7 @@ namespace HR.Services.Data
             }
         }
 
-        private async Task ValidateForCreateAsync(Employee employee)
+        private async Task ValidateAsync(Employee employee)
         {
             if (string.IsNullOrWhiteSpace(employee.FirstName))
                 throw new InvalidOperationException("نام الزامی است.");

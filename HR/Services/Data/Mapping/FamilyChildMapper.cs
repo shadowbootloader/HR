@@ -27,7 +27,8 @@ namespace HR.Services.Data.Mapping
                     BirthDate = DateTime.Now,
                     IssueDate = DateTime.Now,
                     JobTitle = string.IsNullOrWhiteSpace(member.Note) ? "—" : member.Note.Trim(),
-                    Relationship = MapperHelpers.Required(member.Relation)
+                    Relationship = MapperHelpers.Required(member.Relation),
+                    PersonRole = 0
                 });
             }
 

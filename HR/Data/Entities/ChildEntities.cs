@@ -88,6 +88,8 @@ namespace HR.Data.Entities
         public DateTime IssueDate { get; set; }
         public string JobTitle { get; set; } = string.Empty;
         public string Relationship { get; set; } = string.Empty;
+        /// <summary>۰ = بستگان، ۱ = همکاری خارجی</summary>
+        public byte PersonRole { get; set; }
         public HierarchyId? IssueCity { get; set; }
         public HierarchyId? BirthCity { get; set; }
 

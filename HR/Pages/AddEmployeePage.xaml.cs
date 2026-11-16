@@ -73,7 +73,8 @@ namespace HR.Pages
                     return;
                 }
 
-                _profile = EmployeeMapper.ToProfile(entity);
+                using var lookups = await LookupResolver.LoadAsync(new PersonnelDbContext());
+                _profile = await EmployeeMapper.ToProfileAsync(entity, lookups);
                 LoadProfileIntoForm();
             }
             catch (Exception ex)
