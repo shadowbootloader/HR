@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -7,7 +7,6 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 using HR.Controls;
 using HR.Services.Data;
 using MaterialDesignThemes.Wpf;
@@ -28,6 +27,7 @@ namespace HR.Pages
         private int _totalPages = 1;
         private string _searchTerm = string.Empty;
         private string _statusFilter = "همه";
+        private bool _isLoading;
 
         public int FromIndex { get; private set; }
         public int ToIndex { get; private set; }
@@ -47,7 +47,6 @@ namespace HR.Pages
             InitializeComponent();
 
             DataContext = this;
-
             EmployeeItems.ItemsSource = _visible;
 
             Loaded += OnLoaded;
@@ -68,31 +67,25 @@ namespace HR.Pages
 
         private void OnRowNavigationRequested(Page page) => NavigationRequested?.Invoke(page);
 
-        // ==================== داده ====================
+        // ==================== خواندن از پایگاه داده ====================
 
         private async Task LoadEmployeesAsync()
         {
+            if (_isLoading) return;
+            _isLoading = true;
+
             try
             {
-                var employees = await _employeeService.GetAllAsync();
+                // اگر عبارت جستجو دارید از SearchAsync استفاده می‌کنیم؛ وگرنه همه
+                var employees = string.IsNullOrWhiteSpace(_searchTerm)
+                    ? await _employeeService.GetAllAsync()
+                    : await _employeeService.SearchAsync(_searchTerm);
 
                 _all.Clear();
 
                 foreach (var e in employees)
                 {
-                    _all.Add(new EmployeeModel
-                    {
-                        Id = e.EmployeeId,
-                        FullName = $"{e.FirstName} {e.LastName}".Trim(),
-                        Email = e.Email,
-                        Position = e.Supplement?.PositionTitle ?? "—",
-                        Department = e.Supplement?.Department?.Title ?? "—",
-                        DepartmentIcon = "👤",
-                        Status = e.IsDeleted ? "حذف‌شده" : "فعال",
-                        PerformanceValue = 0,
-                        PerformanceLabel = "—",
-                        AvatarUrl = PackIconKind.Account
-                    });
+                    _all.Add(MapToModel(e));
                 }
 
                 ApplyFilter(resetPage: true);
@@ -102,6 +95,30 @@ namespace HR.Pages
                 MessageBox.Show("خطا در بارگذاری لیست کارکنان:\n" + ex.Message, "خطا",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
+            finally
+            {
+                _isLoading = false;
+            }
+        }
+
+        private static EmployeeModel MapToModel(HR.Data.Entities.Employee e)
+        {
+            return new EmployeeModel
+            {
+                Id = e.EmployeeId,
+                FullName = $"{e.FirstName} {e.LastName}".Trim(),
+                Email = e.Email,
+                NationalCode = e.NationalCode,
+                PersonnelCode = e.Supplement?.PersonnelCode ?? "—",
+                Position = e.Supplement?.PositionTitle ?? "—",
+                Department = e.Supplement?.Department?.Title ?? "—",
+                DepartmentIcon = "👤",
+                Status = e.IsDeleted ? "حذف‌شده" : "فعال",
+                Gender = e.Gender?.Title ?? "—",
+                PerformanceValue = 0,
+                PerformanceLabel = "—",
+                AvatarUrl = PackIconKind.Account
+            };
         }
 
         // ==================== فیلتر و صفحه‌بندی ====================
@@ -110,12 +127,17 @@ namespace HR.Pages
         {
             var query = _all.AsEnumerable();
 
+            // جستجوی سمت‌کلاینت روی نتایج بارگذاری‌شده
+            // (اگر SearchAsync از سرور آمده، این فیلتر تکمیلی است)
             if (!string.IsNullOrWhiteSpace(_searchTerm))
             {
                 query = query.Where(x =>
                     x.FullName.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase) ||
                     x.Position.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                    x.Department.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase));
+                    x.Department.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                    x.NationalCode.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                    x.PersonnelCode.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                    x.Email.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase));
             }
 
             if (_statusFilter != "همه")
@@ -182,10 +204,15 @@ namespace HR.Pages
                 GoToPage(page);
         }
 
-        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        private async void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             _searchTerm = SearchBox.Text?.Trim() ?? string.Empty;
-            ApplyFilter(resetPage: true);
+
+            // برای عبارت‌های کوتاه فقط فیلتر حافظه؛ برای طولانی‌تر بارگذاری از سرور
+            if (_searchTerm.Length >= 2)
+                await LoadEmployeesAsync();
+            else
+                ApplyFilter(resetPage: true);
         }
 
         private void StatusFilterCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -198,6 +225,9 @@ namespace HR.Pages
 
         private void BtnAddEmployee_Click(object sender, RoutedEventArgs e)
             => NavigationRequested?.Invoke(new AddEmployeePage());
+
+        /// <summary>بارگذاری مجدد لیست از پایگاه داده (مثلاً بعد از ثبت کارمند جدید).</summary>
+        public Task RefreshAsync() => LoadEmployeesAsync();
     }
 
     public class EmployeeModel
@@ -205,10 +235,13 @@ namespace HR.Pages
         public Guid Id { get; set; }
         public string FullName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
+        public string NationalCode { get; set; } = string.Empty;
+        public string PersonnelCode { get; set; } = string.Empty;
         public string Position { get; set; } = string.Empty;
         public string Department { get; set; } = string.Empty;
         public string DepartmentIcon { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
+        public string Gender { get; set; } = string.Empty;
         public double PerformanceValue { get; set; }
         public string PerformanceLabel { get; set; } = string.Empty;
         public PackIconKind AvatarUrl { get; set; }

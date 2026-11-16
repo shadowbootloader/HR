@@ -36,7 +36,9 @@ namespace HR.Services.Data
                 LastName = profile.LastName?.Trim() ?? string.Empty,
                 FatherName = profile.FatherName?.Trim() ?? string.Empty,
                 NationalCode = nationalCode,
-                BirthCertificateNumber = profile.IdNumber?.Trim() ?? string.Empty,
+                BirthCertificateNumber = string.IsNullOrWhiteSpace(profile.IdNumber)
+                    ? "—"
+                    : profile.IdNumber.Trim(),
                 BirthDate = profile.BirthDate ?? DateTime.Today,
                 IssueDate = profile.IdIssueDate ?? DateTime.Today,
                 Email = BuildEmail(nationalCode),
@@ -53,12 +55,22 @@ namespace HR.Services.Data
 
             var supp = profile.Supplementary;
 
-            // اطلاعات شغلی
-            if (!string.IsNullOrWhiteSpace(profile.PersonnelCode) ||
+            var hasJobInfo =
+                !string.IsNullOrWhiteSpace(profile.PersonnelCode) ||
                 !string.IsNullOrWhiteSpace(profile.Position) ||
                 !string.IsNullOrWhiteSpace(profile.DepartmentName) ||
-                profile.HireDate.HasValue)
+                profile.HireDate.HasValue ||
+                supp != null && (
+                    !string.IsNullOrWhiteSpace(supp.Position) ||
+                    !string.IsNullOrWhiteSpace(supp.InsuranceType) ||
+                    !string.IsNullOrWhiteSpace(supp.CooperationType) ||
+                    supp.StartDate.HasValue ||
+                    supp.Salary > 0);
+
+            if (hasJobInfo)
             {
+                var departmentId = await lookups.IdFromTitleAsync<Department>(profile.DepartmentName);
+
                 entity.Supplement = new EmployeeSupplement
                 {
                     EmployeeSupplementId = Guid.NewGuid(),
@@ -72,22 +84,18 @@ namespace HR.Services.Data
                     Salary = supp?.Salary ?? 0,
                     InsuranceTypeId = await lookups.ByteFromTitleAsync<InsuranceType>(supp?.InsuranceType),
                     CooperationTypeId = await lookups.ByteFromTitleAsync<CooperationType>(supp?.CooperationType),
-                    DepartmentId = await lookups.IdFromTitleAsync<Department>(profile.DepartmentName)
+                    DepartmentId = departmentId
                 };
             }
 
-            // مجموعه‌های فرزند
             foreach (var mapper in ChildMappers)
                 await mapper.MapAsync(profile, entity, lookups);
 
-            // اتصال حساب بانکی اصلی به اطلاعات شغلی
             if (entity.Supplement != null && entity.BankAccounts.Count > 0)
                 entity.Supplement.BankAccountId = entity.BankAccounts.First().BankAccountId;
 
             return entity;
         }
-
-        // ==================== کمکی‌ها ====================
 
         private static string BuildEmail(string nationalCode)
             => string.IsNullOrWhiteSpace(nationalCode)

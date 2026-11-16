@@ -1,4 +1,4 @@
-﻿using HR.Models;
+using HR.Models;
 using HR.Services.Data;
 using System;
 using System.Collections.Generic;
@@ -8,6 +8,9 @@ using System.Windows.Controls;
 
 namespace HR.Services
 {
+    /// <summary>
+    /// پر کردن ComboBox از جداول Lookup پایگاه داده.
+    /// </summary>
     public static class LookupBinder
     {
         /// <summary>
@@ -17,6 +20,8 @@ namespace HR.Services
         public static async Task FillAsync<TEnum>(ComboBox combo, string tableKey, int valueOffset = 0)
             where TEnum : struct, Enum
         {
+            if (combo == null) return;
+
             try
             {
                 var rows = (await LookupCache.GetAsync())[tableKey];
@@ -40,6 +45,97 @@ namespace HR.Services
             catch
             {
                 // دیتابیس در دسترس نیست → لیست پیش‌فرض همان کنترل می‌ماند
+            }
+        }
+
+        /// <summary>
+        /// ComboBox را فقط با عنوان‌های متنی پر می‌کند (برای بانک، زبان، نرم‌افزار، دپارتمان و ...).
+        /// SelectedItem برابر عنوان انتخاب‌شده خواهد بود.
+        /// </summary>
+        public static async Task FillTitlesAsync(ComboBox combo, string tableKey, bool addEmptyItem = false)
+        {
+            if (combo == null) return;
+
+            try
+            {
+                var rows = (await LookupCache.GetAsync())[tableKey];
+                var titles = rows.Select(r => r.Title).Where(t => !string.IsNullOrWhiteSpace(t)).ToList();
+
+                if (addEmptyItem)
+                    titles.Insert(0, "—");
+
+                if (titles.Count == 0) return;
+
+                var previous = combo.SelectedItem as string ?? combo.Text;
+
+                combo.ItemsSource = titles;
+
+                if (!string.IsNullOrWhiteSpace(previous) && titles.Contains(previous))
+                    combo.SelectedItem = previous;
+                else if (combo.SelectedIndex < 0)
+                    combo.SelectedIndex = 0;
+            }
+            catch
+            {
+            }
+        }
+
+        /// <summary>
+        /// ComboBox را با LookupItem (Id + Title) پر می‌کند.
+        /// DisplayMemberPath = Title ، SelectedValuePath = Id
+        /// </summary>
+        public static async Task FillItemsAsync(ComboBox combo, string tableKey)
+        {
+            if (combo == null) return;
+
+            try
+            {
+                var rows = (await LookupCache.GetAsync())[tableKey];
+                if (rows.Count == 0) return;
+
+                var previous = combo.SelectedValue;
+
+                combo.ItemsSource = rows.ToList();
+                combo.DisplayMemberPath = nameof(LookupItem.Title);
+                combo.SelectedValuePath = nameof(LookupItem.Id);
+
+                if (previous != null && rows.Any(x => Equals(x.Id, previous)))
+                    combo.SelectedValue = previous;
+                else if (combo.SelectedIndex < 0)
+                    combo.SelectedIndex = 0;
+            }
+            catch
+            {
+            }
+        }
+
+        /// <summary>
+        /// چند ComboBox را همزمان با کلیدهای مختلف پر می‌کند.
+        /// </summary>
+        public static async Task FillManyTitlesAsync(params (ComboBox Combo, string TableKey)[] targets)
+        {
+            if (targets == null || targets.Length == 0) return;
+
+            try
+            {
+                var cache = await LookupCache.GetAsync();
+                foreach (var (combo, key) in targets)
+                {
+                    if (combo == null) continue;
+                    var rows = cache[key];
+                    var titles = rows.Select(r => r.Title).Where(t => !string.IsNullOrWhiteSpace(t)).ToList();
+                    if (titles.Count == 0) continue;
+
+                    var previous = combo.SelectedItem as string ?? combo.Text;
+                    combo.ItemsSource = titles;
+                    if (!string.IsNullOrWhiteSpace(previous) && titles.Contains(previous))
+                        combo.SelectedItem = previous;
+                    else if (combo.SelectedIndex < 0)
+                        combo.SelectedIndex = 0;
+                }
+            }
+            catch
+            {
             }
         }
     }

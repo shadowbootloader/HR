@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -29,6 +29,7 @@ namespace HR.Pages
         private bool _lazyLoaded;
         private EmployeeProfile _profile = new();
         private readonly IEmployeeService _employeeService = new EmployeeService();
+        private bool _isSaving;
 
         public AddEmployeePage()
         {
@@ -58,7 +59,6 @@ namespace HR.Pages
                 if (section.Parent == null)
                     DataContainerST.Children.Add(section);
 
-                // فرصت به UI تا اسکرول/کلیک قفل نشود
                 await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.Background);
             }
         }
@@ -109,6 +109,8 @@ namespace HR.Pages
 
         private async void SaveBtn_Click(object sender, RoutedEventArgs e)
         {
+            if (_isSaving) return;
+
             var sections = EnumerateSections().ToList();
 
             if (sections.Count == 0)
@@ -129,17 +131,30 @@ namespace HR.Pages
             foreach (var section in sections)
                 section.SaveTo(_profile);
 
+            if (string.IsNullOrWhiteSpace(_profile.FirstName))
+            {
+                NotificationService.Warning("خطا", "نام الزامی است.");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(_profile.LastName))
+            {
+                NotificationService.Warning("خطا", "نام خانوادگی الزامی است.");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(_profile.NationalCode))
+            {
+                NotificationService.Warning("خطا", "کد ملی الزامی است.");
+                return;
+            }
+
+            _isSaving = true;
             try
             {
                 using var lookups = await LookupResolver.LoadAsync(new PersonnelDbContext());
 
                 var entity = await EmployeeMapper.ToEntityAsync(_profile, lookups);
-
-                if (string.IsNullOrWhiteSpace(entity.NationalCode))
-                {
-                    NotificationService.Warning("خطا", "کد ملی الزامی است.");
-                    return;
-                }
 
                 if (await _employeeService.ExistsNationalCodeAsync(entity.NationalCode))
                 {
@@ -165,7 +180,18 @@ namespace HR.Pages
             }
             catch (Exception ex)
             {
-                NotificationService.Warning("خطا در ذخیره", ex.Message);
+                var message = ex.Message;
+                if (ex.InnerException != null &&
+                    !string.Equals(ex.InnerException.Message, ex.Message, StringComparison.Ordinal))
+                {
+                    message += Environment.NewLine + ex.InnerException.Message;
+                }
+
+                NotificationService.Warning("خطا در ذخیره", message);
+            }
+            finally
+            {
+                _isSaving = false;
             }
         }
 
@@ -187,8 +213,6 @@ namespace HR.Pages
 
         private void ScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
         {
-            // بارگذاری تنبل فعلاً در Loaded انجام می‌شود.
-            // اگر بعداً بارگذاری بر اساس اسکرول لازم شد، اینجا پیاده شود.
         }
     }
 }

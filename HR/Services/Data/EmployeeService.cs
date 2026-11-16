@@ -144,21 +144,27 @@ namespace HR.Services.Data
 
         public async Task<Employee> CreateAsync(Employee employee)
         {
+            if (employee == null)
+                throw new ArgumentNullException(nameof(employee));
+
             if (employee.EmployeeId == Guid.Empty)
                 employee.EmployeeId = Guid.NewGuid();
 
             employee.IsDeleted = false;
 
-            // اگر Supplement وجود دارد و Id ندارد
-            if (employee.Supplement != null && employee.Supplement.EmployeeSupplementId == Guid.Empty)
-            {
-                employee.Supplement.EmployeeSupplementId = Guid.NewGuid();
-                employee.Supplement.EmployeeId = employee.EmployeeId;
-            }
+            NormalizeForInsert(employee);
+            await ValidateForCreateAsync(employee);
 
-            _db.Employees.Add(employee);
-            await _db.SaveChangesAsync();
-            return employee;
+            try
+            {
+                _db.Employees.Add(employee);
+                await _db.SaveChangesAsync();
+                return employee;
+            }
+            catch (DbUpdateException ex)
+            {
+                throw new InvalidOperationException(FormatDbError(ex), ex);
+            }
         }
 
         public async Task<Employee> UpdateAsync(Employee employee)
@@ -170,10 +176,8 @@ namespace HR.Services.Data
             if (existing == null)
                 throw new InvalidOperationException("کارمند یافت نشد.");
 
-            // به‌روزرسانی فیلدهای اصلی
             _db.Entry(existing).CurrentValues.SetValues(employee);
 
-            // مدیریت Supplement
             if (employee.Supplement != null)
             {
                 if (existing.Supplement == null)
@@ -190,7 +194,15 @@ namespace HR.Services.Data
                 }
             }
 
-            await _db.SaveChangesAsync();
+            try
+            {
+                await _db.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                throw new InvalidOperationException(FormatDbError(ex), ex);
+            }
+
             return existing;
         }
 
@@ -247,6 +259,200 @@ namespace HR.Services.Data
                 query = query.Where(s => s.EmployeeId != excludeId.Value);
 
             return await query.AnyAsync();
+        }
+
+        // ==================== کمکی Create ====================
+
+        private static void NormalizeForInsert(Employee employee)
+        {
+            if (employee.Supplement != null)
+            {
+                if (employee.Supplement.EmployeeSupplementId == Guid.Empty)
+                    employee.Supplement.EmployeeSupplementId = Guid.NewGuid();
+
+                employee.Supplement.EmployeeId = employee.EmployeeId;
+            }
+
+            foreach (var item in employee.Educations)
+            {
+                if (item.EducationId == Guid.Empty) item.EducationId = Guid.NewGuid();
+                item.EmployeeId = employee.EmployeeId;
+            }
+
+            foreach (var item in employee.Courses)
+            {
+                if (item.CourseId == Guid.Empty) item.CourseId = Guid.NewGuid();
+                item.EmployeeId = employee.EmployeeId;
+            }
+
+            foreach (var item in employee.BankAccounts)
+            {
+                if (item.BankAccountId == Guid.Empty) item.BankAccountId = Guid.NewGuid();
+                item.EmployeeId = employee.EmployeeId;
+            }
+
+            foreach (var item in employee.PhoneNumbers)
+            {
+                if (item.PhoneNumberId == Guid.Empty) item.PhoneNumberId = Guid.NewGuid();
+                item.EmployeeId = employee.EmployeeId;
+            }
+
+            foreach (var item in employee.RelatedPersons)
+            {
+                if (item.RelatedPersonId == Guid.Empty) item.RelatedPersonId = Guid.NewGuid();
+                item.EmployeeId = employee.EmployeeId;
+            }
+
+            foreach (var item in employee.Languages)
+            {
+                if (item.EmployeeLanguageId == Guid.Empty) item.EmployeeLanguageId = Guid.NewGuid();
+                item.EmployeeId = employee.EmployeeId;
+            }
+
+            foreach (var item in employee.Softwares)
+            {
+                if (item.EmployeeSoftwareId == Guid.Empty) item.EmployeeSoftwareId = Guid.NewGuid();
+                item.EmployeeId = employee.EmployeeId;
+            }
+
+            foreach (var item in employee.EmploymentHistories)
+            {
+                if (item.EmploymentHistoryId == Guid.Empty) item.EmploymentHistoryId = Guid.NewGuid();
+                item.EmployeeId = employee.EmployeeId;
+            }
+
+            foreach (var item in employee.Citizenships)
+            {
+                if (item.CitizenshipId == Guid.Empty) item.CitizenshipId = Guid.NewGuid();
+                item.EmployeeId = employee.EmployeeId;
+            }
+
+            foreach (var item in employee.ForeignTravels)
+            {
+                if (item.ForeignTravelId == Guid.Empty) item.ForeignTravelId = Guid.NewGuid();
+                item.EmployeeId = employee.EmployeeId;
+            }
+
+            foreach (var item in employee.ForeignRelatives)
+            {
+                if (item.ForeignRelativeId == Guid.Empty) item.ForeignRelativeId = Guid.NewGuid();
+                item.EmployeeId = employee.EmployeeId;
+            }
+
+            foreach (var item in employee.ForeignCooperations)
+            {
+                if (item.ForeignCooperationId == Guid.Empty) item.ForeignCooperationId = Guid.NewGuid();
+                item.EmployeeId = employee.EmployeeId;
+            }
+
+            foreach (var item in employee.OrganizationCooperations)
+            {
+                if (item.OrganizationCooperationId == Guid.Empty) item.OrganizationCooperationId = Guid.NewGuid();
+                item.EmployeeId = employee.EmployeeId;
+            }
+
+            foreach (var item in employee.OtherActivities)
+            {
+                if (item.OtherActivityId == Guid.Empty) item.OtherActivityId = Guid.NewGuid();
+                item.EmployeeId = employee.EmployeeId;
+            }
+
+            foreach (var item in employee.SacrificeRecords)
+            {
+                if (item.SacrificeRecordId == Guid.Empty) item.SacrificeRecordId = Guid.NewGuid();
+                item.EmployeeId = employee.EmployeeId;
+            }
+
+            foreach (var item in employee.HiringRecords)
+            {
+                if (item.HiringRecordId == Guid.Empty) item.HiringRecordId = Guid.NewGuid();
+                item.EmployeeId = employee.EmployeeId;
+            }
+
+            foreach (var item in employee.BackgroundRecords)
+            {
+                if (item.BackgroundRecordId == Guid.Empty) item.BackgroundRecordId = Guid.NewGuid();
+                item.EmployeeId = employee.EmployeeId;
+            }
+
+            if (employee.Supplement != null &&
+                employee.Supplement.BankAccountId == null &&
+                employee.BankAccounts.Count > 0)
+            {
+                employee.Supplement.BankAccountId = employee.BankAccounts.First().BankAccountId;
+            }
+        }
+
+        private async Task ValidateForCreateAsync(Employee employee)
+        {
+            if (string.IsNullOrWhiteSpace(employee.FirstName))
+                throw new InvalidOperationException("نام الزامی است.");
+
+            if (string.IsNullOrWhiteSpace(employee.LastName))
+                throw new InvalidOperationException("نام خانوادگی الزامی است.");
+
+            if (string.IsNullOrWhiteSpace(employee.NationalCode))
+                throw new InvalidOperationException("کد ملی الزامی است.");
+
+            if (employee.GenderId == 0)
+                throw new InvalidOperationException("جدول Gender خالی است یا مقدار جنسیت نامعتبر است.");
+
+            if (employee.MaritalStatusId == 0)
+                throw new InvalidOperationException("جدول MaritalStatus خالی است یا وضعیت تأهل نامعتبر است.");
+
+            if (employee.Supplement != null)
+            {
+                if (employee.Supplement.DepartmentId <= 0)
+                {
+                    var anyDept = await _db.Departments.AsNoTracking().Select(d => d.DepartmentId).FirstOrDefaultAsync();
+                    if (anyDept <= 0)
+                        throw new InvalidOperationException("هیچ دپارتمانی در پایگاه داده نیست. ابتدا حداقل یک دپارتمان تعریف کنید.");
+
+                    employee.Supplement.DepartmentId = anyDept;
+                }
+                else
+                {
+                    var exists = await _db.Departments.AsNoTracking()
+                        .AnyAsync(d => d.DepartmentId == employee.Supplement.DepartmentId);
+                    if (!exists)
+                        throw new InvalidOperationException("دپارتمان انتخاب‌شده در پایگاه داده وجود ندارد.");
+                }
+
+                if (string.IsNullOrWhiteSpace(employee.Supplement.PersonnelCode))
+                    employee.Supplement.PersonnelCode = $"P{Guid.NewGuid():N}"[..10];
+            }
+
+            foreach (var bank in employee.BankAccounts)
+            {
+                if (bank.BankId <= 0)
+                    throw new InvalidOperationException("برای حساب بانکی، بانک معتبر انتخاب نشده است (جدول Bank را بررسی کنید).");
+            }
+
+            foreach (var lang in employee.Languages)
+            {
+                if (lang.LanguageId <= 0)
+                    throw new InvalidOperationException("برای زبان، عنوان معتبر انتخاب نشده است (جدول Language را بررسی کنید).");
+            }
+        }
+
+        private static string FormatDbError(DbUpdateException ex)
+        {
+            var root = ex.GetBaseException()?.Message ?? ex.Message;
+
+            if (root.Contains("UNIQUE", StringComparison.OrdinalIgnoreCase) ||
+                root.Contains("duplicate", StringComparison.OrdinalIgnoreCase) ||
+                root.Contains("Cannot insert duplicate", StringComparison.OrdinalIgnoreCase))
+            {
+                return "مقدار تکراری است (کد ملی، کد پرسنلی، شبا یا کارت بانکی). جزئیات: " + root;
+            }
+
+            if (root.Contains("FOREIGN KEY", StringComparison.OrdinalIgnoreCase) ||
+                root.Contains("REFERENCE", StringComparison.OrdinalIgnoreCase))
+            {
+                return "یکی از مقادیر Lookup یا دپارتمان نامعتبر است. جداول پایه را پر کنید. جزئیات: " + root;
+            }
+
+            return "خطا در ذخیره در پایگاه داده: " + root;
         }
     }
 }
