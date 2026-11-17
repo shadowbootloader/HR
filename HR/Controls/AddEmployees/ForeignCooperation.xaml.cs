@@ -82,7 +82,7 @@ namespace HR.Controls.AddEmployees
                 return;
             }
 
-            _list.Items.Add(new ForeignCooperationRecord
+            _list.Commit(new ForeignCooperationRecord
             {
                 PersonName = person,
                 Country = ForeignCooperation_CountryCombo.SelectedItem as string
@@ -101,7 +101,17 @@ namespace HR.Controls.AddEmployees
         }
 
         private void DeleteForeignCooperationDataBtn_Click(object sender, RoutedEventArgs e) => _list.DeleteSelected();
-        private void PersonalForeignCooperationList_SelectionChanged(object sender, SelectionChangedEventArgs e) { }
+        private void PersonalForeignCooperationList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (PersonalForeignCooperationList.SelectedItem is not ForeignCooperationRecord item) return;
+            ForeignCooperation_FamilyNameCombo.Text = item.PersonName;
+            LookupBinder.Select(ForeignCooperation_CountryCombo, item.Country);
+            ForeignCooperation_InstitueNameTB.Text = item.InstitutionName;
+            LookupBinder.Select(ForeignCooperation_InstitueTypeCombo, item.InstitutionType);
+            ForeignCooperation_StartDateDP.SelectedDate = item.StartDate;
+            TForeignCooperation_EndDateDP.SelectedDate = item.EndDate;
+            ForeignCooperation_NoteTB.Text = item.Note ?? string.Empty;
+        }
 
         public void LoadFrom(EmployeeProfile profile) => _list.Replace(profile.ForeignCooperations);
         public void SaveTo(EmployeeProfile profile) => _list.CopyTo(profile.ForeignCooperations);

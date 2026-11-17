@@ -50,7 +50,7 @@ namespace HR.Controls.AddEmployees
                 return;
             }
 
-            _list.Items.Add(new CriminalRecord
+            _list.Commit(new CriminalRecord
             {
                 PersonName = Criminal_FamilyNameCombo.Text?.Trim() ?? string.Empty,
                 RecordType = Criminal_TypeCombo.SelectedItem as string
@@ -64,7 +64,14 @@ namespace HR.Controls.AddEmployees
         }
 
         private void DeleteCriminalDataBtn_Click(object sender, RoutedEventArgs e) => _list.DeleteSelected();
-        private void PersonalCriminalList_SelectionChanged(object sender, SelectionChangedEventArgs e) { }
+        private void PersonalCriminalList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (PersonalCriminalList.SelectedItem is not CriminalRecord item) return;
+            Criminal_FamilyNameCombo.Text = item.PersonName;
+            LookupBinder.Select(Criminal_TypeCombo, item.RecordType);
+            Criminal_CriminalTitleTB.Text = item.Title;
+            Criminal_NoteTB.Text = item.Note ?? string.Empty;
+        }
 
         public void LoadFrom(EmployeeProfile profile) => _list.Replace(profile.CriminalRecords);
         public void SaveTo(EmployeeProfile profile) => _list.CopyTo(profile.CriminalRecords);

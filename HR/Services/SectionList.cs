@@ -23,6 +23,28 @@ namespace HR.Services
             Items.CollectionChanged += (_, __) => RowNumbering.Renumber(Items);
         }
 
+        public T? Selected => _listView?.SelectedItem as T;
+
+        public void Commit(T item)
+        {
+            if (Selected is T current)
+            {
+                var index = Items.IndexOf(current);
+                item.Row = current.Row;
+                if (index >= 0)
+                    Items[index] = item;
+                else
+                    Items.Add(item);
+
+                if (_listView != null)
+                    _listView.SelectedItem = null;
+            }
+            else
+            {
+                Items.Add(item);
+            }
+        }
+
         public void DeleteSelected()
         {
             if (_listView == null) return;
@@ -49,5 +71,23 @@ namespace HR.Services
         }
 
         public bool Any(System.Func<T, bool> predicate) => Items.Any(predicate);
+
+        public static void Commit<TRow>(ObservableCollection<TRow> items, ListView list, TRow item) where TRow : ObservableRow
+        {
+            if (list.SelectedItem is TRow current)
+            {
+                var index = items.IndexOf(current);
+                item.Row = current.Row;
+                if (index >= 0)
+                    items[index] = item;
+                else
+                    items.Add(item);
+                list.SelectedItem = null;
+            }
+            else
+            {
+                items.Add(item);
+            }
+        }
     }
 }

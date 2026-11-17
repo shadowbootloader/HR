@@ -90,7 +90,7 @@ namespace HR.Controls.AddEmployees
 
             var reason = JobEndReasonCombo.SelectedItem as string;
 
-            _items.Add(new JobHistoryRecord
+            SectionList<JobHistoryRecord>.Commit(_items, PersonaljobsList, new JobHistoryRecord
             {
                 Company = company,
                 JobTitle = post,
@@ -111,7 +111,17 @@ namespace HR.Controls.AddEmployees
                 _items.Remove(item);
         }
 
-        private void PersonaljobsList_SelectionChanged(object sender, SelectionChangedEventArgs e) { }
+        private void PersonaljobsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (PersonaljobsList.SelectedItem is not JobHistoryRecord item) return;
+            CompanyNameTB.Text = item.Company;
+            PostNameTB.Text = item.JobTitle;
+            JobFoneNumberTB.Text = item.CompanyPhone ?? string.Empty;
+            JobStartDateDP.SelectedDate = item.StartDate;
+            JobEndDateDP.SelectedDate = item.EndDate;
+            LookupBinder.Select(JobEndReasonCombo, item.LeaveReason);
+            JobNoteTB.Text = item.Note ?? string.Empty;
+        }
         private void PersonaljobsList_SizeChanged(object sender, SizeChangedEventArgs e) { }
 
         // ==================== IEmployeeSection ====================

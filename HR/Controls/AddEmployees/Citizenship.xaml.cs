@@ -51,7 +51,7 @@ namespace HR.Controls.AddEmployees
                 return;
             }
 
-            _list.Items.Add(new CitizenshipRecord
+            _list.Commit(new CitizenshipRecord
             {
                 Country = country,
                 Reason = Citizenship_ReasonTB.Text?.Trim() ?? string.Empty,
@@ -63,7 +63,14 @@ namespace HR.Controls.AddEmployees
         }
 
         private void DeleteCitizenshipDataBtn_Click(object sender, RoutedEventArgs e) => _list.DeleteSelected();
-        private void PersonalCitizenshipList_SelectionChanged(object sender, SelectionChangedEventArgs e) { }
+        private void PersonalCitizenshipList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (PersonalCitizenshipList.SelectedItem is not CitizenshipRecord item) return;
+            LookupBinder.Select(Citizenship_CountryNameCombo, item.Country);
+            Citizenship_ReasonTB.Text = item.Reason;
+            Citizenship_NoteTB.Text = item.Note ?? string.Empty;
+            Citizenship_StartDateDP.SelectedDate = item.StartDate;
+        }
 
         public void LoadFrom(EmployeeProfile profile) => _list.Replace(profile.Citizenships);
         public void SaveTo(EmployeeProfile profile) => _list.CopyTo(profile.Citizenships);

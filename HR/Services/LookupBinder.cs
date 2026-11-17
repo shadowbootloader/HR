@@ -17,6 +17,35 @@ namespace HR.Services
         /// ComboBox را از جدول Lookup پر می‌کند.
         /// برچسب‌ها از DB و مقدار هر آیتم شماره‌ی ترتیبی enum است.
         /// </summary>
+        public static void Select(ComboBox combo, string? value)
+        {
+            if (combo == null) return;
+            var text = value?.Trim();
+            if (string.IsNullOrEmpty(text))
+            {
+                if (combo.Items.Count > 0) combo.SelectedIndex = 0;
+                return;
+            }
+
+            for (int i = 0; i < combo.Items.Count; i++)
+            {
+                var label = combo.Items[i] switch
+                {
+                    string s => s,
+                    ComboBoxItem box => box.Content?.ToString(),
+                    ComboItem item => item.Text,
+                    _ => combo.Items[i]?.ToString()
+                };
+                if (string.Equals(label, text, StringComparison.OrdinalIgnoreCase))
+                {
+                    combo.SelectedIndex = i;
+                    return;
+                }
+            }
+
+            combo.Text = text;
+        }
+
         public static string SelectedTitle(ComboBox combo)
         {
             if (combo.SelectedItem is ComboItem item && !string.IsNullOrWhiteSpace(item.Text))

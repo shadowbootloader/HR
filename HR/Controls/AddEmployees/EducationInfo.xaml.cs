@@ -151,7 +151,7 @@ namespace HR.Controls.AddEmployees
                 return;
             }
 
-            _items.Add(new EducationRecord
+            SectionList<EducationRecord>.Commit(_items, PersonalEducationsList, new EducationRecord
             {
                 Degree = GradeCombo.SelectedValue is DegreeLevel degree ? degree : DegreeLevel.Bachelor,
                 DegreeTitle = LookupBinder.SelectedTitle(GradeCombo),
@@ -189,7 +189,30 @@ namespace HR.Controls.AddEmployees
             ImagePicker.Preview(EducationalCertificateImage, _certificateImage);
         }
 
-        private void PersonalEducationsList_SelectionChanged(object sender, SelectionChangedEventArgs e) { }
+        private async void PersonalEducationsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (PersonalEducationsList.SelectedItem is not EducationRecord item) return;
+
+            GradeCombo.SelectedValue = item.Degree;
+            if (!string.IsNullOrWhiteSpace(item.DegreeTitle))
+                LookupBinder.Select(GradeCombo, item.DegreeTitle);
+            FieldNameTB.Text = item.Field;
+            UniversityNameTB.Text = item.University;
+            EducationStateNameTB.SelectionChanged -= EducationStateNameTB_SelectionChanged;
+            LookupBinder.Select(EducationStateNameTB, item.State);
+            EducationStateNameTB.SelectionChanged += EducationStateNameTB_SelectionChanged;
+            await FillCitiesAsync();
+            LookupBinder.Select(EducationalCityNameTB, item.City);
+            EducationalStatusCombo.SelectedValue = item.Status;
+            if (!string.IsNullOrWhiteSpace(item.StatusTitle))
+                LookupBinder.Select(EducationalStatusCombo, item.StatusTitle);
+            EducationalMarksAvgTB.Text = item.Gpa?.ToString() ?? string.Empty;
+            EducationStartDateDP.SelectedDate = item.StartDate;
+            EducationEndDateDP.SelectedDate = item.EndDate;
+            ResaleTB.Text = item.ThesisTitle ?? string.Empty;
+            _certificateImage = item.CertificateImagePath;
+            ImagePicker.Preview(EducationalCertificateImage, _certificateImage);
+        }
         private void PersonalEducationsList_SizeChanged(object sender, SizeChangedEventArgs e) { }
 
         // ==================== IEmployeeSection ====================
