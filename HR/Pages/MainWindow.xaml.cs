@@ -8,6 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using HR.Controls;
 using HR.Services;
+using HR.Services.Auth;
 using LiveChartsCore;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
@@ -21,9 +22,15 @@ namespace HR.Pages
         private Button? _activeSideMenu;
         private bool _sideMenuOpen = true;
 
+        public bool LogoutRequested { get; private set; }
+
         public MainWindow()
         {
             InitializeComponent();
+            var current = AuthSession.Current;
+            CurrentUserName.Text = current?.DisplayName ?? current?.Username ?? "";
+            CurrentUserRole.Text = current?.RoleLabel ?? "";
+            UsersBtn.Visibility = current?.IsAdmin == true ? Visibility.Visible : Visibility.Collapsed;
 
             // مهم: چارت‌ها باید قبل از DataContext مقدار بگیرند،
             // وگرنه بایندینگ‌ها نال می‌خوانند و هرگز آپدیت نمی‌شوند.
@@ -259,16 +266,27 @@ namespace HR.Pages
                 return;
             }
 
+            if (ReferenceEquals(target, UsersBtn))
+            {
+                Navigate(GetPage(() => new UsersPage(), "users"), "کاربران");
+                return;
+            }
+
             NotificationService.Info("به‌زودی", "این بخش هنوز پیاده‌سازی نشده است.");
         }
 
         private void ProfileMenu_Click(object sender, RoutedEventArgs e)
-            => NotificationService.Info("پروفایل", "ورود و نقش کاربری هنوز تعریف نشده است.");
+            => NotificationService.Info("پروفایل", $"{CurrentUserName.Text} — {CurrentUserRole.Text}");
 
         private void SettingsMenu_Click(object sender, RoutedEventArgs e)
             => NotificationService.Info("تنظیمات", "این بخش هنوز پیاده‌سازی نشده است.");
 
-        private void ExitMenu_Click(object sender, RoutedEventArgs e) => Close();
+        private void LogoutMenu_Click(object sender, RoutedEventArgs e)
+        {
+            AuthSession.SignOut();
+            LogoutRequested = true;
+            Close();
+        }
 
         public void NavigateTo(Page page) => DataPanel.Navigate(page);
     }

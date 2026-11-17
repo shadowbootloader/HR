@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using HR.Controls;
+using HR.Services.Auth;
 using HR.Services.Data;
 using MaterialDesignThemes.Wpf;
 
@@ -59,6 +60,8 @@ namespace HR.Pages
 
             Loaded += OnLoaded;
             Unloaded += OnUnloaded;
+            if (AuthSession.Current?.CanManagePeople != true)
+                BtnAddEmployee.Visibility = Visibility.Collapsed;
             Loaded += async (_, _) => await LoadEmployeesAsync();
         }
 

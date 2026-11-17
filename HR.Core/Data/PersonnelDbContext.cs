@@ -95,6 +95,9 @@ namespace HR.Data
         public DbSet<GeoType> GeoTypes => Set<GeoType>();
         public DbSet<DocumentType> DocumentTypes => Set<DocumentType>();
         public DbSet<Document> Documents => Set<Document>();
+        public DbSet<AppUser> AppUsers => Set<AppUser>();
+        public DbSet<Role> Roles => Set<Role>();
+        public DbSet<UserRole> UserRoles => Set<UserRole>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -601,6 +604,35 @@ namespace HR.Data
                 entity.HasOne(e => e.Employee).WithMany().HasForeignKey(e => e.EmployeeId).OnDelete(DeleteBehavior.NoAction);
                 entity.HasOne(e => e.Department).WithMany().HasForeignKey(e => e.DepartmentId).OnDelete(DeleteBehavior.NoAction);
                 entity.HasOne(e => e.Type).WithMany().HasForeignKey(e => e.DocumentTypeId).OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<Role>(entity =>
+            {
+                entity.ToTable("Role");
+                entity.HasKey(e => e.RoleId);
+                entity.Property(e => e.RoleId).ValueGeneratedNever();
+                entity.Property(e => e.Name).HasMaxLength(32).IsRequired();
+                entity.HasIndex(e => e.Name).IsUnique();
+            });
+
+            modelBuilder.Entity<AppUser>(entity =>
+            {
+                entity.ToTable("AppUser");
+                entity.HasKey(e => e.AppUserId);
+                entity.Property(e => e.Username).HasMaxLength(64).IsRequired();
+                entity.Property(e => e.DisplayName).HasMaxLength(100);
+                entity.Property(e => e.PasswordHash).HasMaxLength(64).IsRequired();
+                entity.Property(e => e.PasswordSalt).HasMaxLength(32).IsRequired();
+                entity.HasIndex(e => e.Username).IsUnique();
+                entity.HasOne(e => e.Employee).WithMany().HasForeignKey(e => e.EmployeeId).OnDelete(DeleteBehavior.SetNull);
+            });
+
+            modelBuilder.Entity<UserRole>(entity =>
+            {
+                entity.ToTable("UserRole");
+                entity.HasKey(e => new { e.AppUserId, e.RoleId });
+                entity.HasOne(e => e.User).WithMany(u => u.Roles).HasForeignKey(e => e.AppUserId).OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.Role).WithMany(r => r.Users).HasForeignKey(e => e.RoleId).OnDelete(DeleteBehavior.NoAction);
             });
         }
     }

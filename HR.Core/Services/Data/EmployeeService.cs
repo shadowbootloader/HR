@@ -1,5 +1,6 @@
 using HR.Data;
 using HR.Services;
+using HR.Services.Auth;
 using HR.Services.Files;
 using HR.Data.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -173,6 +174,7 @@ namespace HR.Services.Data
 
         public async Task<Employee> CreateAsync(Employee employee)
         {
+            AccessGuard.RequirePeopleManagement();
             if (employee == null)
                 throw new ArgumentNullException(nameof(employee));
 
@@ -201,6 +203,7 @@ namespace HR.Services.Data
 
         public async Task<Employee> UpdateAsync(Employee employee)
         {
+            AccessGuard.RequirePeopleManagement();
             if (employee == null)
                 throw new ArgumentNullException(nameof(employee));
 
@@ -434,6 +437,7 @@ namespace HR.Services.Data
 
         public async Task<bool> SoftDeleteAsync(Guid employeeId)
         {
+            AccessGuard.RequirePeopleManagement();
             var employee = await _db.Employees.FindAsync(employeeId);
             if (employee == null) return false;
 
@@ -444,6 +448,7 @@ namespace HR.Services.Data
 
         public async Task<bool> HardDeleteAsync(Guid employeeId)
         {
+            AccessGuard.RequirePeopleManagement();
             var employee = await _db.Employees
                 .Include(e => e.Supplement)
                 .Include(e => e.SelfAssessment)
@@ -517,6 +522,7 @@ namespace HR.Services.Data
 
         public async Task<bool> RestoreAsync(Guid employeeId)
         {
+            AccessGuard.RequirePeopleManagement();
             var employee = await _db.Employees.FindAsync(employeeId);
             if (employee == null) return false;
 

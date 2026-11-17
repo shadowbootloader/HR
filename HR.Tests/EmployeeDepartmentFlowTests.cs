@@ -1,5 +1,6 @@
 using HR.Data;
 using HR.Data.Entities;
+using HR.Services.Auth;
 using HR.Services.Data;
 using HR.Services.Files;
 using Microsoft.EntityFrameworkCore;
@@ -17,6 +18,13 @@ public class EmployeeDepartmentFlowTests
     public async Task ListAddSaveEditDeleteRestoreHardDelete_AndDepartmentDelete()
     {
         Skip.IfNot(_sql.IsAvailable, _sql.SkipReason ?? "SQL Server آماده نیست.");
+        AuthSession.SignIn(new CurrentUser
+        {
+            UserId = Guid.NewGuid(),
+            Username = "hr-flow",
+            DisplayName = "آزمون منابع انسانی",
+            Roles = new[] { AppRoles.Hr }
+        });
 
         var storageRoot = Path.Combine(Path.GetTempPath(), "hr-flow-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(storageRoot);
@@ -140,6 +148,7 @@ public class EmployeeDepartmentFlowTests
         }
         finally
         {
+            AuthSession.SignOut();
             Environment.SetEnvironmentVariable(FileStorageService.EnvironmentVariable, null);
             if (Directory.Exists(storageRoot))
                 Directory.Delete(storageRoot, recursive: true);

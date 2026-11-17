@@ -9,6 +9,7 @@ using HR.Controls.AddEmployees;
 using HR.Data;
 using HR.Models;
 using HR.Services;
+using HR.Services.Auth;
 using HR.Services.Data;
 
 namespace HR.Pages
@@ -50,6 +51,8 @@ namespace HR.Pages
         private async void AddEmployeePage_Loaded(object sender, RoutedEventArgs e)
         {
             Loaded -= AddEmployeePage_Loaded;
+            if (AuthSession.Current?.CanManagePeople != true)
+                SaveBtn.IsEnabled = false;
 
             await LoadRemainingSectionsAsync();
 

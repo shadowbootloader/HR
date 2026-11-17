@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using HR.Pages;
 using HR.Services;
+using HR.Services.Auth;
 using HR.Services.Data;
 
 namespace HR.Controls
@@ -25,6 +26,15 @@ namespace HR.Controls
 
         private void UpdateActionButtons()
         {
+            if (AuthSession.Current?.CanManagePeople != true)
+            {
+                EditBtn.Visibility = Visibility.Collapsed;
+                DeleteBtn.Visibility = Visibility.Collapsed;
+                RestoreBtn.Visibility = Visibility.Collapsed;
+                HardDeleteBtn.Visibility = Visibility.Collapsed;
+                return;
+            }
+
             var deleted = Employee?.IsDeleted == true;
             DeleteBtn.Visibility = deleted ? Visibility.Collapsed : Visibility.Visible;
             RestoreBtn.Visibility = deleted ? Visibility.Visible : Visibility.Collapsed;
