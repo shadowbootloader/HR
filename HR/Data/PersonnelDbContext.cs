@@ -6,11 +6,6 @@ namespace HR.Data
 {
     public class PersonnelDbContext : DbContext
     {
-        // ==================== Connection String ====================
-        // این را مطابق سرور خودت تغییر بده
-        private const string ConnectionString =
-            "Server=.;Database=Personnel;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true";
-
         public PersonnelDbContext()
         {
         }
@@ -23,7 +18,7 @@ namespace HR.Data
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseSqlServer(ConnectionString, sqlOptions =>
+                optionsBuilder.UseSqlServer(PersonnelConnection.Resolve(), sqlOptions =>
                 {
                     sqlOptions.UseHierarchyId(); // پشتیبانی hierarchyid
                 });
