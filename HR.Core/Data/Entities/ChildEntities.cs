@@ -93,6 +93,7 @@ namespace HR.Data.Entities
         public byte PersonRole { get; set; }
         public string? PhoneNumber { get; set; }
         public string? Address { get; set; }
+        public ICollection<ForeignCooperation> ForeignCooperations { get; set; } = new List<ForeignCooperation>();
         public HierarchyId? IssueCity { get; set; }
         public HierarchyId? BirthCity { get; set; }
 
@@ -201,16 +202,16 @@ namespace HR.Data.Entities
     public class ForeignCooperation
     {
         public Guid ForeignCooperationId { get; set; }
-        public Guid EmployeeId { get; set; }
-        public Guid RelatedPersonId { get; set; }
+        public Guid? EmployeeId { get; set; }
+        public Guid? RelatedPersonId { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime? EndDate { get; set; }
         public string CenterName { get; set; } = string.Empty;
         public byte CenterTypeId { get; set; }
         public string? Description { get; set; }
 
-        public Employee Employee { get; set; } = null!;
-        public RelatedPerson RelatedPerson { get; set; } = null!;
+        public Employee? Employee { get; set; }
+        public RelatedPerson? RelatedPerson { get; set; }
         public CenterType CenterType { get; set; } = null!;
     }
 

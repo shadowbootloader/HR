@@ -384,9 +384,17 @@ namespace HR.Services.Data
                 .Where(r => r.PersonRole == 1)
                 .ToDictionary(r => r.RelatedPersonId);
 
-            foreach (var fc in entity.ForeignCooperations ?? Enumerable.Empty<HR.Data.Entities.ForeignCooperation>())
+            var foreignCooperations = (entity.ForeignCooperations ?? Enumerable.Empty<HR.Data.Entities.ForeignCooperation>())
+                .Concat((entity.RelatedPersons ?? Enumerable.Empty<RelatedPerson>())
+                    .SelectMany(r => r.ForeignCooperations ?? Enumerable.Empty<HR.Data.Entities.ForeignCooperation>()))
+                .GroupBy(c => c.ForeignCooperationId)
+                .Select(g => g.First());
+
+            foreach (var fc in foreignCooperations)
             {
-                coopPeople.TryGetValue(fc.RelatedPersonId, out var person);
+                RelatedPerson? person = null;
+                if (fc.RelatedPersonId is Guid personId)
+                    coopPeople.TryGetValue(personId, out person);
                 var (country, note) = MapperHelpers.SplitJoined(fc.Description);
                 profile.ForeignCooperations.Add(new ForeignCooperationRecord
                 {

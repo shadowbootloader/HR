@@ -95,7 +95,7 @@ namespace HR.Services.Data
                     .Include(e => e.Citizenships)
                     .Include(e => e.ForeignTravels)
                     .Include(e => e.ForeignRelatives)
-                    .Include(e => e.ForeignCooperations)
+                    .Include(e => e.RelatedPersons).ThenInclude(r => r.ForeignCooperations)
                     .Include(e => e.OrganizationCooperations)
                     .Include(e => e.OtherActivities)
                     .Include(e => e.SacrificeRecords)
@@ -115,7 +115,7 @@ namespace HR.Services.Data
                     .Include(e => e.ForeignTravels).ThenInclude(t => t.TravelReason)
                     .Include(e => e.ForeignTravels).ThenInclude(t => t.TransportType)
                     .Include(e => e.ForeignRelatives).ThenInclude(f => f.AbroadReason)
-                    .Include(e => e.ForeignCooperations).ThenInclude(f => f.CenterType)
+                    .Include(e => e.RelatedPersons).ThenInclude(r => r.ForeignCooperations).ThenInclude(f => f.CenterType)
                     .Include(e => e.SacrificeRecords).ThenInclude(s => s.Relationship)
                     .Include(e => e.SacrificeRecords).ThenInclude(s => s.Type)
                     .Include(e => e.SacrificeRecords).ThenInclude(s => s.AmountUnit)
@@ -220,7 +220,7 @@ namespace HR.Services.Data
                 .Include(e => e.Citizenships)
                 .Include(e => e.ForeignTravels)
                 .Include(e => e.ForeignRelatives)
-                .Include(e => e.ForeignCooperations)
+                .Include(e => e.RelatedPersons).ThenInclude(r => r.ForeignCooperations)
                 .Include(e => e.OrganizationCooperations)
                 .Include(e => e.OtherActivities)
                 .Include(e => e.SacrificeRecords)
@@ -237,6 +237,7 @@ namespace HR.Services.Data
                 throw new InvalidOperationException("کارمند یافت نشد.");
 
             await ValidateAsync(employee);
+            DetachLookups(employee);
 
             // فیلدهای اصلی (کلید و پرچم حذف نرم را دست نمی‌زنیم)
             var id = existing.EmployeeId;
@@ -275,6 +276,9 @@ namespace HR.Services.Data
             ReplaceChildren(existing.Addresses, employee.Addresses, id, (x, empId) => { x.EmployeeId = empId; x.RelatedPersonId = null; if (x.AddressId == Guid.Empty) x.AddressId = Guid.NewGuid(); });
             ReplaceChildren(existing.PhoneNumbers, employee.PhoneNumbers, id, (x, empId) => { x.EmployeeId = empId; if (x.PhoneNumberId == Guid.Empty) x.PhoneNumberId = Guid.NewGuid(); });
             ReplaceChildren(existing.PersonFiles, employee.PersonFiles, id, (x, empId) => { x.EmployeeId = empId; if (x.PersonFileId == Guid.Empty) x.PersonFileId = Guid.NewGuid(); });
+            foreach (var person in existing.RelatedPersons.ToList())
+                _db.RemoveRange(person.ForeignCooperations);
+
             ReplaceChildren(existing.RelatedPersons, employee.RelatedPersons, id, (x, empId) => { x.EmployeeId = empId; if (x.RelatedPersonId == Guid.Empty) x.RelatedPersonId = Guid.NewGuid(); });
 
             ReplaceChildren(existing.Educations, employee.Educations, id, (x, empId) => { x.EmployeeId = empId; if (x.EducationId == Guid.Empty) x.EducationId = Guid.NewGuid(); });
@@ -340,6 +344,73 @@ namespace HR.Services.Data
             return existing;
         }
 
+        private static void DetachLookups(Employee employee)
+        {
+            employee.Gender = null!;
+            employee.MaritalStatus = null!;
+            employee.MilitaryStatus = null;
+            employee.Religion = null;
+            employee.Denomination = null;
+            employee.ExemptionType = null;
+            employee.ExemptionReason = null;
+            employee.Supplement?.Department = null!;
+            employee.Supplement?.InsuranceType = null!;
+            employee.Supplement?.CooperationType = null!;
+            if (employee.Supplement != null) employee.Supplement.Employee = null!;
+            if (employee.SelfAssessment != null) employee.SelfAssessment.Employee = null!;
+
+            foreach (var file in employee.PersonFiles) file.FileType = null!;
+            foreach (var edu in employee.Educations)
+            {
+                edu.Degree = null!;
+                edu.Status = null!;
+                edu.Employee = null!;
+            }
+            foreach (var bank in employee.BankAccounts)
+            {
+                bank.Bank = null!;
+                bank.AccountType = null!;
+                bank.Employee = null!;
+            }
+            foreach (var phone in employee.PhoneNumbers)
+            {
+                phone.Type = null!;
+                phone.Status = null!;
+                phone.Employee = null;
+            }
+            foreach (var language in employee.Languages)
+            {
+                language.Employee = null!;
+                language.Language = null!;
+                language.ReadingLevel = null!;
+                language.WritingLevel = null!;
+                language.ComprehensionLevel = null!;
+                language.SpeakingLevel = null!;
+            }
+            foreach (var software in employee.Softwares)
+            {
+                software.Employee = null!;
+                software.Software = null!;
+                software.SkillLevel = null!;
+            }
+            foreach (var ability in employee.Abilities)
+            {
+                ability.Employee = null!;
+                ability.Ability = null!;
+                ability.SkillLevel = null!;
+            }
+            foreach (var person in employee.RelatedPersons)
+            {
+                person.Employee = null!;
+                foreach (var cooperation in person.ForeignCooperations)
+                {
+                    cooperation.CenterType = null!;
+                    cooperation.Employee = null;
+                    cooperation.RelatedPerson = null;
+                }
+            }
+        }
+
         private void ReplaceChildren<T>(
             ICollection<T> existing,
             ICollection<T>? incoming,
@@ -357,6 +428,7 @@ namespace HR.Services.Data
             {
                 prepare(item, employeeId);
                 existing.Add(item);
+                _db.Entry(item).State = EntityState.Added;
             }
         }
 
@@ -385,7 +457,7 @@ namespace HR.Services.Data
                 .Include(e => e.Citizenships)
                 .Include(e => e.ForeignTravels)
                 .Include(e => e.ForeignRelatives)
-                .Include(e => e.ForeignCooperations)
+                .Include(e => e.RelatedPersons).ThenInclude(r => r.ForeignCooperations)
                 .Include(e => e.OrganizationCooperations)
                 .Include(e => e.OtherActivities)
                 .Include(e => e.SacrificeRecords)
@@ -415,6 +487,7 @@ namespace HR.Services.Data
             await new DocumentLinkService().RemoveEmployeeAsync(_db, employeeId);
 
             _db.RemoveRange(employee.ForeignCooperations);
+            _db.RemoveRange(employee.RelatedPersons.SelectMany(p => p.ForeignCooperations));
             _db.RemoveRange(employee.Citizenships);
             _db.RemoveRange(employee.BackgroundRecords);
             _db.RemoveRange(employee.Addresses);
@@ -555,7 +628,19 @@ namespace HR.Services.Data
             foreach (var item in employee.ForeignCooperations)
             {
                 if (item.ForeignCooperationId == Guid.Empty) item.ForeignCooperationId = Guid.NewGuid();
-                item.EmployeeId = employee.EmployeeId;
+                if (item.RelatedPersonId == null) item.EmployeeId = employee.EmployeeId;
+                else item.EmployeeId = null;
+            }
+
+            foreach (var person in employee.RelatedPersons)
+            {
+                foreach (var cooperation in person.ForeignCooperations)
+                {
+                    if (cooperation.ForeignCooperationId == Guid.Empty)
+                        cooperation.ForeignCooperationId = Guid.NewGuid();
+                    cooperation.EmployeeId = null;
+                    cooperation.RelatedPersonId = person.RelatedPersonId;
+                }
             }
 
             foreach (var item in employee.OrganizationCooperations)
@@ -617,6 +702,23 @@ namespace HR.Services.Data
 
             if (employee.MaritalStatusId == 0)
                 throw new InvalidOperationException("جدول MaritalStatus خالی است یا وضعیت تأهل نامعتبر است.");
+
+            if (employee.GenderId == 2)
+            {
+                if (employee.MilitaryStatusId != null || employee.ExemptionTypeId != null || employee.ExemptionReasonId != null)
+                    throw new InvalidOperationException("برای جنسیت با شناسه ۲، نظام‌وظیفه و معافیت باید خالی باشد.");
+            }
+            else if (employee.GenderId == 1)
+            {
+                if (employee.MilitaryStatusId == null)
+                    throw new InvalidOperationException("برای جنسیت با شناسه ۱، وضعیت نظام‌وظیفه الزامی است.");
+
+                var exempt = employee.MilitaryStatusId == 1;
+                if (exempt && (employee.ExemptionTypeId == null || employee.ExemptionReasonId == null))
+                    throw new InvalidOperationException("برای وضعیت نظام‌وظیفه ۱، نوع و علت معافیت الزامی است.");
+                if (!exempt && (employee.ExemptionTypeId != null || employee.ExemptionReasonId != null))
+                    throw new InvalidOperationException("نوع و علت معافیت فقط وقتی مجاز است که وضعیت نظام‌وظیفه ۱ باشد.");
+            }
 
             if (employee.Supplement != null)
             {

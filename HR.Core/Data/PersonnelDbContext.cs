@@ -494,7 +494,7 @@ namespace HR.Data
                 entity.Property(e => e.Description).HasMaxLength(250);
 
                 entity.HasOne(e => e.Employee).WithMany(emp => emp.ForeignCooperations).HasForeignKey(e => e.EmployeeId).OnDelete(DeleteBehavior.NoAction);
-                entity.HasOne(e => e.RelatedPerson).WithMany().HasForeignKey(e => e.RelatedPersonId).OnDelete(DeleteBehavior.NoAction);
+                entity.HasOne(e => e.RelatedPerson).WithMany(p => p.ForeignCooperations).HasForeignKey(e => e.RelatedPersonId).OnDelete(DeleteBehavior.NoAction);
                 entity.HasOne(e => e.CenterType).WithMany().HasForeignKey(e => e.CenterTypeId).OnDelete(DeleteBehavior.NoAction);
             });
 
