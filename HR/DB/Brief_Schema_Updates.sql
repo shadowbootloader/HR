@@ -1,3 +1,4 @@
+-- منسوخ: بلوک UPGRADE EXISTING در LastPersonnel.sql همین جداول را می‌سازد.
 USE [Personnel];
 GO
 

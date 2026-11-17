@@ -1,4 +1,5 @@
 /*
+  منسوخ: همین تغییرات داخل بلوک UPGRADE EXISTING در LastPersonnel.sql است.
   گسترش جدول Department برای پوشش کامل فرم
   روی دیتابیس موجود Personnel اجرا شود.
 */
