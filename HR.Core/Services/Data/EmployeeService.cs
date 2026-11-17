@@ -704,10 +704,23 @@ namespace HR.Services.Data
             if (!NationalCode.IsValid(employee.NationalCode))
                 throw new InvalidOperationException("کد ملی نامعتبر است.");
 
-            var duplicateNationalCode = await _db.Employees.AnyAsync(e =>
-                e.NationalCode == employee.NationalCode && e.EmployeeId != employee.EmployeeId);
-            if (duplicateNationalCode)
-                throw new InvalidOperationException("این کد ملی قبلاً ثبت شده است.");
+            var problem = EmployeeValidator.Validate(employee, DateTime.Today);
+            if (problem != null)
+                throw new InvalidOperationException(problem);
+
+            // ایندکس یکتای کد ملی شامل کارمندان حذف‌شده هم هست؛ به کاربر بگوییم اگر مالک آن حذف‌شده است.
+            var nationalCode = employee.NationalCode;
+            var employeeId = employee.EmployeeId;
+            var sameNationalCode = await _db.Employees.AsNoTracking()
+                .Where(e => e.NationalCode == nationalCode && e.EmployeeId != employeeId)
+                .Select(e => (bool?)e.IsDeleted)
+                .FirstOrDefaultAsync();
+            if (sameNationalCode.HasValue)
+            {
+                throw new InvalidOperationException(sameNationalCode.Value
+                    ? "این کد ملی برای یک کارمند حذف‌شده ثبت است. او را از فهرست «حذف‌شده» بازگردانید."
+                    : "این کد ملی قبلاً ثبت شده است.");
+            }
 
             if (employee.GenderId == 0)
                 throw new InvalidOperationException("جدول Gender خالی است یا مقدار جنسیت نامعتبر است.");
@@ -744,6 +757,12 @@ namespace HR.Services.Data
 
                 if (string.IsNullOrWhiteSpace(employee.Supplement.PersonnelCode))
                     throw new InvalidOperationException("کد پرسنلی الزامی است.");
+
+                var personnelCode = employee.Supplement.PersonnelCode;
+                var duplicatePersonnelCode = await _db.EmployeeSupplements.AsNoTracking()
+                    .AnyAsync(s => s.PersonnelCode == personnelCode && s.EmployeeId != employeeId);
+                if (duplicatePersonnelCode)
+                    throw new InvalidOperationException("این کد پرسنلی قبلاً برای کارمند دیگری (فعال یا حذف‌شده) ثبت شده است.");
             }
 
             foreach (var bank in employee.BankAccounts)
