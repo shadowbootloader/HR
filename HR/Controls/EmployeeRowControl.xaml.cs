@@ -20,6 +20,7 @@ namespace HR.Controls
         {
             InitializeComponent();
             DataContextChanged += (_, _) => UpdateActionButtons();
+            Unloaded += (_, _) => (_employeeService as IDisposable)?.Dispose();
         }
 
         private void UpdateActionButtons()

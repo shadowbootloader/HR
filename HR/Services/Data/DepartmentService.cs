@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace HR.Services.Data
 {
-    public class DepartmentService : IDepartmentService
+    public class DepartmentService : IDepartmentService, IDisposable
     {
         private readonly PersonnelDbContext _db;
 
@@ -231,5 +231,7 @@ namespace HR.Services.Data
 
             return false;
         }
+
+        public void Dispose() => _db.Dispose();
     }
 }

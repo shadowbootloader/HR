@@ -33,6 +33,11 @@ namespace HR.Pages
                 OfficesList.ItemsSource = _offices;
 
             Loaded += async (_, _) => await InitAsync();
+            Unloaded += (_, _) =>
+            {
+                (_departmentService as IDisposable)?.Dispose();
+                (_employeeService as IDisposable)?.Dispose();
+            };
         }
 
         public AddDepartmentPage(short departmentId) : this()

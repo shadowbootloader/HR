@@ -186,8 +186,8 @@ namespace HR.Controls.AddEmployees
             { message = "نام خانوادگی را وارد کنید."; return false; }
 
             var nationalCode = PersonalNationalCodeTb.Text?.Trim() ?? string.Empty;
-            if (!Regex.IsMatch(nationalCode, @"^\d{10}$"))
-            { message = "کد ملی باید ۱۰ رقم باشد."; return false; }
+            if (!NationalCode.IsValid(nationalCode))
+            { message = "کد ملی نامعتبر است."; return false; }
 
             var idNumber = PersonalIDTb.Text?.Trim() ?? string.Empty;
             if (!Regex.IsMatch(idNumber, @"^\d{1,10}$"))

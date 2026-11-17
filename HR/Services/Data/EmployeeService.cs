@@ -1,4 +1,5 @@
 using HR.Data;
+using HR.Services;
 using HR.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace HR.Services.Data
 {
-    public class EmployeeService : IEmployeeService
+    public class EmployeeService : IEmployeeService, IDisposable
     {
         private readonly PersonnelDbContext _db;
 
@@ -581,8 +582,13 @@ namespace HR.Services.Data
             if (string.IsNullOrWhiteSpace(employee.LastName))
                 throw new InvalidOperationException("نام خانوادگی الزامی است.");
 
-            if (string.IsNullOrWhiteSpace(employee.NationalCode))
-                throw new InvalidOperationException("کد ملی الزامی است.");
+            if (!NationalCode.IsValid(employee.NationalCode))
+                throw new InvalidOperationException("کد ملی نامعتبر است.");
+
+            var duplicateNationalCode = await _db.Employees.AnyAsync(e =>
+                e.NationalCode == employee.NationalCode && e.EmployeeId != employee.EmployeeId);
+            if (duplicateNationalCode)
+                throw new InvalidOperationException("این کد ملی قبلاً ثبت شده است.");
 
             if (employee.GenderId == 0)
                 throw new InvalidOperationException("جدول Gender خالی است یا مقدار جنسیت نامعتبر است.");
@@ -636,5 +642,7 @@ namespace HR.Services.Data
 
             return "خطا در ذخیره در پایگاه داده: " + root;
         }
+
+        public void Dispose() => _db.Dispose();
     }
 }

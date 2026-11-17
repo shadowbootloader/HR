@@ -22,6 +22,7 @@ namespace HR.Pages
             _department = department;
 
             Loaded += (_, __) => BindDepartment();
+            Unloaded += (_, _) => (_departmentService as IDisposable)?.Dispose();
         }
 
         private void BindDepartment()

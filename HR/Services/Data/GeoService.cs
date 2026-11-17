@@ -21,10 +21,15 @@ namespace HR.Services.Data
         private const string DefaultCountry = "ایران";
 
         private readonly PersonnelDbContext _db;
+        private readonly bool _ownsContext;
 
-        public GeoService(PersonnelDbContext db) => _db = db;
+        public GeoService(PersonnelDbContext db, bool ownsContext = false)
+        {
+            _db = db;
+            _ownsContext = ownsContext;
+        }
 
-        public GeoService() : this(new PersonnelDbContext())
+        public GeoService() : this(new PersonnelDbContext(), ownsContext: true)
         {
         }
 
@@ -156,6 +161,10 @@ namespace HR.Services.Data
             return row?.Name;
         }
 
-        public void Dispose() => _db.Dispose();
+        public void Dispose()
+        {
+            if (_ownsContext)
+                _db.Dispose();
+        }
     }
 }

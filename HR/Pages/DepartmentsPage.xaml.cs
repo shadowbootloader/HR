@@ -26,6 +26,7 @@ namespace HR.Pages
             InitializeComponent();
             DepartmentItems.ItemsSource = Departments;
             Loaded += async (_, _) => await LoadDepartmentsAsync();
+            Unloaded += (_, _) => (_departmentService as IDisposable)?.Dispose();
         }
 
         private async Task LoadDepartmentsAsync()

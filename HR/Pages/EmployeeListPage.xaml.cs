@@ -76,6 +76,7 @@ namespace HR.Pages
         {
             EmployeeRowControl.NavigationRequested -= OnRowNavigationRequested;
             EmployeeRowControl.ListRefreshRequested -= OnListRefreshRequested;
+            (_employeeService as IDisposable)?.Dispose();
         }
 
         private async void OnListRefreshRequested()
