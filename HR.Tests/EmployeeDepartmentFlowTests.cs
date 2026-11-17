@@ -34,11 +34,8 @@ public class EmployeeDepartmentFlowTests
         {
             await using (var seed = NewContext())
             {
-                await seed.Database.ExecuteSqlRawAsync("INSERT INTO dbo.Gender (GenderId, Title) VALUES (1, N'مرد');");
-                await seed.Database.ExecuteSqlRawAsync("INSERT INTO dbo.MilitaryStatus (MilitaryStatusId, Title) VALUES (2, N'پایان خدمت');");
-                await seed.Database.ExecuteSqlRawAsync("INSERT INTO dbo.MaritalStatus (MaritalStatusId, Title) VALUES (1, N'مجرد');");
-                await seed.Database.ExecuteSqlRawAsync("INSERT INTO dbo.InsuranceType (Title) VALUES (N'تامین اجتماعی');");
-                await seed.Database.ExecuteSqlRawAsync("INSERT INTO dbo.CooperationType (Title) VALUES (N'تمام‌وقت');");
+                Assert.Equal("مرد", await seed.Genders.Where(g => g.GenderId == 1).Select(g => g.Title).SingleAsync());
+                Assert.Equal("پایان خدمت", await seed.MilitaryStatuses.Where(m => m.MilitaryStatusId == 2).Select(m => m.Title).SingleAsync());
             }
 
             await using var createDepartments = NewContext();
@@ -64,8 +61,8 @@ public class EmployeeDepartmentFlowTests
             byte photoTypeId;
             await using (var lookup = NewContext())
             {
-                insuranceId = await lookup.InsuranceTypes.Select(t => t.InsuranceTypeId).SingleAsync();
-                cooperationId = await lookup.CooperationTypes.Select(t => t.CooperationTypeId).SingleAsync();
+                insuranceId = await lookup.InsuranceTypes.Where(t => t.Title == "تامین اجتماعی").Select(t => t.InsuranceTypeId).SingleAsync();
+                cooperationId = await lookup.CooperationTypes.Where(t => t.Title == "تمام‌وقت").Select(t => t.CooperationTypeId).SingleAsync();
                 photoTypeId = await lookup.FileTypes.Where(t => t.Title == "عکس پرسنلی").Select(t => t.FileTypeId).SingleAsync();
             }
 

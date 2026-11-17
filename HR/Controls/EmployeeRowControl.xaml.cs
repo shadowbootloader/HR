@@ -32,10 +32,12 @@ namespace HR.Controls
                 DeleteBtn.Visibility = Visibility.Collapsed;
                 RestoreBtn.Visibility = Visibility.Collapsed;
                 HardDeleteBtn.Visibility = Visibility.Collapsed;
+                LeaveBtn.Visibility = Visibility.Collapsed;
                 return;
             }
 
             var deleted = Employee?.IsDeleted == true;
+            LeaveBtn.Visibility = deleted ? Visibility.Collapsed : Visibility.Visible;
             DeleteBtn.Visibility = deleted ? Visibility.Collapsed : Visibility.Visible;
             RestoreBtn.Visibility = deleted ? Visibility.Visible : Visibility.Collapsed;
             HardDeleteBtn.Visibility = deleted ? Visibility.Visible : Visibility.Collapsed;
@@ -45,6 +47,14 @@ namespace HR.Controls
         {
             if (Employee == null) return;
             NavigationRequested?.Invoke(new EmployeOverview(Employee));
+        }
+
+        private void LeaveBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (Employee == null || Employee.Id == Guid.Empty) return;
+            var window = new LeaveWindow(Employee.Id, Employee.FullName) { Owner = Window.GetWindow(this) };
+            if (window.ShowDialog() == true)
+                ListRefreshRequested?.Invoke();
         }
 
         private void EditBtn_Click(object sender, RoutedEventArgs e)

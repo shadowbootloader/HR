@@ -143,10 +143,8 @@ namespace HR.Pages
 
         private static string StatusOf(HR.Data.Entities.Employee employee)
         {
-            if (employee.IsDeleted) return "حذف‌شده";
-            if (employee.Supplement?.EndDate is DateTime end && end.Date < DateTime.Today)
-                return "غیرفعال";
-            return "فعال";
+            var onLeave = employee.Leaves?.Any(leave => LeaveService.Covers(leave, DateTime.Today)) == true;
+            return RosterStatus.Resolve(employee.IsDeleted, employee.Supplement?.EndDate, onLeave, DateTime.Today);
         }
 
         private static string DepartmentMark(string? title)

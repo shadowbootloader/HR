@@ -9,11 +9,6 @@ using System.Windows.Media;
 using HR.Controls;
 using HR.Services;
 using HR.Services.Auth;
-using LiveChartsCore;
-using LiveChartsCore.SkiaSharpView;
-using LiveChartsCore.SkiaSharpView.Painting;
-using SkiaSharp;
-
 namespace HR.Pages
 {
     public partial class MainWindow : Window, INotifyPropertyChanged
@@ -32,9 +27,6 @@ namespace HR.Pages
             CurrentUserRole.Text = current?.RoleLabel ?? "";
             UsersBtn.Visibility = current?.IsAdmin == true ? Visibility.Visible : Visibility.Collapsed;
 
-            // مهم: چارت‌ها باید قبل از DataContext مقدار بگیرند،
-            // وگرنه بایندینگ‌ها نال می‌خوانند و هرگز آپدیت نمی‌شوند.
-            SetupCharts();
             DataContext = this;
 
             _activeSideMenu = DashbordBynSide;
@@ -47,84 +39,6 @@ namespace HR.Pages
 
         private void OnPropertyChanged([CallerMemberName] string? name = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-
-        // ==================== چارت‌ها ====================
-
-        public ISeries[]? CompetencySeries { get; private set; }
-        public ISeries[]? PerformanceSeries { get; private set; }
-        public PolarAxis[]? AngleAxes { get; private set; }
-        public Axis[]? XAxes { get; private set; }
-        public Axis[]? YAxes { get; private set; }
-
-        private void SetupCharts()
-        {
-            CompetencySeries = new ISeries[]
-            {
-                new PolarLineSeries<double>
-                {
-                    Values = new double[] { 4.6, 4.4, 4.5, 4.3, 4.6, 4.2 },
-                    Fill = new SolidColorPaint(SKColor.Parse("#3B82F6").WithAlpha(70)),
-                    Stroke = new SolidColorPaint(SKColor.Parse("#3B82F6"), 2.5f),
-                    GeometrySize = 8,
-                    GeometryFill = new SolidColorPaint(SKColors.White),
-                    GeometryStroke = new SolidColorPaint(SKColor.Parse("#3B82F6"), 2),
-                    LineSmoothness = 0.2,
-                    IsClosed = true
-                }
-            };
-
-            AngleAxes = new PolarAxis[]
-            {
-                new PolarAxis
-                {
-                    Labels = new[]
-                    {
-                        "رهبری", "ارتباط", "همکاری",
-                        "حل مسئله", "نتیجه‌گرایی", "تفکر راهبردی"
-                    },
-                    LabelsPaint = new SolidColorPaint(SKColor.Parse("#94A3B8")),
-                    TextSize = 11,
-                    SeparatorsPaint = new SolidColorPaint(SKColor.Parse("#334155"))
-                }
-            };
-
-            PerformanceSeries = new ISeries[]
-            {
-                new LineSeries<double>
-                {
-                    Values = new double[] { 62, 68, 71, 74, 73, 78, 81, 80, 84, 85, 87, 87 },
-                    Fill = new SolidColorPaint(SKColor.Parse("#3B82F6").WithAlpha(40)),
-                    Stroke = new SolidColorPaint(SKColor.Parse("#3B82F6"), 2.5f),
-                    GeometrySize = 6,
-                    GeometryFill = new SolidColorPaint(SKColors.White),
-                    GeometryStroke = new SolidColorPaint(SKColor.Parse("#3B82F6"), 2),
-                    LineSmoothness = 0.5
-                }
-            };
-
-            XAxes = new Axis[]
-            {
-                new Axis
-                {
-                    Labels = new[] { "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند", "فروردین", "اردیبهشت" },
-                    LabelsPaint = new SolidColorPaint(SKColor.Parse("#94A3B8")),
-                    SeparatorsPaint = new SolidColorPaint(SKColor.Parse("#1E293B")),
-                    TextSize = 10
-                }
-            };
-
-            YAxes = new Axis[]
-            {
-                new Axis
-                {
-                    MinLimit = 0,
-                    MaxLimit = 100,
-                    LabelsPaint = new SolidColorPaint(SKColor.Parse("#94A3B8")),
-                    SeparatorsPaint = new SolidColorPaint(SKColor.Parse("#1E293B")),
-                    TextSize = 10
-                }
-            };
-        }
 
         // ==================== ناوبری ====================
 
@@ -194,8 +108,8 @@ namespace HR.Pages
 
         private void ShowDashboard()
         {
-            PageName.Text = "مرور کلی پرونده";
-            DataPanel.Navigate(GetPage(() => new EmployeeAssessmentCenterPage(), "assessment"));
+            PageName.Text = "داشبورد";
+            DataPanel.Navigate(GetPage(() => new DashboardPage(), "dashboard"));
         }
 
         private void BackBtn_Click(object sender, RoutedEventArgs e)
@@ -253,6 +167,12 @@ namespace HR.Pages
             if (ReferenceEquals(target, DashbordBynSide))
             {
                 ShowDashboard();
+                return;
+            }
+
+            if (ReferenceEquals(target, AssessmentsBtn))
+            {
+                Navigate(GetPage(() => new EmployeeAssessmentCenterPage(), "assessment"), "آزمون‌ها");
                 return;
             }
 
