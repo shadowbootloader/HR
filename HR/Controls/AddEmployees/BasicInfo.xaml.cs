@@ -64,7 +64,8 @@ namespace HR.Controls.AddEmployees
             if (picked == null) return;
 
             _photo = picked;
-            ImagePicker.Preview(PhotoBrushTarget, _photo);
+            if (PhotoBrushTarget is Image photoTarget)
+                ImagePicker.Preview(photoTarget, _photo);
             PhotoEllipse.Visibility = Visibility.Visible;
         }
 
@@ -134,7 +135,8 @@ namespace HR.Controls.AddEmployees
             _idCardImage = profile.IdCardImagePath;
             _militaryImage = profile.MilitaryImagePath;
 
-            ImagePicker.Preview(PhotoBrushTarget, _photo);
+            if (PhotoBrushTarget is Image loadedPhoto)
+                ImagePicker.Preview(loadedPhoto, _photo);
             PhotoEllipse.Visibility = string.IsNullOrEmpty(_photo) ? Visibility.Collapsed : Visibility.Visible;
 
             ImagePicker.Preview(NationalCardImage, _nationalCardImage);

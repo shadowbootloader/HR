@@ -7,18 +7,21 @@ namespace HR.Models
 {
     public class AbilityItem
     {
-        public string AbilityName { get; set; }
-        public string AbilityLevel { get; set; }  // ضعیف / متوسط / عالی
+        public string AbilityName { get; set; } = string.Empty;
+        public string AbilityLevel { get; set; } = string.Empty;  // ضعیف / متوسط / عالی
 
         public string DisplayText => $"{AbilityName} · {AbilityLevel}";
 
         public Brush AbilityLevelBrush =>
             AbilityLevel switch
             {
-                "عالی" => (Brush)new BrushConverter().ConvertFrom("#14532D"),
-                "متوسط" => (Brush)new BrushConverter().ConvertFrom("#1E3A5F"),
-                "ضعیف" => (Brush)new BrushConverter().ConvertFrom("#7F1D1D"),
-                _ => (Brush)new BrushConverter().ConvertFrom("#1E3A5F")
+                "عالی" => Paint("#14532D"),
+                "متوسط" => Paint("#1E3A5F"),
+                "ضعیف" => Paint("#7F1D1D"),
+                _ => Paint("#1E3A5F")
             };
+
+        private static Brush Paint(string hex)
+            => new BrushConverter().ConvertFrom(hex) as Brush ?? Brushes.Transparent;
     }
 }

@@ -23,7 +23,7 @@ namespace HR.Controls
 
         private double _duration = 4;
 
-        public event EventHandler Closed;
+        public event EventHandler? Closed;
 
         public NeonNotification()
         {
@@ -141,7 +141,7 @@ namespace HR.Controls
 
 
         private void Timer_Tick(
-            object sender,
+            object? sender,
             EventArgs e)
         {
             _timer.Stop();

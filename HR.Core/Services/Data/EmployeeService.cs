@@ -32,8 +32,8 @@ namespace HR.Services.Data
             var query = _db.Employees
                 .Include(e => e.Gender)
                 .Include(e => e.MaritalStatus)
-                .Include(e => e.Supplement)!
-                    .ThenInclude(s => s.Department)
+                .Include(e => e.Supplement)
+                    .ThenInclude(s => s!.Department)
                 .Include(e => e.SelfAssessment)
                 .Include(e => e.Leaves)
                 .AsQueryable();
@@ -60,12 +60,12 @@ namespace HR.Services.Data
                     .Include(e => e.MilitaryStatus)
                     .Include(e => e.Religion)
                     .Include(e => e.Denomination)
-                    .Include(e => e.Supplement)!
-                        .ThenInclude(s => s.Department)
-                    .Include(e => e.Supplement)!
-                        .ThenInclude(s => s.InsuranceType)
-                    .Include(e => e.Supplement)!
-                        .ThenInclude(s => s.CooperationType)
+                    .Include(e => e.Supplement)
+                        .ThenInclude(s => s!.Department)
+                    .Include(e => e.Supplement)
+                        .ThenInclude(s => s!.InsuranceType)
+                    .Include(e => e.Supplement)
+                        .ThenInclude(s => s!.CooperationType)
                     .Include(e => e.Educations)
                         .ThenInclude(ed => ed.Degree)
                     .Include(e => e.Educations)
@@ -159,8 +159,8 @@ namespace HR.Services.Data
 
             return await _db.Employees
                 .Include(e => e.Gender)
-                .Include(e => e.Supplement)!
-                    .ThenInclude(s => s.Department)
+                .Include(e => e.Supplement)
+                    .ThenInclude(s => s!.Department)
                 .Where(e => !e.IsDeleted &&
                        (e.FirstName.Contains(term) ||
                         e.LastName.Contains(term) ||

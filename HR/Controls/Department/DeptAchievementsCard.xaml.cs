@@ -19,10 +19,10 @@ namespace HR.Controls.Department
 
     public class DeptAchievementItem
     {
-        public string Title { get; set; }
-        public string SubTitle { get; set; }
-        public string Date { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string SubTitle { get; set; } = string.Empty;
+        public string Date { get; set; } = string.Empty;
         public PackIconKind IconKind { get; set; }
-        public Brush AccentBrush { get; set; }
+        public Brush AccentBrush { get; set; } = Brushes.Transparent;
     }
 }

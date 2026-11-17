@@ -57,19 +57,20 @@ namespace HR.Controls.Department
             var icon = panel.Children.OfType<PackIcon>().FirstOrDefault();
             var text = panel.Children.OfType<TextBlock>().FirstOrDefault();
 
-            ApplySeverityStyle(item.Color, icon, text);
+            if (icon != null && text != null)
+                ApplySeverityStyle(item.Color, icon, text);
         }
     }
 
     public class DeptProjectItem
     {
-        public string Name { get; set; }
-        public string Status { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
         public int Progress { get; set; }
-        public string DueDate { get; set; }
+        public string DueDate { get; set; } = string.Empty;
 
         public ProjectNeonType Color{ get; set; }
 
-        public Brush ProgressBrush { get; set; }
+        public Brush ProgressBrush { get; set; } = Brushes.Transparent;
     }
 }

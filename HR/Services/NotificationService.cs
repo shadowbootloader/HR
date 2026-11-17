@@ -151,6 +151,7 @@ namespace HR.Services
 
             _current.Closed += Current_Closed;
 
+            if (_host == null) return;
             _host.Children.Add(_current);
 
             _current.Show(
@@ -162,10 +163,10 @@ namespace HR.Services
 
 
         private static void Current_Closed(
-            object sender,
+            object? sender,
             EventArgs e)
         {
-            if (_current != null)
+            if (_current != null && _host != null)
             {
                 _host.Children.Remove(_current);
 
@@ -180,9 +181,9 @@ namespace HR.Services
 
         private class NotificationRequest
         {
-            public string Title { get; set; }
+            public string Title { get; set; } = string.Empty;
 
-            public string Message { get; set; }
+            public string Message { get; set; } = string.Empty;
 
             public NeonNotification.NotificationType Type { get; set; }
 

@@ -10,10 +10,10 @@ namespace HR.Controls.Assessment
 {
     public class MedalItem
     {
-        public string Title { get; set; }
+        public string Title { get; set; } = string.Empty;
         public int Points { get; set; }
-        public string Description { get; set; }
-        public Brush ToneBrush { get; set; }
+        public string Description { get; set; } = string.Empty;
+        public Brush ToneBrush { get; set; } = Brushes.Transparent;
         public PackIconKind IconKind { get; set; } = PackIconKind.Medal;
     }
 

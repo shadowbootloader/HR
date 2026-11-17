@@ -18,7 +18,7 @@ namespace HR.Pages
         private int PageSize => _def.QuestionsPerPage <= 0 ? 1 : _def.QuestionsPerPage;
         private int PageCount => Math.Max(1, (int)Math.Ceiling(_questions.Count / (double)PageSize));
 
-        public event EventHandler<AssessmentSession> Submitted;
+        public event EventHandler<AssessmentSession>? Submitted;
 
         public AssessmentTestShellPage(AssessmentDefinition definition, AssessmentSession session)
         {
@@ -91,7 +91,7 @@ namespace HR.Pages
                     slot.ShowError("این سوال اجباری است");
                     ok = false;
                 }
-                else slot.ShowError(null);
+                else slot.ShowError(string.Empty);
 
                 if (!string.IsNullOrEmpty(answer.QuestionId))
                     _session.Answers[answer.QuestionId] = answer;
@@ -132,7 +132,7 @@ namespace HR.Pages
             ShowPage(_session.CurrentIndex + 1);
         }
 
-        private QuestionSlot BuildSlot(QuestionDefinition q, int number, AnswerValue saved)
+        private QuestionSlot BuildSlot(QuestionDefinition q, int number, AnswerValue? saved)
         {
             var root = new Border
             {
@@ -317,8 +317,8 @@ namespace HR.Pages
 
         private static SolidColorBrush Brush(string hex)
         {
-            var b = (SolidColorBrush)new BrushConverter().ConvertFrom(hex);
-            b.Freeze();
+            var b = new BrushConverter().ConvertFrom(hex) as SolidColorBrush ?? new SolidColorBrush(Colors.Transparent);
+            if (b.CanFreeze) b.Freeze();
             return b;
         }
 
@@ -341,7 +341,7 @@ namespace HR.Pages
 
             public AnswerValue Read() => _read();
             public bool HasValue(AnswerValue answer) => _has(answer);
-            public void ShowError(string message)
+            public void ShowError(string? message)
             {
                 _error.Text = message;
                 _error.Visibility = string.IsNullOrEmpty(message) ? Visibility.Collapsed : Visibility.Visible;

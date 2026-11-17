@@ -10,7 +10,7 @@ namespace HR.Controls
 {
     public partial class PerformanceMiniGauge : UserControl
     {
-        private static SKTypeface _nazanin;
+        private static SKTypeface? _nazanin;
         public PerformanceMiniGauge()
         {
             InitializeComponent();
@@ -44,7 +44,7 @@ namespace HR.Controls
             set => SetValue(LabelProperty, value);
         }
 
-        public ISeries[] Series { get; set; }
+        public ISeries[] Series { get; set; } = Array.Empty<ISeries>();
 
         private static void OnValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {

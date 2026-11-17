@@ -310,8 +310,8 @@ namespace HR.Controls.Assessment
 
         private static SolidColorBrush Brush(string hex)
         {
-            var b = (SolidColorBrush)new BrushConverter().ConvertFrom(hex);
-            b.Freeze();
+            var b = new BrushConverter().ConvertFrom(hex) as SolidColorBrush ?? new SolidColorBrush(Colors.Transparent);
+            if (b.CanFreeze) b.Freeze();
             return b;
         }
     }

@@ -43,9 +43,9 @@ namespace HR.Controls.Department
                 Time = "۱۰:۲۰",
                 IconKind = PackIconKind.AccountGroupOutline
             });
-            
 
-            ActivityItems.ItemsSource = Activities;
+            if (ActivityItems != null)
+                ActivityItems.ItemsSource = Activities;
         }
 
         public static readonly DependencyProperty ManagerNameProperty =
