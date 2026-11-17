@@ -247,6 +247,7 @@
                             <ComboBoxItem Content="فعال"/>
                             <ComboBoxItem Content="مرخصی"/>
                             <ComboBoxItem Content="غیرفعال"/>
+                            <ComboBoxItem Content="حذف‌شده"/>
                         </ComboBox>
                     </Grid>
                 </Border>
@@ -427,14 +428,14 @@
                     <TextBlock Text="کارمند جدید" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center"/>
                 </StackPanel>
             </Button>
-            <uc:SummaryCardControl  Title="تعداد کل"  FontFamily="pack://application:,,,/Fonts/#B Nazanin" SubTextColor="White" Value="{Binding TotalCount}" SubText="85.5% از نیرو ها"  IconBackground="CornflowerBlue"  Margin="0,0,0,14" Loaded="SummaryCardControl_Loaded"  >
+            <uc:SummaryCardControl  Title="تعداد کل"  FontFamily="pack://application:,,,/Fonts/#B Nazanin" SubTextColor="White" Value="{Binding RosterCountText}" SubText="{Binding ActiveShareText}"  IconBackground="CornflowerBlue"  Margin="0,0,0,14" Loaded="SummaryCardControl_Loaded"  >
                 <uc:SummaryCardControl.IconContent>
                     <Image gif:ImageBehavior.AnimatedSource="pack://application:,,,/Assets/people.gif"
 
        Stretch="Uniform"/>
                 </uc:SummaryCardControl.IconContent>
             </uc:SummaryCardControl>
-            <uc:SummaryCardControl Title="فعال"  FontFamily="pack://application:,,,/Fonts/#B Nazanin" SubTextColor="White" SubText="85.5% از نیرو ها"  IconBackground="DarkGreen"  Margin="0,0,0,14">
+            <uc:SummaryCardControl Title="فعال"  FontFamily="pack://application:,,,/Fonts/#B Nazanin" SubTextColor="White" Value="{Binding ActiveCountText}" SubText="{Binding ActiveShareText}"  IconBackground="DarkGreen"  Margin="0,0,0,14">
                 <uc:SummaryCardControl.IconContent>
                     <Grid Width="70" Height="50" ClipToBounds="True" Background="Transparent">
                         <Path 
@@ -467,7 +468,7 @@
                 </uc:SummaryCardControl.IconContent>
 
             </uc:SummaryCardControl>
-            <uc:SummaryCardControl Title="افراد جدید" FontFamily="pack://application:,,,/Fonts/#B Nazanin" SubTextColor="White" SubText="افزایش 20%"  IconBackground="Purple"  Margin="0,0,0,5" >
+            <uc:SummaryCardControl Title="افراد جدید" FontFamily="pack://application:,,,/Fonts/#B Nazanin" SubTextColor="White" Value="{Binding NewHireCountText}" SubText="{Binding NewHireText}"  IconBackground="Purple"  Margin="0,0,0,5" >
                 <uc:SummaryCardControl.IconContent>
                     <uc:ShiningStarsControl/>
                 </uc:SummaryCardControl.IconContent>

@@ -30,6 +30,7 @@ namespace HR.Services.Data
                 .Include(e => e.MaritalStatus)
                 .Include(e => e.Supplement)!
                     .ThenInclude(s => s.Department)
+                .Include(e => e.SelfAssessment)
                 .AsQueryable();
 
             if (!includeDeleted)
@@ -364,10 +365,55 @@ namespace HR.Services.Data
         {
             var employee = await _db.Employees
                 .Include(e => e.Supplement)
+                .Include(e => e.SelfAssessment)
+                .Include(e => e.Educations)
+                .Include(e => e.Courses)
+                .Include(e => e.BankAccounts)
+                .Include(e => e.PhoneNumbers)
+                .Include(e => e.Languages)
+                .Include(e => e.Softwares)
+                .Include(e => e.EmploymentHistories)
+                .Include(e => e.Citizenships)
+                .Include(e => e.ForeignTravels)
+                .Include(e => e.ForeignRelatives)
+                .Include(e => e.ForeignCooperations)
+                .Include(e => e.OrganizationCooperations)
+                .Include(e => e.OtherActivities)
+                .Include(e => e.SacrificeRecords)
+                .Include(e => e.HiringRecords)
+                .Include(e => e.BackgroundRecords)
+                .Include(e => e.PersonFiles)
+                .Include(e => e.Addresses)
+                .Include(e => e.Abilities)
+                .Include(e => e.WorkInterests)
+                .Include(e => e.RelatedPersons)
                 .FirstOrDefaultAsync(e => e.EmployeeId == employeeId);
 
             if (employee == null) return false;
 
+            _db.RemoveRange(employee.ForeignCooperations);
+            _db.RemoveRange(employee.Citizenships);
+            _db.RemoveRange(employee.BackgroundRecords);
+            _db.RemoveRange(employee.Addresses);
+            _db.RemoveRange(employee.PhoneNumbers);
+            _db.RemoveRange(employee.PersonFiles);
+            _db.RemoveRange(employee.Educations);
+            _db.RemoveRange(employee.Courses);
+            _db.RemoveRange(employee.BankAccounts);
+            _db.RemoveRange(employee.Languages);
+            _db.RemoveRange(employee.Softwares);
+            _db.RemoveRange(employee.EmploymentHistories);
+            _db.RemoveRange(employee.ForeignTravels);
+            _db.RemoveRange(employee.ForeignRelatives);
+            _db.RemoveRange(employee.OrganizationCooperations);
+            _db.RemoveRange(employee.OtherActivities);
+            _db.RemoveRange(employee.SacrificeRecords);
+            _db.RemoveRange(employee.HiringRecords);
+            _db.RemoveRange(employee.Abilities);
+            _db.RemoveRange(employee.WorkInterests);
+            _db.RemoveRange(employee.RelatedPersons);
+            if (employee.Supplement != null) _db.Remove(employee.Supplement);
+            if (employee.SelfAssessment != null) _db.Remove(employee.SelfAssessment);
             _db.Employees.Remove(employee);
             await _db.SaveChangesAsync();
             return true;

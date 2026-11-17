@@ -19,6 +19,15 @@ namespace HR.Controls
         public EmployeeRowControl()
         {
             InitializeComponent();
+            DataContextChanged += (_, _) => UpdateActionButtons();
+        }
+
+        private void UpdateActionButtons()
+        {
+            var deleted = Employee?.IsDeleted == true;
+            DeleteBtn.Visibility = deleted ? Visibility.Collapsed : Visibility.Visible;
+            RestoreBtn.Visibility = deleted ? Visibility.Visible : Visibility.Collapsed;
+            HardDeleteBtn.Visibility = deleted ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void ViewBtn_Click(object sender, RoutedEventArgs e)
@@ -61,6 +70,60 @@ namespace HR.Controls
             catch (Exception ex)
             {
                 NotificationService.Warning("خطا در حذف", ex.Message);
+            }
+        }
+
+        private async void RestoreBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (Employee == null || Employee.Id == Guid.Empty) return;
+
+            try
+            {
+                var ok = await _employeeService.RestoreAsync(Employee.Id);
+                if (ok)
+                {
+                    NotificationService.Success("بازگردانی شد", $"«{Employee.FullName}» به فهرست فعال برگشت.");
+                    ListRefreshRequested?.Invoke();
+                }
+                else
+                {
+                    NotificationService.Warning("خطا", "کارمند یافت نشد.");
+                }
+            }
+            catch (Exception ex)
+            {
+                NotificationService.Warning("خطا در بازگردانی", ex.Message);
+            }
+        }
+
+        private async void HardDeleteBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (Employee == null || Employee.Id == Guid.Empty) return;
+
+            var answer = MessageBox.Show(
+                $"حذف دائمی «{Employee.FullName}» قابل بازگشت نیست. ادامه می‌دهید؟",
+                "حذف دائمی",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (answer != MessageBoxResult.Yes) return;
+
+            try
+            {
+                var ok = await _employeeService.HardDeleteAsync(Employee.Id);
+                if (ok)
+                {
+                    NotificationService.Success("حذف دائمی", $"«{Employee.FullName}» برای همیشه حذف شد.");
+                    ListRefreshRequested?.Invoke();
+                }
+                else
+                {
+                    NotificationService.Warning("خطا", "کارمند یافت نشد.");
+                }
+            }
+            catch (Exception ex)
+            {
+                NotificationService.Warning("خطا در حذف دائمی", ex.Message);
             }
         }
 
