@@ -72,8 +72,8 @@ namespace HR.Pages
                 {
                     Labels = new[]
                     {
-                        "Leadership", "Communication", "Collaboration",
-                        "Problem Solving", "Results Orientation", "Strategic Thinking"
+                        "رهبری", "ارتباط", "همکاری",
+                        "حل مسئله", "نتیجه‌گرایی", "تفکر راهبردی"
                     },
                     LabelsPaint = new SolidColorPaint(SKColor.Parse("#94A3B8")),
                     TextSize = 11,
@@ -99,7 +99,7 @@ namespace HR.Pages
             {
                 new Axis
                 {
-                    Labels = new[] { "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May" },
+                    Labels = new[] { "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند", "فروردین", "اردیبهشت" },
                     LabelsPaint = new SolidColorPaint(SKColor.Parse("#94A3B8")),
                     SeparatorsPaint = new SolidColorPaint(SKColor.Parse("#1E293B")),
                     TextSize = 10
@@ -240,8 +240,19 @@ namespace HR.Pages
                 var page = GetPage(() => new DepartmentsPage(), "departments");
 
                 Navigate(page, "دپارتمان‌ها");
+                return;
             }
+
+            NotificationService.Info("به‌زودی", "این بخش هنوز پیاده‌سازی نشده است.");
         }
+
+        private void ProfileMenu_Click(object sender, RoutedEventArgs e)
+            => NotificationService.Info("پروفایل", "ورود و نقش کاربری هنوز تعریف نشده است.");
+
+        private void SettingsMenu_Click(object sender, RoutedEventArgs e)
+            => NotificationService.Info("تنظیمات", "این بخش هنوز پیاده‌سازی نشده است.");
+
+        private void ExitMenu_Click(object sender, RoutedEventArgs e) => Close();
 
         public void NavigateTo(Page page) => DataPanel.Navigate(page);
     }
