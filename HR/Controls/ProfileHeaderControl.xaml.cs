@@ -22,5 +22,13 @@ namespace HR.Controls
         {
             InitializeComponent();
         }
+
+        public void Bind(string? fullName, string? position, string? department, string? location)
+        {
+            EmpFullName.Text = string.IsNullOrWhiteSpace(fullName) ? "—" : fullName;
+            EmpGroup.Text = string.IsNullOrWhiteSpace(position) ? "—" : position;
+            EmpFeild.Text = string.IsNullOrWhiteSpace(department) ? "—" : department;
+            EmpLocation.Text = string.IsNullOrWhiteSpace(location) ? string.Empty : location;
+        }
     }
 }

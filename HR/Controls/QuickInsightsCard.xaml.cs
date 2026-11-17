@@ -8,41 +8,19 @@ namespace HR.Controls
         public QuickInsightsCard()
         {
             InitializeComponent();
-            Loaded += (s, e) => LoadItems();
         }
 
-        private void LoadItems()
+        public void ShowFacts(params (string Title, string Description)[] facts)
         {
             ItemsPanel.Children.Clear();
-
-            // آیتم ۱
-            ItemsPanel.Children.Add(new InsightItem
+            foreach (var fact in facts)
             {
-                Title = "نقطه قوت شناخته‌شده",
-                Description = "همیشه به خاطر ساختن تیم‌های با عملکرد بالا تحسین می‌شود.",
-                Icon = "👤",
-                IconBackground = new SolidColorBrush(Color.FromRgb(0x3B, 0x4A, 0x6B))
-            });
+                if (string.IsNullOrWhiteSpace(fact.Description) || fact.Description == "—") continue;
+                AddItem(fact.Title, fact.Description, "•", new SolidColorBrush(Color.FromRgb(0x2A, 0x4A, 0x6B)));
+            }
 
-            // آیتم ۲
-            ItemsPanel.Children.Add(new InsightItem
-            {
-                Title = "امتیاز تأثیرگذاری",
-                Description = "تأثیر بالا روی مشارکت و حفظ نیروی تیم.",
-                Icon = "📊",
-                IconBackground = new SolidColorBrush(Color.FromRgb(0x2A, 0x4A, 0x6B)),
-                ChangeText = "+۱۲٪ نسبت به ارزیابی قبلی"
-            });
-
-            // آیتم ۳
-            ItemsPanel.Children.Add(new InsightItem
-            {
-                Title = "روند رشد",
-                Description = "مسیر صعودی قوی در عملکرد.",
-                Icon = "📈",
-                IconBackground = new SolidColorBrush(Color.FromRgb(0x2A, 0x5A, 0x4A)),
-                ChangeText = "+۸٪ نسبت به فصل قبل"
-            });
+            if (ItemsPanel.Children.Count == 0)
+                AddItem("پرونده", "اطلاعاتی برای نمایش ثبت نشده است.", "•", new SolidColorBrush(Color.FromRgb(0x3B, 0x4A, 0x6B)));
         }
 
         // متد عمومی برای اضافه کردن آیتم از بیرون

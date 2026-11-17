@@ -16,7 +16,7 @@
         </Grid.ColumnDefinitions>
         <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Hidden">
             <DockPanel >
-                <controls:ProfileHeaderControl MinWidth="385" DockPanel.Dock="Top"   Height="400" VerticalAlignment="Top" HorizontalAlignment="Stretch" Margin="5,5,10,0">
+                <controls:ProfileHeaderControl x:Name="Header" MinWidth="385" DockPanel.Dock="Top"   Height="400" VerticalAlignment="Top" HorizontalAlignment="Stretch" Margin="5,5,10,0">
 
                 </controls:ProfileHeaderControl>
                 <controls:SkillsProficienciesCard DockPanel.Dock="Top" Height="190" VerticalAlignment="Top" HorizontalAlignment="Stretch"  Margin="5,5,10,0" >
@@ -29,7 +29,7 @@
         </ScrollViewer>
         <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Hidden">
             <DockPanel LastChildFill="True" >
-                <controls:QuickInsightsCard DockPanel.Dock="Top" Height="290" VerticalAlignment="Top" >
+                <controls:QuickInsightsCard x:Name="Insights" DockPanel.Dock="Top" Height="290" VerticalAlignment="Top" >
 
                 </controls:QuickInsightsCard>
                 <controls:StrengthsAreasCard Margin="0,5,0,0" DockPanel.Dock="Top"  VerticalAlignment="Top" >
