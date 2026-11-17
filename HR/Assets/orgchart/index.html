@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <style>
+    @font-face {
+      font-family: "BNazanin";
+      src: url("../../Fonts/BNazanin.ttf") format("truetype");
+    }
+    html, body, #chart { margin: 0; width: 100%; height: 100%; background: #0B1120; overflow: hidden; }
+    body { font-family: BNazanin, Tahoma, sans-serif; }
+  </style>
+</head>
+<body>
+  <div id="chart"></div>
+  <script src="d3.min.js"></script>
+  <script src="d3-flextree.js"></script>
+  <script src="d3-org-chart.min.js"></script>
+  <script>
+    const chart = new d3.OrgChart()
+      .container("#chart")
+      .nodeId(d => d.id)
+      .parentNodeId(d => d.parentId)
+      .nodeWidth(() => 250)
+      .nodeHeight(() => 108)
+      .childrenMargin(() => 60)
+      .siblingsMargin(() => 24)
+      .layout("right")
+      .compact(false)
+      .nodeContent(function (d) {
+        const data = d.data || {};
+        const count = data.kind === "department" || data.kind === "root"
+          ? `<div style="margin-top:6px;color:#94A3B8;font-size:13px;">${data.memberCount || 0} نفر</div>`
+          : "";
+        return `<div style="direction:rtl;text-align:right;font-family:BNazanin,Tahoma,sans-serif;background:#111827;color:#F8FAFC;border:1px solid #334155;border-radius:14px;padding:12px 14px;height:${d.height - 2}px;box-sizing:border-box;">
+          <div style="font-size:18px;font-weight:700;line-height:1.3;">${escapeHtml(data.name || "")}</div>
+          <div style="margin-top:4px;color:#93C5FD;font-size:14px;">${escapeHtml(data.subtitle || "")}</div>
+          ${count}
+        </div>`;
+      })
+      .onNodeClick(function (node) {
+        const data = node.data || {};
+        if (!data.kind || data.kind === "root" || !window.chrome || !window.chrome.webview) return;
+        window.chrome.webview.postMessage(JSON.stringify({ kind: data.kind, entityId: data.entityId || "" }));
+      });
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    }
+
+    window.loadOrg = function (json) {
+      const data = JSON.parse(json);
+      chart.data(data).render().fit();
+    };
+
+    window.searchOrg = function (term) {
+      chart.clearHighlighting();
+      const query = (term || "").trim();
+      if (!query) {
+        chart.render();
+        return;
+      }
+      const rows = chart.getChartState().data || [];
+      rows.filter(row => (row.name || "").includes(query) || (row.subtitle || "").includes(query))
+        .forEach(row => chart.setHighlighted(row.id));
+      chart.render().fit();
+    };
+
+    window.fitOrg = function () { chart.fit(); };
+    window.expandOrg = function () { chart.expandAll().fit(); };
+    window.collapseOrg = function () { chart.collapseAll(); };
+    window.exportPng = function () { chart.exportImg({ full: true, save: true }); };
+    window.exportSvg = function () { chart.exportSvg(); };
+  </script>
+</body>
+</html>

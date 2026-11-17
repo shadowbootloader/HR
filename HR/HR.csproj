@@ -26,20 +26,12 @@
     <None Remove="Icons\manager.png" />
     <None Remove="Icons\phone.png" />
     <None Remove="Icons\wedding.png" />
-    <None Remove="OrgChart.html" />
-    <None Remove="orgchart.js" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="OrgChart.html">
+    <Content Include="Assets\orgchart\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="orgchart.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
@@ -87,7 +79,9 @@
     <Resource Include="Assets\Shining Stars.lottie">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
-    <Resource Include="Fonts\BNazanin.ttf" />
+    <Resource Include="Fonts\BNazanin.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="Fonts\BNaznnBd.ttf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>

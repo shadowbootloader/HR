@@ -154,6 +154,8 @@ namespace HR.Pages
                 DepartmentsPage => "دپارتمان‌ها",
                 AddDepartmentPage => "دپارتمان",
                 DepartmentDetailPage => "جزئیات دپارتمان",
+                OrgChartPage => "چارت سازمانی",
+                EmployeOverview => "پرونده کارمند",
                 _ => PageName.Text
             };
             Navigate(page, title);
@@ -182,6 +184,10 @@ namespace HR.Pages
                 case DepartmentDetailPage detail:
                     detail.NavigationRequested -= OnChildNavigation;
                     detail.NavigationRequested += OnChildNavigation;
+                    break;
+                case OrgChartPage chart:
+                    chart.NavigationRequested -= OnChildNavigation;
+                    chart.NavigationRequested += OnChildNavigation;
                     break;
             }
         }
@@ -269,6 +275,12 @@ namespace HR.Pages
             if (ReferenceEquals(target, UsersBtn))
             {
                 Navigate(GetPage(() => new UsersPage(), "users"), "کاربران");
+                return;
+            }
+
+            if (ReferenceEquals(target, OrgChartBtn))
+            {
+                Navigate(GetPage(() => new OrgChartPage(), "orgchart"), "چارت سازمانی");
                 return;
             }
 
