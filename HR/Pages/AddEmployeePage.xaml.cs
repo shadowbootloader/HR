@@ -31,6 +31,8 @@ namespace HR.Pages
         private bool _isSaving;
         private Guid? _editingId;
 
+        public event Action<Page>? NavigationRequested;
+
         /// <summary>حالت ایجاد کارمند جدید.</summary>
         public AddEmployeePage()
         {
@@ -252,18 +254,7 @@ namespace HR.Pages
 
             if (answer != MessageBoxResult.Yes) return;
 
-            if (_editingId.HasValue)
-            {
-                // بازگشت به لیست در صورت تمایل می‌تواند از بیرون هندل شود
-                _ = LoadEmployeeForEditAsync(_editingId.Value);
-            }
-            else
-            {
-                _profile = new EmployeeProfile();
-                LoadProfileIntoForm();
-            }
-
-            NotificationService.Info("انصراف", "فرم به حالت اولیه بازگشت.");
+            NavigationRequested?.Invoke(new EmployeeListPage());
         }
 
         private void ScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)

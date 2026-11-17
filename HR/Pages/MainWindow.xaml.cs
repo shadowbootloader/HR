@@ -138,7 +138,19 @@ namespace HR.Pages
             DataPanel.Navigate(page);
         }
 
-        private void OnChildNavigation(Page page) => Navigate(page, PageName.Text);
+        private void OnChildNavigation(Page page)
+        {
+            var title = page switch
+            {
+                EmployeeListPage => "کارکنان",
+                AddEmployeePage => "پرونده کارمند",
+                DepartmentsPage => "دپارتمان‌ها",
+                AddDepartmentPage => "دپارتمان",
+                DepartmentDetailPage => "جزئیات دپارتمان",
+                _ => PageName.Text
+            };
+            Navigate(page, title);
+        }
 
         private void WireNavigation(Page page)
         {
@@ -147,6 +159,10 @@ namespace HR.Pages
                 case EmployeeListPage list:
                     list.NavigationRequested -= OnChildNavigation;
                     list.NavigationRequested += OnChildNavigation;
+                    break;
+                case AddEmployeePage addEmployee:
+                    addEmployee.NavigationRequested -= OnChildNavigation;
+                    addEmployee.NavigationRequested += OnChildNavigation;
                     break;
                 case DepartmentsPage departments:
                     departments.NavigationRequested -= OnChildNavigation;
