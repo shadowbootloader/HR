@@ -15,13 +15,10 @@ namespace HR.Controls
         public static event Action<Page>? NavigationRequested;
         public static event Action? ListRefreshRequested;
 
-        private readonly IEmployeeService _employeeService = new EmployeeService();
-
         public EmployeeRowControl()
         {
             InitializeComponent();
             DataContextChanged += (_, _) => UpdateActionButtons();
-            Unloaded += (_, _) => (_employeeService as IDisposable)?.Dispose();
         }
 
         private void UpdateActionButtons()
@@ -77,7 +74,8 @@ namespace HR.Controls
 
             try
             {
-                var ok = await _employeeService.SoftDeleteAsync(Employee.Id);
+                using var service = new EmployeeService();
+                var ok = await service.SoftDeleteAsync(Employee.Id);
                 if (ok)
                 {
                     NotificationService.Success("حذف شد", $"«{Employee.FullName}» حذف شد.");
@@ -100,7 +98,8 @@ namespace HR.Controls
 
             try
             {
-                var ok = await _employeeService.RestoreAsync(Employee.Id);
+                using var service = new EmployeeService();
+                var ok = await service.RestoreAsync(Employee.Id);
                 if (ok)
                 {
                     NotificationService.Success("بازگردانی شد", $"«{Employee.FullName}» به فهرست فعال برگشت.");
@@ -131,7 +130,8 @@ namespace HR.Controls
 
             try
             {
-                var ok = await _employeeService.HardDeleteAsync(Employee.Id);
+                using var service = new EmployeeService();
+                var ok = await service.HardDeleteAsync(Employee.Id);
                 if (ok)
                 {
                     NotificationService.Success("حذف دائمی", $"«{Employee.FullName}» برای همیشه حذف شد.");

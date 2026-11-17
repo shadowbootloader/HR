@@ -22,7 +22,8 @@ namespace HR.Pages
 
         private readonly List<EmployeeModel> _all = new();
         private readonly ObservableCollection<EmployeeModel> _visible = new();
-        private readonly IEmployeeService _employeeService = new EmployeeService();
+        // سرویس برای هر عملیات جداگانه ساخته می‌شود: این صفحه در MainWindow کش می‌شود و
+        // DbContext بلندمدتِ بسته‌شده در Unloaded هنگام بازگشت به صفحه خطای ObjectDisposed می‌داد.
 
         private int _currentPage = 1;
         private int _totalPages = 1;
@@ -79,7 +80,6 @@ namespace HR.Pages
         {
             EmployeeRowControl.NavigationRequested -= OnRowNavigationRequested;
             EmployeeRowControl.ListRefreshRequested -= OnListRefreshRequested;
-            (_employeeService as IDisposable)?.Dispose();
         }
 
         private async void OnListRefreshRequested()
@@ -97,7 +97,8 @@ namespace HR.Pages
             try
             {
                 // اگر عبارت جستجو دارید از SearchAsync استفاده می‌کنیم؛ وگرنه همه
-                var employees = await _employeeService.GetAllAsync(includeDeleted: true);
+                using var service = new EmployeeService();
+                var employees = await service.GetAllAsync(includeDeleted: true);
 
                 _all.Clear();
 

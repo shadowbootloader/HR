@@ -13,7 +13,6 @@ namespace HR.Pages
         public event Action<Page>? NavigationRequested;
 
         private readonly DepartmentModel? _department;
-        private readonly IDepartmentService _departmentService = new DepartmentService();
 
         public DepartmentDetailPage() : this(null) { }
 
@@ -23,7 +22,6 @@ namespace HR.Pages
             _department = department;
 
             Loaded += (_, __) => BindDepartment();
-            Unloaded += (_, _) => (_departmentService as IDisposable)?.Dispose();
         }
 
         private void BindDepartment()
@@ -85,7 +83,8 @@ namespace HR.Pages
 
             try
             {
-                var ok = await _departmentService.DeleteAsync(_department.Id);
+                using var service = new DepartmentService();
+                var ok = await service.DeleteAsync(_department.Id);
                 if (!ok)
                 {
                     NotificationService.Warning("حذف دپارتمان", "دپارتمان یافت نشد.");

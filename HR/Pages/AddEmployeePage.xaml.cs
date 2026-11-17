@@ -28,7 +28,6 @@ namespace HR.Pages
         private readonly Dictionary<string, UserControl> _sectionCache = new();
         private bool _lazyLoaded;
         private EmployeeProfile _profile = new();
-        private readonly IEmployeeService _employeeService = new EmployeeService();
         private bool _isSaving;
         private Guid? _editingId;
 
@@ -38,7 +37,6 @@ namespace HR.Pages
         public AddEmployeePage()
         {
             InitializeComponent();
-            Unloaded += (_, _) => (_employeeService as IDisposable)?.Dispose();
             Loaded += AddEmployeePage_Loaded;
         }
 
@@ -70,7 +68,8 @@ namespace HR.Pages
         {
             try
             {
-                var entity = await _employeeService.GetByIdAsync(employeeId, includeDetails: true);
+                using var employeeService = new EmployeeService();
+                var entity = await employeeService.GetByIdAsync(employeeId, includeDetails: true);
                 if (entity == null)
                 {
                     NotificationService.Warning("خطا", "کارمند یافت نشد.");
@@ -199,14 +198,18 @@ namespace HR.Pages
 
                 var entity = await EmployeeMapper.ToEntityAsync(_profile, lookups, _editingId);
 
-                if (await _employeeService.ExistsNationalCodeAsync(entity.NationalCode, _editingId))
+                // برای هر ذخیره یک DbContext تازه: اگر ذخیره شکست بخورد، گراف ناموفق
+                // در Context ردیابی‌شده نمی‌ماند و تلاش بعدی کاربر خراب نمی‌شود.
+                using var employeeService = new EmployeeService();
+
+                if (await employeeService.ExistsNationalCodeAsync(entity.NationalCode, _editingId))
                 {
                     NotificationService.Warning("خطا", "کد ملی تکراری است.");
                     return;
                 }
 
                 if (entity.Supplement != null &&
-                    await _employeeService.ExistsPersonnelCodeAsync(entity.Supplement.PersonnelCode, _editingId))
+                    await employeeService.ExistsPersonnelCodeAsync(entity.Supplement.PersonnelCode, _editingId))
                 {
                     NotificationService.Warning("خطا", "کد پرسنلی تکراری است.");
                     return;
@@ -214,14 +217,14 @@ namespace HR.Pages
 
                 if (_editingId.HasValue)
                 {
-                    await _employeeService.UpdateAsync(entity);
+                    await employeeService.UpdateAsync(entity);
                     NotificationService.Success(
                         "ویرایش موفق",
                         $"کارمند «{entity.FirstName} {entity.LastName}» با موفقیت به‌روز شد.");
                 }
                 else
                 {
-                    await _employeeService.CreateAsync(entity);
+                    await employeeService.CreateAsync(entity);
                     NotificationService.Success(
                         "ثبت موفق",
                         $"کارمند «{entity.FirstName} {entity.LastName}» با موفقیت ذخیره شد.");

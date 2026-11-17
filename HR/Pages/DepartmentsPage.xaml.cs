@@ -20,8 +20,6 @@ namespace HR.Pages
 
         public ObservableCollection<DepartmentModel> Departments { get; set; } = new();
 
-        private readonly IDepartmentService _departmentService = new DepartmentService();
-
         public DepartmentsPage()
         {
             InitializeComponent();
@@ -29,15 +27,16 @@ namespace HR.Pages
             if (AuthSession.Current?.CanManagePeople != true)
                 BtnAddDepartment.Visibility = Visibility.Collapsed;
             Loaded += async (_, _) => await LoadDepartmentsAsync();
-            Unloaded += (_, _) => (_departmentService as IDisposable)?.Dispose();
         }
 
         private async Task LoadDepartmentsAsync()
         {
             try
             {
-                var list = await _departmentService.GetAllAsync();
-                var counts = await _departmentService.CountMembersAsync();
+                // صفحه کش می‌شود؛ پس سرویس برای هر بارگذاری جداگانه ساخته و بسته می‌شود.
+                using var service = new DepartmentService();
+                var list = await service.GetAllAsync();
+                var counts = await service.CountMembersAsync();
 
                 Departments.Clear();
 
