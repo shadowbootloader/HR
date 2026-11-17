@@ -8,6 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using HR.Data.Entities;
 using HR.Services;
+using HR.Services.Auth;
 using HR.Services.Data;
 
 namespace HR.Pages
@@ -32,6 +33,8 @@ namespace HR.Pages
             if (OfficesList != null)
                 OfficesList.ItemsSource = _offices;
 
+            if (AuthSession.Current?.CanManagePeople != true)
+                SaveDepartmentBtn.IsEnabled = false;
             Loaded += async (_, _) => await InitAsync();
             Unloaded += (_, _) =>
             {

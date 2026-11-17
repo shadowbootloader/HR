@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using HR.Data;
 using HR.Data.Entities;
+using HR.Services.Auth;
 using Microsoft.EntityFrameworkCore;
 
 namespace HR.Services.Files
@@ -13,7 +14,7 @@ namespace HR.Services.Files
     /// </summary>
     public sealed class DocumentLinkService
     {
-        public const string Actor = "کاربر سامانه";
+        public static string Actor => AuthSession.ActorName;
         public const string LogoTypeTitle = "لوگوی دپارتمان";
 
         private readonly FileStorageService _storage;

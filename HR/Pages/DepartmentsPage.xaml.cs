@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using HR.Controls;
+using HR.Services.Auth;
 using HR.Services.Data;
 using MaterialDesignThemes.Wpf;
 using static HR.Controls.DepartmentCardControl;
@@ -25,6 +26,8 @@ namespace HR.Pages
         {
             InitializeComponent();
             DepartmentItems.ItemsSource = Departments;
+            if (AuthSession.Current?.CanManagePeople != true)
+                BtnAddDepartment.Visibility = Visibility.Collapsed;
             Loaded += async (_, _) => await LoadDepartmentsAsync();
             Unloaded += (_, _) => (_departmentService as IDisposable)?.Dispose();
         }

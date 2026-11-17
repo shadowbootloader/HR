@@ -95,6 +95,16 @@ namespace HR.Data
         public DbSet<GeoType> GeoTypes => Set<GeoType>();
         public DbSet<DocumentType> DocumentTypes => Set<DocumentType>();
         public DbSet<Document> Documents => Set<Document>();
+        public DbSet<Assessment> Assessments => Set<Assessment>();
+        public DbSet<AssessmentDimension> AssessmentDimensions => Set<AssessmentDimension>();
+        public DbSet<AssessmentLevel> AssessmentLevels => Set<AssessmentLevel>();
+        public DbSet<AssessmentQuestion> AssessmentQuestions => Set<AssessmentQuestion>();
+        public DbSet<AssessmentOption> AssessmentOptions => Set<AssessmentOption>();
+        public DbSet<AssessmentAttempt> AssessmentAttempts => Set<AssessmentAttempt>();
+        public DbSet<AssessmentAnswer> AssessmentAnswers => Set<AssessmentAnswer>();
+        public DbSet<AppUser> AppUsers => Set<AppUser>();
+        public DbSet<Role> Roles => Set<Role>();
+        public DbSet<UserRole> UserRoles => Set<UserRole>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -601,6 +611,110 @@ namespace HR.Data
                 entity.HasOne(e => e.Employee).WithMany().HasForeignKey(e => e.EmployeeId).OnDelete(DeleteBehavior.NoAction);
                 entity.HasOne(e => e.Department).WithMany().HasForeignKey(e => e.DepartmentId).OnDelete(DeleteBehavior.NoAction);
                 entity.HasOne(e => e.Type).WithMany().HasForeignKey(e => e.DocumentTypeId).OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<Assessment>(entity =>
+            {
+                entity.ToTable("Assessment");
+                entity.HasKey(e => e.AssessmentId);
+                entity.Property(e => e.Code).HasMaxLength(64).IsRequired();
+                entity.Property(e => e.Title).HasMaxLength(200).IsRequired();
+                entity.Property(e => e.Description).HasMaxLength(1000);
+                entity.Property(e => e.Category).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.ScoringMode).HasMaxLength(32).IsRequired();
+                entity.Property(e => e.CreatedBy).HasMaxLength(100);
+                entity.HasIndex(e => e.Code).IsUnique();
+            });
+
+            modelBuilder.Entity<AssessmentDimension>(entity =>
+            {
+                entity.ToTable("AssessmentDimension");
+                entity.HasKey(e => e.DimensionId);
+                entity.Property(e => e.Key).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.Title).HasMaxLength(100).IsRequired();
+                entity.HasOne(e => e.Assessment).WithMany(a => a.Dimensions).HasForeignKey(e => e.AssessmentId).OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<AssessmentLevel>(entity =>
+            {
+                entity.ToTable("AssessmentLevel");
+                entity.HasKey(e => e.LevelId);
+                entity.Property(e => e.Label).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.ColorHex).HasMaxLength(16).IsRequired();
+                entity.HasOne(e => e.Assessment).WithMany(a => a.Levels).HasForeignKey(e => e.AssessmentId).OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<AssessmentQuestion>(entity =>
+            {
+                entity.ToTable("AssessmentQuestion");
+                entity.HasKey(e => e.QuestionId);
+                entity.Property(e => e.Code).HasMaxLength(32).IsRequired();
+                entity.Property(e => e.QuestionType).HasMaxLength(32).IsRequired();
+                entity.Property(e => e.Text).HasMaxLength(1000).IsRequired();
+                entity.Property(e => e.HelpText).HasMaxLength(500);
+                entity.Property(e => e.DimensionKey).HasMaxLength(50);
+                entity.Property(e => e.MinLabel).HasMaxLength(50);
+                entity.Property(e => e.MaxLabel).HasMaxLength(50);
+                entity.HasOne(e => e.Assessment).WithMany(a => a.Questions).HasForeignKey(e => e.AssessmentId).OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<AssessmentOption>(entity =>
+            {
+                entity.ToTable("AssessmentOption");
+                entity.HasKey(e => e.OptionId);
+                entity.Property(e => e.Code).HasMaxLength(16).IsRequired();
+                entity.Property(e => e.Text).HasMaxLength(400).IsRequired();
+                entity.HasOne(e => e.Question).WithMany(q => q.Options).HasForeignKey(e => e.QuestionId).OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<AssessmentAttempt>(entity =>
+            {
+                entity.ToTable("AssessmentAttempt");
+                entity.HasKey(e => e.AttemptId);
+                entity.Property(e => e.Status).HasMaxLength(20).IsRequired();
+                entity.Property(e => e.LevelLabel).HasMaxLength(50);
+                entity.Property(e => e.Summary).HasMaxLength(500);
+                entity.HasOne(e => e.Assessment).WithMany(a => a.Attempts).HasForeignKey(e => e.AssessmentId).OnDelete(DeleteBehavior.NoAction);
+                entity.HasOne(e => e.Employee).WithMany().HasForeignKey(e => e.EmployeeId).OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<AssessmentAnswer>(entity =>
+            {
+                entity.ToTable("AssessmentAnswer");
+                entity.HasKey(e => e.AnswerId);
+                entity.Property(e => e.TextValue).HasMaxLength(2000);
+                entity.HasOne(e => e.Attempt).WithMany(a => a.Answers).HasForeignKey(e => e.AttemptId).OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.Question).WithMany().HasForeignKey(e => e.QuestionId).OnDelete(DeleteBehavior.NoAction);
+                entity.HasOne(e => e.Option).WithMany().HasForeignKey(e => e.OptionId).OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<Role>(entity =>
+            {
+                entity.ToTable("Role");
+                entity.HasKey(e => e.RoleId);
+                entity.Property(e => e.RoleId).ValueGeneratedNever();
+                entity.Property(e => e.Name).HasMaxLength(32).IsRequired();
+                entity.HasIndex(e => e.Name).IsUnique();
+            });
+
+            modelBuilder.Entity<AppUser>(entity =>
+            {
+                entity.ToTable("AppUser");
+                entity.HasKey(e => e.AppUserId);
+                entity.Property(e => e.Username).HasMaxLength(64).IsRequired();
+                entity.Property(e => e.DisplayName).HasMaxLength(100);
+                entity.Property(e => e.PasswordHash).HasMaxLength(64).IsRequired();
+                entity.Property(e => e.PasswordSalt).HasMaxLength(32).IsRequired();
+                entity.HasIndex(e => e.Username).IsUnique();
+                entity.HasOne(e => e.Employee).WithMany().HasForeignKey(e => e.EmployeeId).OnDelete(DeleteBehavior.SetNull);
+            });
+
+            modelBuilder.Entity<UserRole>(entity =>
+            {
+                entity.ToTable("UserRole");
+                entity.HasKey(e => new { e.AppUserId, e.RoleId });
+                entity.HasOne(e => e.User).WithMany(u => u.Roles).HasForeignKey(e => e.AppUserId).OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.Role).WithMany(r => r.Users).HasForeignKey(e => e.RoleId).OnDelete(DeleteBehavior.NoAction);
             });
         }
     }

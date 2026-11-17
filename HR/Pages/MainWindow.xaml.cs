@@ -8,6 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using HR.Controls;
 using HR.Services;
+using HR.Services.Auth;
 using LiveChartsCore;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
@@ -21,9 +22,15 @@ namespace HR.Pages
         private Button? _activeSideMenu;
         private bool _sideMenuOpen = true;
 
+        public bool LogoutRequested { get; private set; }
+
         public MainWindow()
         {
             InitializeComponent();
+            var current = AuthSession.Current;
+            CurrentUserName.Text = current?.DisplayName ?? current?.Username ?? "";
+            CurrentUserRole.Text = current?.RoleLabel ?? "";
+            UsersBtn.Visibility = current?.IsAdmin == true ? Visibility.Visible : Visibility.Collapsed;
 
             // مهم: چارت‌ها باید قبل از DataContext مقدار بگیرند،
             // وگرنه بایندینگ‌ها نال می‌خوانند و هرگز آپدیت نمی‌شوند.
@@ -138,7 +145,21 @@ namespace HR.Pages
             DataPanel.Navigate(page);
         }
 
-        private void OnChildNavigation(Page page) => Navigate(page, PageName.Text);
+        private void OnChildNavigation(Page page)
+        {
+            var title = page switch
+            {
+                EmployeeListPage => "کارکنان",
+                AddEmployeePage => "پرونده کارمند",
+                DepartmentsPage => "دپارتمان‌ها",
+                AddDepartmentPage => "دپارتمان",
+                DepartmentDetailPage => "جزئیات دپارتمان",
+                OrgChartPage => "چارت سازمانی",
+                EmployeOverview => "پرونده کارمند",
+                _ => PageName.Text
+            };
+            Navigate(page, title);
+        }
 
         private void WireNavigation(Page page)
         {
@@ -147,6 +168,10 @@ namespace HR.Pages
                 case EmployeeListPage list:
                     list.NavigationRequested -= OnChildNavigation;
                     list.NavigationRequested += OnChildNavigation;
+                    break;
+                case AddEmployeePage addEmployee:
+                    addEmployee.NavigationRequested -= OnChildNavigation;
+                    addEmployee.NavigationRequested += OnChildNavigation;
                     break;
                 case DepartmentsPage departments:
                     departments.NavigationRequested -= OnChildNavigation;
@@ -159,6 +184,10 @@ namespace HR.Pages
                 case DepartmentDetailPage detail:
                     detail.NavigationRequested -= OnChildNavigation;
                     detail.NavigationRequested += OnChildNavigation;
+                    break;
+                case OrgChartPage chart:
+                    chart.NavigationRequested -= OnChildNavigation;
+                    chart.NavigationRequested += OnChildNavigation;
                     break;
             }
         }
@@ -243,16 +272,33 @@ namespace HR.Pages
                 return;
             }
 
+            if (ReferenceEquals(target, UsersBtn))
+            {
+                Navigate(GetPage(() => new UsersPage(), "users"), "کاربران");
+                return;
+            }
+
+            if (ReferenceEquals(target, OrgChartBtn))
+            {
+                Navigate(GetPage(() => new OrgChartPage(), "orgchart"), "چارت سازمانی");
+                return;
+            }
+
             NotificationService.Info("به‌زودی", "این بخش هنوز پیاده‌سازی نشده است.");
         }
 
         private void ProfileMenu_Click(object sender, RoutedEventArgs e)
-            => NotificationService.Info("پروفایل", "ورود و نقش کاربری هنوز تعریف نشده است.");
+            => NotificationService.Info("پروفایل", $"{CurrentUserName.Text} — {CurrentUserRole.Text}");
 
         private void SettingsMenu_Click(object sender, RoutedEventArgs e)
             => NotificationService.Info("تنظیمات", "این بخش هنوز پیاده‌سازی نشده است.");
 
-        private void ExitMenu_Click(object sender, RoutedEventArgs e) => Close();
+        private void LogoutMenu_Click(object sender, RoutedEventArgs e)
+        {
+            AuthSession.SignOut();
+            LogoutRequested = true;
+            Close();
+        }
 
         public void NavigateTo(Page page) => DataPanel.Navigate(page);
     }

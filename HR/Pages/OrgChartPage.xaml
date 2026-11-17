@@ -1,0 +1,22 @@
+<Page x:Class="HR.Pages.OrgChartPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+      Background="#0B1120"
+      FlowDirection="RightToLeft"
+      FontFamily="pack://application:,,,/Fonts/#B Nazanin">
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="8">
+            <TextBox x:Name="SearchBox" Width="220" Height="34" Padding="8,4" Background="#1E293B" Foreground="White"
+                     BorderBrush="#334155" KeyDown="SearchBox_KeyDown"/>
+            <Button Content="جستجو" Margin="8,0,0,0" Padding="12,0" Height="34" Click="Search_Click" Background="#1E293B" Foreground="White" BorderThickness="0"/>
+            <Button Content="جا شدن" Margin="8,0,0,0" Padding="12,0" Height="34" Click="Fit_Click" Background="#1E293B" Foreground="White" BorderThickness="0"/>
+            <Button Content="باز کردن" Margin="8,0,0,0" Padding="12,0" Height="34" Click="Expand_Click" Background="#1E293B" Foreground="White" BorderThickness="0"/>
+            <Button Content="بستن" Margin="8,0,0,0" Padding="12,0" Height="34" Click="Collapse_Click" Background="#1E293B" Foreground="White" BorderThickness="0"/>
+            <Button Content="خروجی PNG" Margin="8,0,0,0" Padding="12,0" Height="34" Click="Png_Click" Background="#1D4ED8" Foreground="White" BorderThickness="0"/>
+            <Button Content="خروجی SVG" Margin="8,0,0,0" Padding="12,0" Height="34" Click="Svg_Click" Background="#1D4ED8" Foreground="White" BorderThickness="0"/>
+            <CheckBox x:Name="IncludeEmployees" Content="نمایش کارکنان" Margin="12,0,0,0" Foreground="White" IsChecked="True" Checked="IncludeEmployees_Changed" Unchecked="IncludeEmployees_Changed"/>
+        </StackPanel>
+        <wv2:WebView2 x:Name="ChartView"/>
+    </DockPanel>
+</Page>

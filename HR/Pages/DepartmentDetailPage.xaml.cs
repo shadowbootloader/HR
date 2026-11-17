@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Navigation;
 using HR.Services;
+using HR.Services.Auth;
 using HR.Services.Data;
 
 namespace HR.Pages
@@ -27,6 +28,12 @@ namespace HR.Pages
 
         private void BindDepartment()
         {
+            if (AuthSession.Current?.CanManagePeople != true)
+            {
+                EditDepartmentBtn.Visibility = Visibility.Collapsed;
+                DeleteDepartmentBtn.Visibility = Visibility.Collapsed;
+            }
+
             if (_department == null) return;
 
             DeptTitleText.Text = _department.Name;

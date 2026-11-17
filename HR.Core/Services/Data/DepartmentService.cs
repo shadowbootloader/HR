@@ -1,5 +1,6 @@
 using HR.Data;
 using HR.Data.Entities;
+using HR.Services.Auth;
 using HR.Services.Files;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -70,6 +71,7 @@ namespace HR.Services.Data
 
         public async Task<Department> CreateAsync(Department department)
         {
+            AccessGuard.RequirePeopleManagement();
             if (department == null) throw new ArgumentNullException(nameof(department));
             if (string.IsNullOrWhiteSpace(department.Title))
                 throw new InvalidOperationException("نام دپارتمان الزامی است.");
@@ -109,6 +111,7 @@ namespace HR.Services.Data
 
         public async Task<Department> UpdateAsync(Department department)
         {
+            AccessGuard.RequirePeopleManagement();
             if (department == null) throw new ArgumentNullException(nameof(department));
             if (department.DepartmentId <= 0)
                 throw new InvalidOperationException("شناسه دپارتمان نامعتبر است.");
@@ -192,6 +195,7 @@ namespace HR.Services.Data
 
         public async Task<bool> DeleteAsync(short id)
         {
+            AccessGuard.RequirePeopleManagement();
             var dept = await _db.Departments
                 .Include(d => d.Children)
                 .Include(d => d.Employees)

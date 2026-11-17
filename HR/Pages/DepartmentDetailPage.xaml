@@ -168,12 +168,12 @@ TargetType="{x:Type TextBlock}">
                                FontSize="16" FontWeight="Bold" Margin="10,0,0,0"/>
                     </StackPanel>
 
-                    <Button Content="ویرایش" Click="EditDepartment_Click"
+                    <Button x:Name="EditDepartmentBtn" Content="ویرایش" Click="EditDepartment_Click"
                         Height="34" Padding="14,0" Margin="18,0,0,0"
                         Background="#1D4ED8" Foreground="White" BorderThickness="0"
                         materialDesign:ButtonAssist.CornerRadius="8"
                         VerticalAlignment="Center"/>
-                    <Button Content="حذف" Click="DeleteDepartment_Click"
+                    <Button x:Name="DeleteDepartmentBtn" Content="حذف" Click="DeleteDepartment_Click"
                         Height="34" Padding="14,0" Margin="8,0,0,0"
                         Background="#7F1D1D" Foreground="White" BorderThickness="0"
                         materialDesign:ButtonAssist.CornerRadius="8"

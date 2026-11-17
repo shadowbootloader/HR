@@ -7,111 +7,161 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using HR.Controls.Assessment;
 using HR.Models;
+using HR.Services;
+using HR.Services.Assessments;
+using HR.Services.Auth;
+using HR.Services.Data;
+using LiveChartsCore;
+using LiveChartsCore.SkiaSharpView;
+using LiveChartsCore.SkiaSharpView.Painting;
 using MaterialDesignThemes.Wpf;
+using SkiaSharp;
 
 namespace HR.Pages
 {
     public partial class EmployeeAssessmentCenterPage : Page
     {
         public ObservableCollection<AssessmentActivityItem> Activities { get; } = new();
-        private readonly IAssessmentCatalog _catalog = new InMemoryAssessmentCatalog();
+        private readonly AssessmentService _assessments = new();
+        private readonly IEmployeeService _employees = new EmployeeService();
         private readonly List<AssessmentTestRow> _allRows = new();
+        private readonly List<EmployeePick> _people = new();
+        private List<AssessmentRecord> _definitions = new();
+        private List<AttemptSummary> _history = new();
         private int _pageIndex;
         private const int PageSize = 6;
+        private bool _loadingPeople;
 
         public EmployeeAssessmentCenterPage()
         {
             InitializeComponent();
-            Hero.Medals = new ObservableCollection<MedalItem>
+            Hero.Medals = new ObservableCollection<MedalItem>();
+            SidePanel.Medals = new ObservableCollection<SideMedalItem>();
+            SidePanel.Activities = new ObservableCollection<SideActivityItem>();
+            SidePanel.XpMax = 100;
+            if (AuthSession.Current?.CanManagePeople != true)
+                BtnNewTest.Visibility = Visibility.Collapsed;
+            Loaded += async (_, _) => await LoadPeopleAsync();
+            Unloaded += (_, _) =>
             {
-                new MedalItem
-                {
-                    Title = "تحلیل‌گر داده",
-                    Points = 150,
-                    Description = "تکمیل مسیر تخصصی داده",
-                    ToneBrush = (Brush)new BrushConverter().ConvertFrom("#F5C542"),
-                    IconKind = PackIconKind.ChartBar
-                },
-                new MedalItem
-                {
-                    Title = "تیم‌ساز",
-                    Points = 200,
-                    Description = "همکاری و رهبری تیمی",
-                    ToneBrush = (Brush)new BrushConverter().ConvertFrom("#93C5FD"),
-                    IconKind = PackIconKind.AccountGroup
-                },
-                new MedalItem
-                {
-                    Title = "رشد فردی",
-                    Points = 150,
-                    Description = "پیشرفت مداوم مهارت‌ها",
-                    ToneBrush = (Brush)new BrushConverter().ConvertFrom("#D97706"),
-                    IconKind = PackIconKind.TrendingUp
-                },
-                new MedalItem
-                {
-                    Title = "نوآور",
-                    Points = 200,
-                    Description = "ایده‌های اجرایی نو",
-                    ToneBrush = (Brush)new BrushConverter().ConvertFrom("#A78BFA"),
-                    IconKind = PackIconKind.LightbulbOn
-                },
+                _assessments.Dispose();
+                (_employees as IDisposable)?.Dispose();
             };
-
-            LoadSample();
-            UpdateFooterStats();
-
-            SidePanel.Xp = 750;
-            SidePanel.XpMax = 1000;
-            SidePanel.NextMedalRemain = 250;
-            SidePanel.NextGoalTitle = "تحلیل‌گر داده";
-            SidePanel.NextGoalDesc = "تکمیل ۴ آزمون تخصصی با نمره بالای ۸۰";
-            SidePanel.NextGoalPoints = 250;
-
-            SidePanel.Medals = new ObservableCollection<SideMedalItem>
-            {
-                new() { Title = "تحلیل‌گر داده", Points = 150, IconKind = PackIconKind.Medal, ToneBrush = Brush("#F5C542") },
-                new() { Title = "تیم‌ساز", Points = 200, IconKind = PackIconKind.Star, ToneBrush = Brush("#38BDF8") },
-                new() { Title = "رشد فردی", Points = 150, IconKind = PackIconKind.Star, ToneBrush = Brush("#D97706") },
-                new() { Title = "نوآور", Points = 200, IconKind = PackIconKind.LightbulbOn, ToneBrush = Brush("#A78BFA") },
-            };
-            
-                        SidePanel.Activities = new ObservableCollection<SideActivityItem>
-            {
-                new() { Time = "۱۴:۳۵", Title = "تست شخصیت‌شناسی MBTI تکمیل شد", Detail = "امتیاز +۱۵۰", IconKind = PackIconKind.CheckCircle, IconBrush = Brush("#A78BFA") },
-                new() { Time = "۱۰:۲۱", Title = "داده پرت در تست تصمیم‌گیری ثبت شد", Detail = "نیاز به بررسی", IconKind = PackIconKind.AlertCircle, IconBrush = Brush("#FB7185") },
-                new() { Time = "۰۹:۴۷", Title = "مدال تحلیل‌گر داده اعطا شد", Detail = "+۲۵۰ امتیاز", IconKind = PackIconKind.Medal, IconBrush = Brush("#F5C542") },
-                new() { Time = "دیروز", Title = "تست مهارت‌های ارتباطی شروع شد", IconKind = PackIconKind.Cog, IconBrush = Brush("#22D3EE") },
-                new() { Time = "دیروز", Title = "ارزیابی مدیر تکمیل شد", Detail = "+۸۰ امتیاز", IconKind = PackIconKind.Briefcase, IconBrush = Brush("#38BDF8") },
-            };
-
-            static Brush Brush(string hex) => (Brush)new BrushConverter().ConvertFrom(hex);
         }
 
-        private void LoadSample()
+        private async System.Threading.Tasks.Task LoadPeopleAsync()
+        {
+            _loadingPeople = true;
+            _people.Clear();
+            EmployeePicker.ItemsSource = null;
+            foreach (var employee in await _employees.GetAllAsync())
+            {
+                _people.Add(new EmployeePick(employee.EmployeeId, $"{employee.FirstName} {employee.LastName}".Trim()));
+            }
+
+            EmployeePicker.ItemsSource = _people;
+            var linked = AuthSession.Current?.EmployeeId;
+            var selected = _people.FirstOrDefault(person => person.Id == linked) ?? _people.FirstOrDefault();
+            EmployeePicker.SelectedItem = selected;
+            _loadingPeople = false;
+            await ReloadAssessmentsAsync();
+        }
+
+        private async void EmployeePicker_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_loadingPeople) return;
+            await ReloadAssessmentsAsync();
+        }
+
+        private async System.Threading.Tasks.Task ReloadAssessmentsAsync()
+        {
+            try
+            {
+                _definitions = (await _assessments.ListAsync()).ToList();
+                var selected = EmployeePicker.SelectedItem as EmployeePick;
+                _history = selected == null
+                    ? new List<AttemptSummary>()
+                    : (await _assessments.HistoryAsync(selected.Id)).ToList();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "آزمون‌ها", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var person = EmployeePicker.SelectedItem as EmployeePick;
+            Hero.EmployeeName = person?.Name ?? "کارمندی انتخاب نشده";
+            Hero.Role = AuthSession.Current?.RoleLabel ?? "";
+            BindRows();
+            BindChart(_history);
+            BindSide(_history);
+            UpdateFooterStats();
+        }
+
+        private void BindRows()
         {
             _allRows.Clear();
-            _allRows.Add(CreateRow("شخصیت‌شناسی MBTI", "روانشناسی", "روانشناسی", PackIconKind.Brain, "#A78BFA", "completed", 100, "۱۴۰۴/۰۲/۱۲", "mbti"));
-            _allRows.Add(CreateRow("ارزیابی مدیر", "شغلی و موقعیتی", "شغلی", PackIconKind.Briefcase, "#38BDF8", "in-progress", 60, "۱۴۰۴/۰۲/۱۰", "manager-eval"));
-            _allRows.Add(CreateRow("تست مهارت‌های ارتباطی", "مهارتی", "مهارتی", PackIconKind.Cog, "#22D3EE", "completed", 100, "۱۴۰۴/۰۲/۰۸", "comm-skills"));
-            _allRows.Add(CreateRow("تست تصمیم‌گیری", "موقعیتی", "شغلی", PackIconKind.Briefcase, "#38BDF8", "outlier", 70, "۱۴۰۴/۰۲/۰۵", "decision", 2));
-            _allRows.Add(CreateRow("تست خودکارآمدی", "روانشناسی", "روانشناسی", PackIconKind.Brain, "#A78BFA", "locked", 0, "پس از تکمیل مدیر فعال می‌شود", "self-efficacy"));
-            _allRows.Add(CreateRow("ارزیابی انضباط سازمانی", "انضباطی", "انضباطی", PackIconKind.ShieldCheck, "#2DD4BF", "completed", 100, "۱۴۰۴/۰۲/۰۴", "discipline"));
-            _allRows.Add(CreateRow("تست حل مسئله", "موقعیتی", "موقعیتی", PackIconKind.Star, "#60A5FA", "locked", 0, "پس از تکمیل ارزیابی مدیر فعال می‌شود", "problem-solving"));
-            _allRows.Add(CreateRow("تست خلاقیت", "توانمندی‌ها", "توانمندی‌ها", PackIconKind.Star, "#22D3EE", "completed", 90, "۱۴۰۴/۰۲/۰۱", "creativity"));
-            _allRows.Add(CreateRow("ارزیابی ۳۶۰ درجه", "شغلی", "شغلی", PackIconKind.Briefcase, "#38BDF8", "in-progress", 35, "۱۴۰۴/۰۱/۲۹", "360"));
-            _allRows.Add(CreateRow("تست انگیزش شغلی", "روانشناسی", "روانشناسی", PackIconKind.Brain, "#A78BFA", "locked", 0, "پس از تکمیل ارزیابی مدیر فعال می‌شود", "motivation"));
-
-            Activities.Clear();
-            Activities.Add(new AssessmentActivityItem { Time = "۱۴:۲۵", Title = "تست شخصیت‌شناسی MBTI تکمیل شد" });
-            Activities.Add(new AssessmentActivityItem { Time = "۱۰:۱۲", Title = "داده پرت در تست تصمیم‌گیری ثبت شد" });
-            Activities.Add(new AssessmentActivityItem { Time = "۰۹:۴۰", Title = "مدال تحلیل‌گر داده اعطا شد" });
-            Activities.Add(new AssessmentActivityItem { Time = "دیروز", Title = "تست مهارت‌های ارتباطی شروع شد" });
-            Activities.Add(new AssessmentActivityItem { Time = "دیروز", Title = "ارزیابی مدیر تکمیل شد" });
-            //ActivityList.ItemsSource = Activities;
+            foreach (var definition in _definitions)
+            {
+                var latest = _history.FirstOrDefault(item => item.AssessmentCode == definition.Code);
+                var done = latest?.SubmittedAt != null;
+                var score = (int)Math.Round(latest?.TotalScore ?? 0);
+                _allRows.Add(CreateRow(
+                    definition.Title,
+                    definition.Description ?? definition.Category,
+                    definition.Category,
+                    PackIconKind.ClipboardText,
+                    "#38BDF8",
+                    done ? "completed" : "not-started",
+                    done ? score : 0,
+                    latest?.SubmittedAt?.ToString("yyyy/MM/dd") ?? "هنوز انجام نشده",
+                    definition.Code));
+            }
 
             _pageIndex = 0;
             RefreshList();
+        }
+
+        private void BindChart(IReadOnlyList<AttemptSummary> history)
+        {
+            ScoreChart.Series = new ISeries[]
+            {
+                new ColumnSeries<double>
+                {
+                    Values = history.Take(8).Select(item => item.TotalScore ?? 0).Reverse().ToArray(),
+                    Fill = new SolidColorPaint(SKColor.Parse("#38BDF8")),
+                    Name = "نمره"
+                }
+            };
+            ScoreChart.XAxes = new[]
+            {
+                new Axis
+                {
+                    Labels = history.Take(8).Select(item => item.Title).Reverse().ToArray(),
+                    LabelsPaint = new SolidColorPaint(SKColor.Parse("#94A3B8"))
+                }
+            };
+            ScoreChart.YAxes = new[]
+            {
+                new Axis { MinLimit = 0, MaxLimit = 100, LabelsPaint = new SolidColorPaint(SKColor.Parse("#94A3B8")) }
+            };
+        }
+
+        private void BindSide(IReadOnlyList<AttemptSummary> history)
+        {
+            var average = history.Count == 0 ? 0 : (int)Math.Round(history.Average(item => item.TotalScore ?? 0));
+            SidePanel.Xp = average;
+            SidePanel.NextGoalTitle = history.FirstOrDefault()?.Title ?? "آزمونی ثبت نشده";
+            SidePanel.NextGoalDesc = history.FirstOrDefault()?.LevelLabel ?? "نتیجه‌ای برای این کارمند نیست";
+            SidePanel.NextGoalPoints = (int)Math.Round(history.FirstOrDefault()?.TotalScore ?? 0);
+            SidePanel.Activities = new ObservableCollection<SideActivityItem>(history.Take(6).Select(item => new SideActivityItem
+            {
+                Time = item.SubmittedAt?.ToString("MM/dd HH:mm") ?? "",
+                Title = item.Title,
+                Detail = item.TotalScore is double score ? score.ToString("0.#") : "",
+                IconKind = PackIconKind.ClipboardCheck,
+                IconBrush = (Brush)new BrushConverter().ConvertFrom("#38BDF8")!
+            }));
         }
 
         private AssessmentTestRow CreateRow(
@@ -141,39 +191,64 @@ namespace HR.Pages
         private void UpdateFooterStats()
         {
             if (FooterStats == null) return;
-            FooterStats.OverallPercent = 38;
+            var scored = _history.Where(item => item.TotalScore.HasValue).Select(item => item.TotalScore!.Value).ToList();
+            FooterStats.OverallPercent = scored.Count == 0 ? 0 : (int)Math.Round(scored.Average());
             FooterStats.TotalTests = _allRows.Count;
             FooterStats.PsychologyCount = _allRows.Count(r => r.CategoryText == "روانشناسی");
             FooterStats.JobCount = _allRows.Count(r => r.CategoryText == "شغلی");
             FooterStats.SkillCount = _allRows.Count(r => r.CategoryText == "مهارتی");
-            FooterStats.OutlierCount = _allRows.Count(r => r.Status == "outlier");
-            FooterStats.LockedCount = _allRows.Count(r => r.Status == "locked");
+            FooterStats.OutlierCount = 0;
+            FooterStats.LockedCount = 0;
         }
 
-        private void NewRow_RowClick(object sender, RoutedEventArgs e)
+        private async void NewRow_RowClick(object sender, RoutedEventArgs e)
         {
-            AssessmentTestRow Target = (AssessmentTestRow)sender;
-            if (string.Equals(Target.Status, "locked", System.StringComparison.OrdinalIgnoreCase))
+            if (sender is not AssessmentTestRow target) return;
+            if (EmployeePicker.SelectedItem is not EmployeePick person)
             {
-                MessageBox.Show("این آزمون هنوز قفل است.");
-                return;
-            }
-            var def = _catalog.Get(Target.DefinitionId);
-            if (def == null)
-            {
-                MessageBox.Show("تعریف این آزمون پیدا نشد: " + Target.DefinitionId);
+                MessageBox.Show("ابتدا کارمند را انتخاب کنید.");
                 return;
             }
 
+            var record = _definitions.FirstOrDefault(item => item.Code == target.DefinitionId)
+                ?? await _assessments.GetByCodeAsync(target.DefinitionId);
+            if (record == null)
+            {
+                MessageBox.Show("تعریف این آزمون پیدا نشد.");
+                return;
+            }
+
+            var definition = AssessmentDefinitionMapper.ToDefinition(record);
             var session = new AssessmentSession
             {
-                DefinitionId = def.Id,
-                EmployeeId = "emp-1", // فعلاً ثابت؛ بعداً شناسه علی فاطمی
+                DefinitionId = definition.Id,
+                EmployeeId = person.Id.ToString(),
                 Status = AssessmentStatus.NotStarted
             };
-
-            // اگر Page داخل Frame است:
-            NavigationService?.Navigate(new AssessmentTestShellPage(def, session));
+            var shell = new AssessmentTestShellPage(definition, session);
+            shell.Submitted += async (_, submitted) =>
+            {
+                var result = submitted.Result ?? AssessmentScoringEngine.Compute(definition, submitted);
+                await _assessments.SaveAttemptAsync(new AttemptSave
+                {
+                    AssessmentCode = definition.Id,
+                    EmployeeId = person.Id,
+                    StartedAt = submitted.StartedAt ?? DateTime.UtcNow,
+                    SubmittedAt = submitted.CompletedAt ?? DateTime.UtcNow,
+                    TotalScore = result.TotalScore,
+                    LevelLabel = result.LevelLabel,
+                    Summary = result.Summary,
+                    Answers = submitted.Answers.Select(pair => new AnswerSave
+                    {
+                        QuestionCode = pair.Key,
+                        OptionCode = pair.Value.SelectedOptionIds.FirstOrDefault(),
+                        NumericValue = pair.Value.Numeric,
+                        TextValue = pair.Value.Text,
+                        Score = result.QuestionScores.TryGetValue(pair.Key, out var score) ? score : 0
+                    }).ToList()
+                });
+            };
+            NavigationService?.Navigate(shell);
         }
 
         /// <summary>فیلتر + مرتب‌سازی + صفحه</summary>
@@ -301,7 +376,16 @@ namespace HR.Pages
             RefreshList();
         }
 
-        private void BtnNewTest_Click(object sender, RoutedEventArgs e) { }
+        private void BtnNewTest_Click(object sender, RoutedEventArgs e)
+        {
+            if (AuthSession.Current?.CanManagePeople != true)
+            {
+                MessageBox.Show("ساخت آزمون فقط برای مدیر و منابع انسانی است.");
+                return;
+            }
+
+            NavigationService?.Navigate(new AssessmentEditorPage());
+        }
 
         private void ProfileHeroControl_NextMedalClick(object sender, RoutedEventArgs e) { }
 
@@ -314,7 +398,9 @@ namespace HR.Pages
 
     public class AssessmentActivityItem
     {
-        public string Time { get; set; }
-        public string Title { get; set; }
+        public string Time { get; set; } = "";
+        public string Title { get; set; } = "";
     }
+
+    public sealed record EmployeePick(Guid Id, string Name);
 }

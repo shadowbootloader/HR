@@ -9,6 +9,7 @@ using HR.Controls.AddEmployees;
 using HR.Data;
 using HR.Models;
 using HR.Services;
+using HR.Services.Auth;
 using HR.Services.Data;
 
 namespace HR.Pages
@@ -31,6 +32,8 @@ namespace HR.Pages
         private bool _isSaving;
         private Guid? _editingId;
 
+        public event Action<Page>? NavigationRequested;
+
         /// <summary>حالت ایجاد کارمند جدید.</summary>
         public AddEmployeePage()
         {
@@ -48,6 +51,8 @@ namespace HR.Pages
         private async void AddEmployeePage_Loaded(object sender, RoutedEventArgs e)
         {
             Loaded -= AddEmployeePage_Loaded;
+            if (AuthSession.Current?.CanManagePeople != true)
+                SaveBtn.IsEnabled = false;
 
             await LoadRemainingSectionsAsync();
 
@@ -252,18 +257,7 @@ namespace HR.Pages
 
             if (answer != MessageBoxResult.Yes) return;
 
-            if (_editingId.HasValue)
-            {
-                // بازگشت به لیست در صورت تمایل می‌تواند از بیرون هندل شود
-                _ = LoadEmployeeForEditAsync(_editingId.Value);
-            }
-            else
-            {
-                _profile = new EmployeeProfile();
-                LoadProfileIntoForm();
-            }
-
-            NotificationService.Info("انصراف", "فرم به حالت اولیه بازگشت.");
+            NavigationRequested?.Invoke(new EmployeeListPage());
         }
 
         private void ScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
