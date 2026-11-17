@@ -28,44 +28,6 @@ namespace HR.Controls.Department
         {
             InitializeComponent();
             Items.ItemsSource = Risks;
-            LoadSample();
-            
-        }
-
-        private void LoadSample()
-        {
-            Risks.Add(new DeptRiskItem
-            {
-                Title = "کمبود نیروی متخصص در حوزه IT",
-                Severity = "بالا",
-                Owner = "مهدی کاظمی",
-                OwnerRole = "معاون دپارتمان",
-                
-            });
-            Risks.Add(new DeptRiskItem
-            {
-                Title = "تاخیر در تأمین بودجه پروژه‌ها",
-                Severity = "متوسط",
-                Owner = "سارا احمدی",
-                OwnerRole = "مدیر دپارتمان",
-                
-            });
-            Risks.Add(new DeptRiskItem
-            {
-                Title = "افزایش نرخ ترک خدمت",
-                Severity = "متوسط",
-                Owner = "الهام رضایی",
-                OwnerRole = "کارشناس منابع انسانی",
-                
-            });
-            Risks.Add(new DeptRiskItem
-            {
-                Title = "مشکلات سیستم اتوماسیون اداری",
-                Severity = "پایین",
-                Owner = "علی رستمی",
-                OwnerRole = "کارشناس فناوری اطلاعات",
-                
-            });
         }
 
 

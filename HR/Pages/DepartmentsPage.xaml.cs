@@ -33,6 +33,7 @@ namespace HR.Pages
             try
             {
                 var list = await _departmentService.GetAllAsync();
+                var counts = await _departmentService.CountMembersAsync();
 
                 Departments.Clear();
 
@@ -58,12 +59,12 @@ namespace HR.Pages
                         Id = d.DepartmentId,
                         Name = d.Title,
                         Manager = d.Manager != null ? $"{d.Manager.FirstName} {d.Manager.LastName}".Trim() : "—",
-                        MembersCount = 0,
+                        MembersCount = counts.TryGetValue(d.DepartmentId, out var members) ? members : 0,
                         ProjectsCount = 0,
                         Performance = 0,
                         EvaluationProgress = 0,
                         ProjectProgress = 0,
-                        Status = "فعال",
+                        Status = d.IsActive ? "فعال" : "غیرفعال",
                         StatusBackground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(style.Item3)),
                         StatusForeground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(style.Item4)),
                         IconKind = style.Item1,

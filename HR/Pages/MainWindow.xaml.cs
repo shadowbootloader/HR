@@ -133,8 +133,34 @@ namespace HR.Pages
 
         private void Navigate(Page page, string title)
         {
+            WireNavigation(page);
             PageName.Text = title;
             DataPanel.Navigate(page);
+        }
+
+        private void OnChildNavigation(Page page) => Navigate(page, PageName.Text);
+
+        private void WireNavigation(Page page)
+        {
+            switch (page)
+            {
+                case EmployeeListPage list:
+                    list.NavigationRequested -= OnChildNavigation;
+                    list.NavigationRequested += OnChildNavigation;
+                    break;
+                case DepartmentsPage departments:
+                    departments.NavigationRequested -= OnChildNavigation;
+                    departments.NavigationRequested += OnChildNavigation;
+                    break;
+                case AddDepartmentPage addDepartment:
+                    addDepartment.NavigationRequested -= OnChildNavigation;
+                    addDepartment.NavigationRequested += OnChildNavigation;
+                    break;
+                case DepartmentDetailPage detail:
+                    detail.NavigationRequested -= OnChildNavigation;
+                    detail.NavigationRequested += OnChildNavigation;
+                    break;
+            }
         }
 
         private void ShowDashboard()
@@ -203,12 +229,7 @@ namespace HR.Pages
 
             if (ReferenceEquals(target, EmployeesBtn))
             {
-                var page = GetPage(() =>
-                {
-                    var list = new EmployeeListPage();
-                    list.NavigationRequested += p => Navigate(p, PageName.Text);
-                    return list;
-                }, "employees");
+                var page = GetPage(() => new EmployeeListPage(), "employees");
 
                 Navigate(page, "کارکنان");
                 return;
@@ -216,12 +237,7 @@ namespace HR.Pages
 
             if (ReferenceEquals(target, DepartmentsBtn))
             {
-                var page = GetPage(() =>
-                {
-                    var departments = new DepartmentsPage();
-                    departments.NavigationRequested += p => Navigate(p, PageName.Text);
-                    return departments;
-                }, "departments");
+                var page = GetPage(() => new DepartmentsPage(), "departments");
 
                 Navigate(page, "دپارتمان‌ها");
             }
