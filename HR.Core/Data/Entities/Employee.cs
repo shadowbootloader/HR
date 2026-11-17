@@ -41,6 +41,7 @@ namespace HR.Data.Entities
         public ExemptionType? ExemptionType { get; set; }
         public ExemptionReason? ExemptionReason { get; set; }
         public EmployeeSupplement? Supplement { get; set; }
+        public ICollection<LeaveRecord> Leaves { get; set; } = new List<LeaveRecord>();
         public EmployeeSelfAssessment? SelfAssessment { get; set; }
 
         public ICollection<Education> Educations { get; set; } = new List<Education>();

@@ -102,6 +102,7 @@ namespace HR.Data
         public DbSet<AssessmentOption> AssessmentOptions => Set<AssessmentOption>();
         public DbSet<AssessmentAttempt> AssessmentAttempts => Set<AssessmentAttempt>();
         public DbSet<AssessmentAnswer> AssessmentAnswers => Set<AssessmentAnswer>();
+        public DbSet<LeaveRecord> LeaveRecords => Set<LeaveRecord>();
         public DbSet<AppUser> AppUsers => Set<AppUser>();
         public DbSet<Role> Roles => Set<Role>();
         public DbSet<UserRole> UserRoles => Set<UserRole>();
@@ -686,6 +687,15 @@ namespace HR.Data
                 entity.HasOne(e => e.Attempt).WithMany(a => a.Answers).HasForeignKey(e => e.AttemptId).OnDelete(DeleteBehavior.Cascade);
                 entity.HasOne(e => e.Question).WithMany().HasForeignKey(e => e.QuestionId).OnDelete(DeleteBehavior.NoAction);
                 entity.HasOne(e => e.Option).WithMany().HasForeignKey(e => e.OptionId).OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<LeaveRecord>(entity =>
+            {
+                entity.ToTable("LeaveRecord");
+                entity.HasKey(e => e.LeaveId);
+                entity.Property(e => e.LeaveType).HasMaxLength(30).IsRequired();
+                entity.Property(e => e.CreatedBy).HasMaxLength(100);
+                entity.HasOne(e => e.Employee).WithMany(employee => employee.Leaves).HasForeignKey(e => e.EmployeeId).OnDelete(DeleteBehavior.Cascade);
             });
 
             modelBuilder.Entity<Role>(entity =>

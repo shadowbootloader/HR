@@ -23,6 +23,7 @@ namespace HR.Services.Data
 
         public async Task<DashboardSnapshot> GetAsync(DateTime? today = null)
         {
+            var day = (today ?? DateTime.Today).Date;
             var rows = await _db.Employees.AsNoTracking()
                 .Select(employee => new DashboardPerson
                 {
@@ -31,11 +32,11 @@ namespace HR.Services.Data
                     Department = employee.Supplement != null ? employee.Supplement.Department.Title : null,
                     StartDate = employee.Supplement != null ? employee.Supplement.StartDate : null,
                     EndDate = employee.Supplement != null ? employee.Supplement.EndDate : null,
-                    OnLeave = false
+                    OnLeave = employee.Leaves.Any(leave => !leave.IsCancelled && leave.StartDate <= day && leave.EndDate >= day)
                 })
                 .ToListAsync();
 
-            return DashboardAggregator.Build(rows, today ?? DateTime.Today);
+            return DashboardAggregator.Build(rows, day);
         }
 
         public void Dispose()

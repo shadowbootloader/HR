@@ -34,6 +34,7 @@ namespace HR.Services.Data
                 .Include(e => e.Supplement)!
                     .ThenInclude(s => s.Department)
                 .Include(e => e.SelfAssessment)
+                .Include(e => e.Leaves)
                 .AsQueryable();
 
             if (!includeDeleted)
