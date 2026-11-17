@@ -41,6 +41,7 @@ namespace HR.Controls.AddEmployees
             _items.Add(new WorkInterestRecord
             {
                 Title = name,
+                LevelTitle = (InterestLevelCombo.SelectedItem as ComboBoxItem)?.Content?.ToString()?.Trim() ?? string.Empty,
                 Level = (InterestLevelCombo.SelectedItem as ComboBoxItem)?.Content?.ToString() switch
                 {
                     "کم" => InterestLevel.Low,

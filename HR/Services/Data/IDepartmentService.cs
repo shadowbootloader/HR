@@ -14,5 +14,6 @@ namespace HR.Services.Data
         Task<Department> CreateAsync(Department department);
         Task<Department> UpdateAsync(Department department);
         Task<bool> DeleteAsync(short id);
+        Task<Dictionary<short, int>> CountMembersAsync();
     }
 }

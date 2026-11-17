@@ -15,19 +15,11 @@ namespace HR.Services.Data.Mapping
             {
                 if (string.IsNullOrWhiteSpace(item.Title) || item.Title.Trim() == "—") continue;
 
-                var levelTitle = item.Level switch
-                {
-                    HR.Models.InterestLevel.Low => "کم",
-                    HR.Models.InterestLevel.Medium => "متوسط",
-                    HR.Models.InterestLevel.High => "زیاد",
-                    _ => "متوسط"
-                };
-
                 entity.WorkInterests.Add(new EmployeeWorkInterest
                 {
                     EmployeeWorkInterestId = Guid.NewGuid(),
                     EmployeeId = entity.EmployeeId,
-                    InterestLevelId = await lookups.ByteFromTitleAsync<HR.Data.Entities.InterestLevel>(levelTitle),
+                    InterestLevelId = await lookups.ByteFromTitleAsync<HR.Data.Entities.InterestLevel>(item.LevelTitle),
                     Title = item.Title.Trim(),
                     Description = null
                 });

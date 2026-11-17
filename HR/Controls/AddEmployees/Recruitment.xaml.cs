@@ -64,7 +64,7 @@ namespace HR.Controls.AddEmployees
 
             var result = Employment_ResaltCombo.SelectedItem as string;
 
-            _list.Items.Add(new RecruitmentRecord
+            _list.Commit(new RecruitmentRecord
             {
                 InstitutionName = name,
                 InstitutionType = Employment_OrganTypeCombo.SelectedItem as string ?? string.Empty,
@@ -76,7 +76,14 @@ namespace HR.Controls.AddEmployees
         }
 
         private void DeleteEmploymentDataBtn_Click(object sender, RoutedEventArgs e) => _list.DeleteSelected();
-        private void PersonalEmploymentList_SelectionChanged(object sender, SelectionChangedEventArgs e) { }
+        private void PersonalEmploymentList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (PersonalEmploymentList.SelectedItem is not RecruitmentRecord item) return;
+            Employment_OrganNameTB.Text = item.InstitutionName;
+            LookupBinder.Select(Employment_OrganTypeCombo, item.InstitutionType);
+            LookupBinder.Select(Employment_ResaltCombo, item.Result);
+            Employment_NoteTB.Text = item.Note ?? string.Empty;
+        }
 
         public void LoadFrom(EmployeeProfile profile) => _list.Replace(profile.Recruitments);
         public void SaveTo(EmployeeProfile profile) => _list.CopyTo(profile.Recruitments);

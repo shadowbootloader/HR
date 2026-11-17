@@ -30,34 +30,7 @@ namespace HR.Services.Data
             return new LookupResolver(db, await LookupCache.GetAsync());
         }
 
-        // ==================== enum → Id بر اساس اندیس ردیف DB ====================
-
-        /// <summary>
-        /// مقدار enum را به Id ردیف هم‌اندیس تبدیل می‌کند.
-        /// <paramref name="offset"/> برای enumهایی است که اولین عضوشان «نامشخص» است.
-        /// </summary>
-        public Task<byte> FromEnumAsync<TEntity, TEnum>(TEnum value, int offset = 0)
-            where TEntity : class
-            where TEnum : struct, Enum
-        {
-            var index = Convert.ToInt32(value) - offset;
-            return FromIndexAsync<TEntity>(index);
-        }
-
-        public Task<byte> FromIndexAsync<TEntity>(int index) where TEntity : class
-        {
-            var rows = _cache.Get<TEntity>();
-
-            if (rows.Count == 0)
-                throw new InvalidOperationException($"جدول «{typeof(TEntity).Name}» خالی است؛ ابتدا آن را پر کنید.");
-
-            if (index < 0) index = 0;
-            if (index >= rows.Count) index = rows.Count - 1;
-
-            return Task.FromResult(checked((byte)rows[index].Id));
-        }
-
-        // ==================== عنوان متنی → Id ====================
+        // ==================== عنوان متنی → Id (بدون حدس بر اساس ترتیب ردیف) ====================
 
         public async Task<byte> ByteFromTitleAsync<TEntity>(string? title) where TEntity : class
             => checked((byte)await _cache.ResolveOrCreateAsync<TEntity>(title));
@@ -69,7 +42,28 @@ namespace HR.Services.Data
         }
 
         public Task<short> IdFromTitleAsync<TEntity>(string? title) where TEntity : class
+            => _cache.ResolveAsync(typeof(TEntity), title, createIfMissing: false);
+
+        public Task<short> IdFromUserCatalogAsync<TEntity>(string? title) where TEntity : class
             => _cache.ResolveOrCreateAsync<TEntity>(title);
+
+        /// <summary>اولین ردیفی که عنوانش یکی از عبارت‌ها را دارد. اگر نبود خطا می‌دهد.</summary>
+        public byte MatchTitle<TEntity>(IEnumerable<string> fragments, string label) where TEntity : class
+        {
+            var rows = _cache.Get<TEntity>();
+            if (rows.Count == 0)
+                throw new InvalidOperationException($"جدول {typeof(TEntity).Name} خالی است. {label}");
+
+            var accepted = fragments.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToList();
+            var match = rows.FirstOrDefault(row =>
+                accepted.Any(fragment => row.Title.Contains(fragment, StringComparison.OrdinalIgnoreCase)));
+
+            if (match == null)
+                throw new InvalidOperationException(
+                    $"{label}: عنوانی شامل ({string.Join("، ", accepted)}) در جدول {typeof(TEntity).Name} نیست.");
+
+            return checked((byte)match.Id);
+        }
 
         // ==================== موقعیت جغرافیایی ====================
 
@@ -81,13 +75,13 @@ namespace HR.Services.Data
 
         public async Task<int> CountryAsync(string? title)
         {
+            if (string.IsNullOrWhiteSpace(title))
+                throw new InvalidOperationException("کشور انتخاب نشده است.");
+
             var country = await _geo.FindCountryAsync(title);
             if (country != null) return country.GeoId;
 
-            var first = (await _geo.GetCountriesAsync()).FirstOrDefault();
-            if (first != null) return first.GeoId;
-
-            throw new InvalidOperationException("جدول Geo هیچ کشوری ندارد؛ ابتدا کشورها را وارد کنید.");
+            throw new InvalidOperationException($"کشور «{title.Trim()}» در جدول Geo نیست.");
         }
 
         public Task<HierarchyId?> LocationByNameAsync(string? name)

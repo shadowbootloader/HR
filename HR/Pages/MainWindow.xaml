@@ -137,28 +137,28 @@
                         <Button x:Name="RecommendedBtn" Style="{StaticResource NavButton}" Margin="0,2" Click="SideMenu_Click">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="⭐" FontSize="15" Width="28"/>
-                                <TextBlock Text="Recommended for You" VerticalAlignment="Center"/>
+                                <TextBlock Text="پیشنهادها" VerticalAlignment="Center" FontFamily="pack://application:,,,/Fonts/#B Nazanin" FontSize="18"/>
                             </StackPanel>
                         </Button>
 
                         <Button x:Name="CareerBtn" Style="{StaticResource NavButton}" Margin="0,2" Click="SideMenu_Click">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="🚀" FontSize="15" Width="28"/>
-                                <TextBlock Text="Career Development" VerticalAlignment="Center"/>
+                                <TextBlock Text="توسعه شغلی" VerticalAlignment="Center" FontFamily="pack://application:,,,/Fonts/#B Nazanin" FontSize="18"/>
                             </StackPanel>
                         </Button>
 
                         <Button x:Name="ReportsBtn" Style="{StaticResource NavButton}" Margin="0,2" Click="SideMenu_Click">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="📊" FontSize="15" Width="28"/>
-                                <TextBlock Text="Reports &amp; Insights" VerticalAlignment="Center"/>
+                                <TextBlock Text="گزارش‌ها" VerticalAlignment="Center" FontFamily="pack://application:,,,/Fonts/#B Nazanin" FontSize="18"/>
                             </StackPanel>
                         </Button>
 
                         <Button x:Name="SettingsBtn" Style="{StaticResource NavButton}" Margin="0,2" Click="SideMenu_Click">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="⚙️" FontSize="15" Width="28"/>
-                                <TextBlock Text="Settings" VerticalAlignment="Center"/>
+                                <TextBlock Text="تنظیمات" VerticalAlignment="Center" FontFamily="pack://application:,,,/Fonts/#B Nazanin" FontSize="18"/>
                             </StackPanel>
                         </Button>
                     </StackPanel>
@@ -175,8 +175,8 @@
 
                                     <!-- نام و نقش -->
                                     <StackPanel VerticalAlignment="Center" Margin="0,0,6,0">
-                                        <TextBlock Text="Priya Sharma"  FontSize="12.5" FontWeight="SemiBold"  Foreground="White"/>
-                                        <TextBlock Text="HR Business Partner" FontSize="10.5" Foreground="#94A3B8"/>
+                                        <TextBlock Text="کاربر سامانه" FontFamily="pack://application:,,,/Fonts/#B Nazanin" FontSize="12.5" FontWeight="SemiBold"  Foreground="White"/>
+                                        <TextBlock Text="بدون احراز هویت" FontFamily="pack://application:,,,/Fonts/#B Nazanin" FontSize="10.5" Foreground="#94A3B8"/>
                                     </StackPanel>
 
                                     <!-- فلش -->
@@ -188,14 +188,14 @@
                         <!-- منوی بازشونده -->
                         <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="12" Padding="6" Width="140">
                             <StackPanel>
-                                <Button Content="پروفایل من" FontWeight="Bold" FontSize="18" FontFamily="pack://application:,,,/Fonts/#B Nazanin"
+                                <Button Content="پروفایل من" Click="ProfileMenu_Click" FontWeight="Bold" FontSize="18" FontFamily="pack://application:,,,/Fonts/#B Nazanin"
  Style="{StaticResource MaterialDesignFlatButton}"
  HorizontalContentAlignment="Left"
  Foreground="White"
  Height="36"
  Margin="0,2"/>
 
-                                <Button Content="تنظیمات" FontWeight="Bold" FontSize="18" FontFamily="pack://application:,,,/Fonts/#B Nazanin"
+                                <Button Content="تنظیمات" Click="SettingsMenu_Click" FontWeight="Bold" FontSize="18" FontFamily="pack://application:,,,/Fonts/#B Nazanin"
  Style="{StaticResource MaterialDesignFlatButton}"
  HorizontalContentAlignment="Left"
  Foreground="White"
@@ -204,7 +204,7 @@
 
                                 <Separator Background="#334155" Margin="4,6"/>
 
-                                <Button Content="خروج" FontWeight="Bold" FontSize="18" FontFamily="pack://application:,,,/Fonts/#B Nazanin"
+                                <Button Content="خروج" Click="ExitMenu_Click" FontWeight="Bold" FontSize="18" FontFamily="pack://application:,,,/Fonts/#B Nazanin"
  Style="{StaticResource MaterialDesignFlatButton}"
  HorizontalContentAlignment="Left"
  Foreground="#F87171"

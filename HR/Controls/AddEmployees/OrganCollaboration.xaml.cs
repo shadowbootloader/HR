@@ -50,7 +50,7 @@ namespace HR.Controls.AddEmployees
                 return;
             }
 
-            _list.Items.Add(new OrganCollaborationRecord
+            _list.Commit(new OrganCollaborationRecord
             {
                 OrganName = name,
                 OrganType = CooperationOrgan_OrganTypeCombo.SelectedItem as string ?? string.Empty,
@@ -61,7 +61,13 @@ namespace HR.Controls.AddEmployees
         }
 
         private void DeleteCooperationOrganDataBtn_Click(object sender, RoutedEventArgs e) => _list.DeleteSelected();
-        private void PersonalCooperationOrganList_SelectionChanged(object sender, SelectionChangedEventArgs e) { }
+        private void PersonalCooperationOrganList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (PersonalCooperationOrganList.SelectedItem is not OrganCollaborationRecord item) return;
+            CooperationOrgan_OrganNameTB.Text = item.OrganName;
+            LookupBinder.Select(CooperationOrgan_OrganTypeCombo, item.OrganType);
+            CooperationOrgan_NoteTB.Text = item.Note ?? string.Empty;
+        }
 
         public void LoadFrom(EmployeeProfile profile) => _list.Replace(profile.OrganCollaborations);
         public void SaveTo(EmployeeProfile profile) => _list.CopyTo(profile.OrganCollaborations);

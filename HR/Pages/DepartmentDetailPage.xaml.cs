@@ -1,12 +1,18 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Navigation;
+using HR.Services;
+using HR.Services.Data;
 
 namespace HR.Pages
 {
     public partial class DepartmentDetailPage : Page
     {
+        public event Action<Page>? NavigationRequested;
+
         private readonly DepartmentModel? _department;
+        private readonly IDepartmentService _departmentService = new DepartmentService();
 
         public DepartmentDetailPage() : this(null) { }
 
@@ -16,6 +22,7 @@ namespace HR.Pages
             _department = department;
 
             Loaded += (_, __) => BindDepartment();
+            Unloaded += (_, _) => (_departmentService as IDisposable)?.Dispose();
         }
 
         private void BindDepartment()
@@ -52,7 +59,40 @@ namespace HR.Pages
             FinanceCard.UsedPercent = _department.ProjectProgress;
         }
 
-        private void EditDepartment_Click(object sender, RoutedEventArgs e) { }
+        private void EditDepartment_Click(object sender, RoutedEventArgs e)
+        {
+            if (_department == null) return;
+            NavigationRequested?.Invoke(new AddDepartmentPage(_department.Id));
+        }
+
+        private async void DeleteDepartment_Click(object sender, RoutedEventArgs e)
+        {
+            if (_department == null) return;
+
+            var answer = MessageBox.Show(
+                $"دپارتمان «{_department.Name}» حذف شود؟",
+                "حذف دپارتمان",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+            if (answer != MessageBoxResult.Yes) return;
+
+            try
+            {
+                var ok = await _departmentService.DeleteAsync(_department.Id);
+                if (!ok)
+                {
+                    NotificationService.Warning("حذف دپارتمان", "دپارتمان یافت نشد.");
+                    return;
+                }
+
+                NotificationService.Success("حذف شد", $"«{_department.Name}» حذف شد.");
+                NavigationRequested?.Invoke(new DepartmentsPage());
+            }
+            catch (Exception ex)
+            {
+                NotificationService.Warning("حذف دپارتمان", ex.Message);
+            }
+        }
 
         private void Back_Click(object sender, RoutedEventArgs e)
         {

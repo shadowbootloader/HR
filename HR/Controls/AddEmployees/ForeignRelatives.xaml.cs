@@ -50,7 +50,7 @@ namespace HR.Controls.AddEmployees
                 return;
             }
 
-            _list.Items.Add(new ForeignRelativeRecord
+            _list.Commit(new ForeignRelativeRecord
             {
                 FullName = name,
                 Country = ForeignFamily_CountryNameCombo.SelectedItem as string
@@ -65,7 +65,15 @@ namespace HR.Controls.AddEmployees
         }
 
         private void DeleteForeignFamilyDataBtn_Click(object sender, RoutedEventArgs e) => _list.DeleteSelected();
-        private void PersonalForeignFamilyList_SelectionChanged(object sender, SelectionChangedEventArgs e) { }
+        private void PersonalForeignFamilyList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (PersonalForeignFamilyList.SelectedItem is not ForeignRelativeRecord item) return;
+            ForeignFamily_FamilyNameCombo.Text = item.FullName;
+            LookupBinder.Select(ForeignFamily_CountryNameCombo, item.Country);
+            ForeignFamily_StartDateDP.SelectedDate = item.DepartureDate;
+            ForeignFamily_ReasonTB.Text = item.Reason ?? string.Empty;
+            ForeignFamily_NoteTB.Text = item.Note ?? string.Empty;
+        }
 
         public void LoadFrom(EmployeeProfile profile) => _list.Replace(profile.ForeignRelatives);
         public void SaveTo(EmployeeProfile profile) => _list.CopyTo(profile.ForeignRelatives);

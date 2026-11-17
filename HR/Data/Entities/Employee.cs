@@ -37,6 +37,7 @@ namespace HR.Data.Entities
         public MaritalStatus MaritalStatus { get; set; } = null!;
         public MilitaryStatus? MilitaryStatus { get; set; }
         public Religion? Religion { get; set; }
+        public Denomination? Denomination { get; set; }
         public ExemptionType? ExemptionType { get; set; }
         public ExemptionReason? ExemptionReason { get; set; }
         public EmployeeSupplement? Supplement { get; set; }

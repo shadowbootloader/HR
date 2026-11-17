@@ -132,27 +132,30 @@ namespace HR.Controls.AddEmployees
 
             var start = EducationStartDateDP.SelectedDate;
             var end = EducationEndDateDP.SelectedDate;
+            if (start == null)
+            {
+                Warn("تاریخ شروع تحصیل را انتخاب کنید.");
+                return;
+            }
+
             if (start.HasValue && end.HasValue && end < start)
             {
                 Warn("تاریخ پایان نمی‌تواند قبل از تاریخ شروع باشد.");
                 return;
             }
 
-            double? gpa = null;
-            if (!string.IsNullOrWhiteSpace(EducationalMarksAvgTB.Text))
+            if (!double.TryParse(EducationalMarksAvgTB.Text?.Trim(), out var parsed) || parsed < 0 || parsed > 20)
             {
-                if (!double.TryParse(EducationalMarksAvgTB.Text.Trim(), out var parsed) || parsed < 0 || parsed > 20)
-                {
-                    Warn("معدل باید عددی بین ۰ تا ۲۰ باشد.");
-                    EducationalMarksAvgTB.Focus();
-                    return;
-                }
-                gpa = parsed;
+                Warn("معدل باید عددی بین ۰ تا ۲۰ باشد.");
+                EducationalMarksAvgTB.Focus();
+                return;
             }
 
-            _items.Add(new EducationRecord
+            SectionList<EducationRecord>.Commit(_items, PersonalEducationsList, new EducationRecord
             {
                 Degree = GradeCombo.SelectedValue is DegreeLevel degree ? degree : DegreeLevel.Bachelor,
+                DegreeTitle = LookupBinder.SelectedTitle(GradeCombo),
+                StatusTitle = LookupBinder.SelectedTitle(EducationalStatusCombo),
                 Field = field,
                 University = university,
                 State = EducationStateNameTB.SelectedItem as string,
@@ -160,7 +163,7 @@ namespace HR.Controls.AddEmployees
                 Status = EducationalStatusCombo.SelectedValue is EducationStatusKind status
                     ? status
                     : EducationStatusKind.Studying,
-                Gpa = gpa,
+                Gpa = parsed,
                 StartDate = start,
                 EndDate = end,
                 ThesisTitle = NullIfEmpty(ResaleTB.Text),
@@ -186,7 +189,30 @@ namespace HR.Controls.AddEmployees
             ImagePicker.Preview(EducationalCertificateImage, _certificateImage);
         }
 
-        private void PersonalEducationsList_SelectionChanged(object sender, SelectionChangedEventArgs e) { }
+        private async void PersonalEducationsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (PersonalEducationsList.SelectedItem is not EducationRecord item) return;
+
+            GradeCombo.SelectedValue = item.Degree;
+            if (!string.IsNullOrWhiteSpace(item.DegreeTitle))
+                LookupBinder.Select(GradeCombo, item.DegreeTitle);
+            FieldNameTB.Text = item.Field;
+            UniversityNameTB.Text = item.University;
+            EducationStateNameTB.SelectionChanged -= EducationStateNameTB_SelectionChanged;
+            LookupBinder.Select(EducationStateNameTB, item.State);
+            EducationStateNameTB.SelectionChanged += EducationStateNameTB_SelectionChanged;
+            await FillCitiesAsync();
+            LookupBinder.Select(EducationalCityNameTB, item.City);
+            EducationalStatusCombo.SelectedValue = item.Status;
+            if (!string.IsNullOrWhiteSpace(item.StatusTitle))
+                LookupBinder.Select(EducationalStatusCombo, item.StatusTitle);
+            EducationalMarksAvgTB.Text = item.Gpa?.ToString() ?? string.Empty;
+            EducationStartDateDP.SelectedDate = item.StartDate;
+            EducationEndDateDP.SelectedDate = item.EndDate;
+            ResaleTB.Text = item.ThesisTitle ?? string.Empty;
+            _certificateImage = item.CertificateImagePath;
+            ImagePicker.Preview(EducationalCertificateImage, _certificateImage);
+        }
         private void PersonalEducationsList_SizeChanged(object sender, SizeChangedEventArgs e) { }
 
         // ==================== IEmployeeSection ====================

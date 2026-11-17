@@ -32,6 +32,14 @@ namespace HR.Pages
         public int FromIndex { get; private set; }
         public int ToIndex { get; private set; }
         public int TotalCount { get; private set; }
+        public int RosterCount { get; private set; }
+        public int ActiveCount { get; private set; }
+        public int NewHireCount { get; private set; }
+        public string RosterCountText { get; private set; } = "0";
+        public string ActiveCountText { get; private set; } = "0";
+        public string NewHireCountText { get; private set; } = "0";
+        public string ActiveShareText { get; private set; } = "—";
+        public string NewHireText { get; private set; } = "—";
 
         public string PaginationText => TotalCount == 0
             ? "موردی یافت نشد"
@@ -68,6 +76,7 @@ namespace HR.Pages
         {
             EmployeeRowControl.NavigationRequested -= OnRowNavigationRequested;
             EmployeeRowControl.ListRefreshRequested -= OnListRefreshRequested;
+            (_employeeService as IDisposable)?.Dispose();
         }
 
         private async void OnListRefreshRequested()
@@ -85,9 +94,7 @@ namespace HR.Pages
             try
             {
                 // اگر عبارت جستجو دارید از SearchAsync استفاده می‌کنیم؛ وگرنه همه
-                var employees = string.IsNullOrWhiteSpace(_searchTerm)
-                    ? await _employeeService.GetAllAsync()
-                    : await _employeeService.SearchAsync(_searchTerm);
+                var employees = await _employeeService.GetAllAsync(includeDeleted: true);
 
                 _all.Clear();
 
@@ -120,13 +127,45 @@ namespace HR.Pages
                 PersonnelCode = e.Supplement?.PersonnelCode ?? "—",
                 Position = e.Supplement?.PositionTitle ?? "—",
                 Department = e.Supplement?.Department?.Title ?? "—",
-                DepartmentIcon = "👤",
-                Status = e.IsDeleted ? "حذف‌شده" : "فعال",
+                DepartmentIcon = DepartmentMark(e.Supplement?.Department?.Title),
+                Status = StatusOf(e),
+                IsDeleted = e.IsDeleted,
                 Gender = e.Gender?.Title ?? "—",
-                PerformanceValue = 0,
-                PerformanceLabel = "—",
+                PerformanceValue = PerformanceOf(e).Value,
+                PerformanceLabel = PerformanceOf(e).Label,
+                HireDate = e.Supplement?.StartDate,
                 AvatarUrl = PackIconKind.Account
             };
+        }
+
+        private static string StatusOf(HR.Data.Entities.Employee employee)
+        {
+            if (employee.IsDeleted) return "حذف‌شده";
+            if (employee.Supplement?.EndDate is DateTime end && end.Date < DateTime.Today)
+                return "غیرفعال";
+            return "فعال";
+        }
+
+        private static string DepartmentMark(string? title)
+        {
+            var text = title?.Trim();
+            if (string.IsNullOrEmpty(text)) return "—";
+            return text[0].ToString();
+        }
+
+        private static (double Value, string Label) PerformanceOf(HR.Data.Entities.Employee employee)
+        {
+            var assessment = employee.SelfAssessment;
+            if (assessment == null) return (0, "—");
+
+            var average = new double[]
+            {
+                assessment.Discipline, assessment.Speed, assessment.Effort, assessment.Negotiation,
+                assessment.Patience, assessment.Creativity, assessment.Punctuality,
+                assessment.Teamwork, assessment.Accuracy, assessment.Planning
+            }.Average();
+
+            return (average, average.ToString("0"));
         }
 
         // ==================== فیلتر و صفحه‌بندی ====================
@@ -148,8 +187,9 @@ namespace HR.Pages
                     x.Email.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase));
             }
 
-            if (_statusFilter != "همه")
-                query = query.Where(x => x.Status == _statusFilter);
+            query = _statusFilter == "همه"
+                ? query.Where(x => x.Status != "حذف‌شده")
+                : query.Where(x => x.Status == _statusFilter);
 
             var filtered = query.ToList();
 
@@ -165,6 +205,7 @@ namespace HR.Pages
             TotalCount = filtered.Count;
             FromIndex = TotalCount == 0 ? 0 : (_currentPage - 1) * PageSize + 1;
             ToIndex = Math.Min(_currentPage * PageSize, TotalCount);
+            UpdateSummary();
 
             OnPropertyChanged(nameof(TotalCount));
             OnPropertyChanged(nameof(FromIndex));
@@ -172,6 +213,31 @@ namespace HR.Pages
             OnPropertyChanged(nameof(PaginationText));
 
             UpdatePaginationUI();
+        }
+
+        private void UpdateSummary()
+        {
+            var roster = _all.Where(x => x.Status != "حذف‌شده").ToList();
+            RosterCount = roster.Count;
+            ActiveCount = roster.Count(x => x.Status == "فعال");
+            var cutoff = DateTime.Today.AddDays(-30);
+            NewHireCount = roster.Count(x => x.HireDate.HasValue && x.HireDate.Value.Date >= cutoff);
+            ActiveShareText = RosterCount == 0
+                ? "—"
+                : $"{(ActiveCount * 100.0 / RosterCount):0.#}٪ از نیروها";
+            NewHireText = "شروع همکاری در ۳۰ روز اخیر";
+            RosterCountText = RosterCount.ToString();
+            ActiveCountText = ActiveCount.ToString();
+            NewHireCountText = NewHireCount.ToString();
+
+            OnPropertyChanged(nameof(RosterCount));
+            OnPropertyChanged(nameof(ActiveCount));
+            OnPropertyChanged(nameof(NewHireCount));
+            OnPropertyChanged(nameof(RosterCountText));
+            OnPropertyChanged(nameof(ActiveCountText));
+            OnPropertyChanged(nameof(NewHireCountText));
+            OnPropertyChanged(nameof(ActiveShareText));
+            OnPropertyChanged(nameof(NewHireText));
         }
 
         private void UpdatePaginationUI()
@@ -212,15 +278,10 @@ namespace HR.Pages
                 GoToPage(page);
         }
 
-        private async void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             _searchTerm = SearchBox.Text?.Trim() ?? string.Empty;
-
-            // برای عبارت‌های کوتاه فقط فیلتر حافظه؛ برای طولانی‌تر بارگذاری از سرور
-            if (_searchTerm.Length >= 2)
-                await LoadEmployeesAsync();
-            else
-                ApplyFilter(resetPage: true);
+            ApplyFilter(resetPage: true);
         }
 
         private void StatusFilterCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -249,6 +310,8 @@ namespace HR.Pages
         public string Department { get; set; } = string.Empty;
         public string DepartmentIcon { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
+        public bool IsDeleted { get; set; }
+        public DateTime? HireDate { get; set; }
         public string Gender { get; set; } = string.Empty;
         public double PerformanceValue { get; set; }
         public string PerformanceLabel { get; set; } = string.Empty;

@@ -22,6 +22,15 @@
         <!-- فرم -->
         <WrapPanel FlowDirection="RightToLeft">
 
+            <TextBox x:Name="PersonnelCodeTB"
+         Style="{StaticResource DarkOutlinedTextBox}"
+         Width="140"
+         MaxLength="20"
+         materialDesign:HintAssist.Hint="کد پرسنلی"/>
+            <ComboBox x:Name="DepartmentCombo"
+                Style="{StaticResource DarkOutlinedComboBox}"
+                Width="180"
+                materialDesign:HintAssist.Hint="دپارتمان"/>
             <TextBox x:Name="SelectedPostTB"
          Style="{StaticResource DarkOutlinedTextBox}"
          Width="180"

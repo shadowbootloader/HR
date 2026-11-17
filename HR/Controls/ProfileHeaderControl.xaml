@@ -103,7 +103,7 @@
                     <StackPanel Orientation="Horizontal" Margin="0,5,0,0" FlowDirection="RightToLeft">
 
 
-                        <TextBlock Text="علی فاطمی" x:Name="EmpFullName"
+                        <TextBlock Text="—" x:Name="EmpFullName"
                                    Foreground="#F3F6FA"
                                    FontSize="20"
                                    FontWeight="SemiBold"
@@ -120,13 +120,13 @@
 
                     </StackPanel>
 
-                    <TextBlock FlowDirection="RightToLeft" Text="Senior HR Business Partner"
+                    <TextBlock FlowDirection="RightToLeft" Text="—"
                                x:Name="EmpGroup"
                                Foreground="#B6C1CC"
                                FontSize="10"
                                Margin="0,5,0,0" FontFamily="pack://application:,,,/Fonts/#B Nazanin"/>
 
-                    <TextBlock FlowDirection="RightToLeft" Text="People &amp; Culture Department"
+                    <TextBlock FlowDirection="RightToLeft" Text="—"
                                x:Name="EmpFeild"
                                Foreground="#B6C1CC"
                                FontSize="10"

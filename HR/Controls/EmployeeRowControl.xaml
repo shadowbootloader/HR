@@ -77,6 +77,8 @@ TargetType="{x:Type materialDesign:PackIcon}">
                 <Button x:Name="ViewBtn" Click="ViewBtn_Click" materialDesign:ButtonAssist.CornerRadius="8" Content="👁" ToolTip="مشاهده" Width="35" Padding="0" Background="#222C3C" BorderBrush="#FF354256" BorderThickness="1.5" Foreground="White" Margin="0,0,5,0"/>
                 <Button x:Name="EditBtn" Click="EditBtn_Click" materialDesign:ButtonAssist.CornerRadius="8" Content="✎" ToolTip="ویرایش" Width="35" Padding="0" Background="#222C3C" BorderBrush="#FF354256" BorderThickness="1.5" Foreground="White" Margin="0,0,5,0"/>
                 <Button x:Name="DeleteBtn" Click="DeleteBtn_Click" materialDesign:ButtonAssist.CornerRadius="8" Content="🗑" ToolTip="حذف" Width="35" Padding="0" Background="#3C2222" BorderBrush="#563535" BorderThickness="1.5" Foreground="White"/>
+                <Button x:Name="RestoreBtn" Click="RestoreBtn_Click" Visibility="Collapsed" materialDesign:ButtonAssist.CornerRadius="8" Content="↩" ToolTip="بازگردانی" Width="35" Padding="0" Background="#14532D" BorderBrush="#166534" BorderThickness="1.5" Foreground="White" Margin="5,0,0,0"/>
+                <Button x:Name="HardDeleteBtn" Click="HardDeleteBtn_Click" Visibility="Collapsed" materialDesign:ButtonAssist.CornerRadius="8" Content="✕" ToolTip="حذف دائمی" Width="35" Padding="0" Background="#7F1D1D" BorderBrush="#991B1B" BorderThickness="1.5" Foreground="White" Margin="5,0,0,0"/>
             </StackPanel>
         </Grid>
     </Border>

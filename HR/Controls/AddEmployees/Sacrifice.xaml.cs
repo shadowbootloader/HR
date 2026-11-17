@@ -68,7 +68,7 @@ namespace HR.Controls.AddEmployees
                 return;
             }
 
-            _list.Items.Add(new SacrificeRecord
+            _list.Commit(new HR.Models.SacrificeRecord
             {
                 FullName = name,
                 SacrificeRelationship = Sacrifice_RelationshipCombo.SelectedItem as string ?? string.Empty,
@@ -82,7 +82,16 @@ namespace HR.Controls.AddEmployees
         }
 
         private void DeleteSacrificeDataBtn_Click(object sender, RoutedEventArgs e) => _list.DeleteSelected();
-        private void PersonalSacrificeList_SelectionChanged(object sender, SelectionChangedEventArgs e) { }
+        private void PersonalSacrificeList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (PersonalSacrificeList.SelectedItem is not SacrificeRecord item) return;
+            Sacrifice_FullNameTB.Text = item.FullName;
+            LookupBinder.Select(Sacrifice_RelationshipCombo, item.SacrificeRelationship);
+            LookupBinder.Select(Sacrifice_TypeCombo, item.SacrificeType);
+            Sacrifice_MuchTB.Text = item.Amount ?? string.Empty;
+            LookupBinder.Select(Sacrifice_UnitCombo, item.AmountUnit);
+            Sacrifice_NoteTB.Text = item.Note ?? string.Empty;
+        }
 
         public void LoadFrom(EmployeeProfile profile) => _list.Replace(profile.Sacrifices);
         public void SaveTo(EmployeeProfile profile) => _list.CopyTo(profile.Sacrifices);

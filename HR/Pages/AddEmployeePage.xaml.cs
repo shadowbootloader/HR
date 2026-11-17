@@ -35,6 +35,7 @@ namespace HR.Pages
         public AddEmployeePage()
         {
             InitializeComponent();
+            Unloaded += (_, _) => (_employeeService as IDisposable)?.Dispose();
             Loaded += AddEmployeePage_Loaded;
         }
 

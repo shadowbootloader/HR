@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace HR.Services.Data
 {
-    public class DepartmentService : IDepartmentService
+    public class DepartmentService : IDepartmentService, IDisposable
     {
         private readonly PersonnelDbContext _db;
 
@@ -175,6 +175,17 @@ namespace HR.Services.Data
             }
         }
 
+        public async Task<Dictionary<short, int>> CountMembersAsync()
+        {
+            var rows = await _db.EmployeeSupplements
+                .Where(s => !s.Employee.IsDeleted)
+                .GroupBy(s => s.DepartmentId)
+                .Select(g => new { g.Key, Count = g.Count() })
+                .ToListAsync();
+
+            return rows.ToDictionary(x => x.Key, x => x.Count);
+        }
+
         public async Task<bool> DeleteAsync(short id)
         {
             var dept = await _db.Departments
@@ -220,5 +231,7 @@ namespace HR.Services.Data
 
             return false;
         }
+
+        public void Dispose() => _db.Dispose();
     }
 }

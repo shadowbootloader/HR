@@ -33,6 +33,11 @@ namespace HR.Pages
                 OfficesList.ItemsSource = _offices;
 
             Loaded += async (_, _) => await InitAsync();
+            Unloaded += (_, _) =>
+            {
+                (_departmentService as IDisposable)?.Dispose();
+                (_employeeService as IDisposable)?.Dispose();
+            };
         }
 
         public AddDepartmentPage(short departmentId) : this()
@@ -127,10 +132,7 @@ namespace HR.Pages
             DepartmentCashCustodian.SelectedValue = dept.CashCustodianEmployeeId;
 
             _logoPath = dept.LogoPath;
-            if (!string.IsNullOrWhiteSpace(_logoPath) && System.IO.File.Exists(_logoPath))
-            {
-                LogoImage.Source = new BitmapImage(new Uri(_logoPath));
-            }
+            ImagePicker.Preview(LogoImage, _logoPath);
 
             _offices.Clear();
             foreach (var o in dept.Offices)
@@ -266,7 +268,7 @@ namespace HR.Pages
             var path = ImagePicker.Pick();
             if (path == null) return;
             _logoPath = path;
-            LogoImage.Source = new BitmapImage(new Uri(path));
+            ImagePicker.Preview(LogoImage, _logoPath);
         }
 
         private void CancelBtn_Click(object sender, RoutedEventArgs e)

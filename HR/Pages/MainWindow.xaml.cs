@@ -72,8 +72,8 @@ namespace HR.Pages
                 {
                     Labels = new[]
                     {
-                        "Leadership", "Communication", "Collaboration",
-                        "Problem Solving", "Results Orientation", "Strategic Thinking"
+                        "رهبری", "ارتباط", "همکاری",
+                        "حل مسئله", "نتیجه‌گرایی", "تفکر راهبردی"
                     },
                     LabelsPaint = new SolidColorPaint(SKColor.Parse("#94A3B8")),
                     TextSize = 11,
@@ -99,7 +99,7 @@ namespace HR.Pages
             {
                 new Axis
                 {
-                    Labels = new[] { "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May" },
+                    Labels = new[] { "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند", "فروردین", "اردیبهشت" },
                     LabelsPaint = new SolidColorPaint(SKColor.Parse("#94A3B8")),
                     SeparatorsPaint = new SolidColorPaint(SKColor.Parse("#1E293B")),
                     TextSize = 10
@@ -133,8 +133,34 @@ namespace HR.Pages
 
         private void Navigate(Page page, string title)
         {
+            WireNavigation(page);
             PageName.Text = title;
             DataPanel.Navigate(page);
+        }
+
+        private void OnChildNavigation(Page page) => Navigate(page, PageName.Text);
+
+        private void WireNavigation(Page page)
+        {
+            switch (page)
+            {
+                case EmployeeListPage list:
+                    list.NavigationRequested -= OnChildNavigation;
+                    list.NavigationRequested += OnChildNavigation;
+                    break;
+                case DepartmentsPage departments:
+                    departments.NavigationRequested -= OnChildNavigation;
+                    departments.NavigationRequested += OnChildNavigation;
+                    break;
+                case AddDepartmentPage addDepartment:
+                    addDepartment.NavigationRequested -= OnChildNavigation;
+                    addDepartment.NavigationRequested += OnChildNavigation;
+                    break;
+                case DepartmentDetailPage detail:
+                    detail.NavigationRequested -= OnChildNavigation;
+                    detail.NavigationRequested += OnChildNavigation;
+                    break;
+            }
         }
 
         private void ShowDashboard()
@@ -203,12 +229,7 @@ namespace HR.Pages
 
             if (ReferenceEquals(target, EmployeesBtn))
             {
-                var page = GetPage(() =>
-                {
-                    var list = new EmployeeListPage();
-                    list.NavigationRequested += p => Navigate(p, PageName.Text);
-                    return list;
-                }, "employees");
+                var page = GetPage(() => new EmployeeListPage(), "employees");
 
                 Navigate(page, "کارکنان");
                 return;
@@ -216,16 +237,22 @@ namespace HR.Pages
 
             if (ReferenceEquals(target, DepartmentsBtn))
             {
-                var page = GetPage(() =>
-                {
-                    var departments = new DepartmentsPage();
-                    departments.NavigationRequested += p => Navigate(p, PageName.Text);
-                    return departments;
-                }, "departments");
+                var page = GetPage(() => new DepartmentsPage(), "departments");
 
                 Navigate(page, "دپارتمان‌ها");
+                return;
             }
+
+            NotificationService.Info("به‌زودی", "این بخش هنوز پیاده‌سازی نشده است.");
         }
+
+        private void ProfileMenu_Click(object sender, RoutedEventArgs e)
+            => NotificationService.Info("پروفایل", "ورود و نقش کاربری هنوز تعریف نشده است.");
+
+        private void SettingsMenu_Click(object sender, RoutedEventArgs e)
+            => NotificationService.Info("تنظیمات", "این بخش هنوز پیاده‌سازی نشده است.");
+
+        private void ExitMenu_Click(object sender, RoutedEventArgs e) => Close();
 
         public void NavigateTo(Page page) => DataPanel.Navigate(page);
     }

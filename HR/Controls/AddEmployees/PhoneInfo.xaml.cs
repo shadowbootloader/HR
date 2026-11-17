@@ -54,6 +54,7 @@ namespace HR.Controls.AddEmployees
                 Number = number,
                 Owner = NullIfEmpty(OwnerPhoneTB.Text),
                 Kind = PhoneStatusCombo.SelectedValue is PhoneKind kind ? kind : PhoneKind.Mobile,
+                KindTitle = LookupBinder.SelectedTitle(PhoneStatusCombo),
                 StartDate = PhoneStartDateDP.SelectedDate,
                 EndDate = PhoneEndDateDP.SelectedDate,
                 Note = NullIfEmpty(PhoneNumberNoteTB.Text),

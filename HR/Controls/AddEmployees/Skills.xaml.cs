@@ -56,7 +56,8 @@ namespace HR.Controls.AddEmployees
             _softwares.Add(new SoftwareSkillRecord
             {
                 SoftwareName = name,
-                Level = SkillCombo.SelectedValue is SkillLevel level ? level : SkillLevel.Average
+                Level = SkillCombo.SelectedValue is SkillLevel level ? level : SkillLevel.Average,
+                LevelTitle = LookupBinder.SelectedTitle(SkillCombo)
             });
 
             SoftwareNameTB.Clear();

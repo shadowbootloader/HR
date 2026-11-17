@@ -1,3 +1,4 @@
+-- منسوخ: ستون‌های PhoneNumber و Address در LastPersonnel.sql (بلوک UPGRADE EXISTING) هستند.
 USE [Personnel];
 GO
 

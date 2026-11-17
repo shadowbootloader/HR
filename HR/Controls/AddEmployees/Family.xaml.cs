@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using HR.Models;
+using HR.Services;
 
 namespace HR.Controls.AddEmployees
 {
@@ -45,9 +46,9 @@ namespace HR.Controls.AddEmployees
             }
 
             var nationalCode = Family_NationalIDNumberTB.Text?.Trim();
-            if (!string.IsNullOrWhiteSpace(nationalCode) && !Regex.IsMatch(nationalCode, @"^\d{10}$"))
+            if (!string.IsNullOrWhiteSpace(nationalCode) && !NationalCode.IsValid(nationalCode))
             {
-                Warn("کد ملی باید ۱۰ رقم باشد.");
+                Warn("کد ملی نامعتبر است.");
                 Family_NationalIDNumberTB.Focus();
                 return;
             }

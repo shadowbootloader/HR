@@ -41,6 +41,15 @@ namespace HR.Models
         public string ExemptionReason { get; set; } = string.Empty;
         public string ExemptionType { get; set; } = string.Empty;
         public string Religion { get; set; } = string.Empty;
+        public string Denomination { get; set; } = string.Empty;
+        public string? MaritalStatusTitle { get; set; }
+        public string? MilitaryStatusTitle { get; set; }
+        public string Email { get; set; } = string.Empty;
+        public string InsuranceNumber { get; set; } = string.Empty;
+        public string Residence { get; set; } = string.Empty;
+        public string AddressTitle { get; set; } = string.Empty;
+        public string AddressText { get; set; } = string.Empty;
+        public string? PostalCode { get; set; }
         public int? ChildrenCount { get; set; }
         public MilitaryStatus MilitaryStatus { get; set; }
 
@@ -109,14 +118,17 @@ namespace HR.Models
 
         public string PrimaryText => IsPrimary ? "اصلی" : string.Empty;
 
-        public string KindText => Kind switch
-        {
-            PhoneKind.Mobile => "همراه",
-            PhoneKind.Home => "منزل",
-            PhoneKind.Work => "کاری",
-            PhoneKind.Emergency => "اضطراری",
-            _ => "سایر"
-        };
+        public string? KindTitle { get; set; }
+        public string KindText => string.IsNullOrWhiteSpace(KindTitle)
+            ? Kind switch
+            {
+                PhoneKind.Mobile => "همراه",
+                PhoneKind.Home => "منزل",
+                PhoneKind.Work => "کاری",
+                PhoneKind.Emergency => "اضطراری",
+                _ => "سایر"
+            }
+            : KindTitle;
     }
 
     public class EducationRecord : ObservableRow
@@ -133,8 +145,10 @@ namespace HR.Models
         public DateTime? EndDate { get; set; }
         public string? ThesisTitle { get; set; }
         public string CertificateImagePath { get; set; } = string.Empty;
+        public string DegreeTitle { get; set; } = string.Empty;
+        public string StatusTitle { get; set; } = string.Empty;
 
-        public string DegreeText => Degree switch
+        public string DegreeText => !string.IsNullOrWhiteSpace(DegreeTitle) ? DegreeTitle : Degree switch
         {
             DegreeLevel.Diploma => "دیپلم",
             DegreeLevel.Associate => "کاردانی",
@@ -145,7 +159,7 @@ namespace HR.Models
             _ => "سایر"
         };
 
-        public string StatusText => Status switch
+        public string StatusText => !string.IsNullOrWhiteSpace(StatusTitle) ? StatusTitle : Status switch
         {
             EducationStatusKind.Graduated => "فارغ‌التحصیل",
             EducationStatusKind.Studying => "در حال تحصیل",
@@ -184,8 +198,9 @@ namespace HR.Models
         public string ShebaNumber { get; set; } = string.Empty;
         public string CardNumber { get; set; } = string.Empty;
         public BankAccountType AccountType { get; set; }
+        public string AccountTypeTitle { get; set; } = string.Empty;
 
-        public string AccountTypeText => AccountType switch
+        public string AccountTypeText => !string.IsNullOrWhiteSpace(AccountTypeTitle) ? AccountTypeTitle : AccountType switch
         {
             BankAccountType.Current => "جاری",
             BankAccountType.Savings => "پس‌انداز",
@@ -216,11 +231,18 @@ namespace HR.Models
         public LanguageLevel Writing { get; set; }
         public LanguageLevel Comprehension { get; set; }
         public LanguageLevel Speaking { get; set; }
+        public string ReadingTitle { get; set; } = string.Empty;
+        public string WritingTitle { get; set; } = string.Empty;
+        public string ComprehensionTitle { get; set; } = string.Empty;
+        public string SpeakingTitle { get; set; } = string.Empty;
 
-        public string ReadingText => LanguageLevelText(Reading);
-        public string WritingText => LanguageLevelText(Writing);
-        public string ComprehensionText => LanguageLevelText(Comprehension);
-        public string SpeakingText => LanguageLevelText(Speaking);
+        public string ReadingText => TextOrLevel(ReadingTitle, Reading);
+        public string WritingText => TextOrLevel(WritingTitle, Writing);
+        public string ComprehensionText => TextOrLevel(ComprehensionTitle, Comprehension);
+        public string SpeakingText => TextOrLevel(SpeakingTitle, Speaking);
+
+        private static string TextOrLevel(string? title, LanguageLevel level)
+            => string.IsNullOrWhiteSpace(title) ? LanguageLevelText(level) : title;
 
         public static string LanguageLevelText(LanguageLevel level) => level switch
         {
@@ -239,9 +261,10 @@ namespace HR.Models
         public int Id { get; set; }
         public string SoftwareName { get; set; } = string.Empty;
         public SkillLevel Level { get; set; }
+        public string LevelTitle { get; set; } = string.Empty;
         public string? Note { get; set; }
 
-        public string LevelText => Level switch
+        public string LevelText => !string.IsNullOrWhiteSpace(LevelTitle) ? LevelTitle : Level switch
         {
             SkillLevel.Weak => "ضعیف",
             SkillLevel.Average => "متوسط",
@@ -389,10 +412,11 @@ namespace HR.Models
         public int Id { get; set; }
         public string Title { get; set; } = string.Empty;
         public SkillLevel Level { get; set; }
+        public string LevelTitle { get; set; } = string.Empty;
 
         public string DisplayText => $"{Title} · {LevelText}";
 
-        public string LevelText => Level switch
+        public string LevelText => !string.IsNullOrWhiteSpace(LevelTitle) ? LevelTitle : Level switch
         {
             SkillLevel.Weak => "ضعیف",
             SkillLevel.Average => "متوسط",
@@ -415,15 +439,18 @@ namespace HR.Models
         public int Id { get; set; }
         public string Title { get; set; } = string.Empty;
         public InterestLevel Level { get; set; }
+        public string LevelTitle { get; set; } = string.Empty;
 
         public string DisplayText => $"{Title} · {LevelText}";
 
-        public string LevelText => Level switch
-        {
-            InterestLevel.Low => "کم",
-            InterestLevel.Medium => "متوسط",
-            _ => "زیاد"
-        };
+        public string LevelText => !string.IsNullOrWhiteSpace(LevelTitle)
+            ? LevelTitle
+            : Level switch
+            {
+                InterestLevel.Low => "کم",
+                InterestLevel.Medium => "متوسط",
+                _ => "زیاد"
+            };
 
         public Brush InterestLevelBrush => Level switch
         {

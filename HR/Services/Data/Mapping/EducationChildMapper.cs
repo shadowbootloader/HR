@@ -17,12 +17,14 @@ namespace HR.Services.Data.Mapping
                 {
                     EducationId = Guid.NewGuid(),
                     EmployeeId = entity.EmployeeId,
-                    DegreeId = await lookups.FromEnumAsync<EducationDegree, DegreeLevel>(edu.Degree),
-                    StatusId = await lookups.FromEnumAsync<EducationStatus, EducationStatusKind>(edu.Status),
-                    FieldOfStudy = MapperHelpers.Required(edu.Field),
-                    InstitutionName = MapperHelpers.Required(edu.University),
-                    GPA = (decimal)(edu.Gpa ?? 0),
-                    StartDate = edu.StartDate ?? DateTime.Today,
+                    DegreeId = await lookups.ByteFromTitleAsync<EducationDegree>(edu.DegreeTitle),
+                    StatusId = await lookups.ByteFromTitleAsync<EducationStatus>(edu.StatusTitle),
+                    FieldOfStudy = MapperHelpers.Required(edu.Field, "رشته تحصیلی"),
+                    InstitutionName = MapperHelpers.Required(edu.University, "موسسه آموزشی"),
+                    GPA = edu.Gpa is double gpa
+                        ? (decimal)gpa
+                        : throw new InvalidOperationException("معدل الزامی است."),
+                    StartDate = MapperHelpers.RequireDate(edu.StartDate, "تاریخ شروع تحصیل"),
                     EndDate = edu.EndDate,
                     ThesisTitle = edu.ThesisTitle,
                     EducationLocationNode = await lookups.EducationLocationAsync(edu.State, edu.City),

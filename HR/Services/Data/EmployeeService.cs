@@ -1,4 +1,5 @@
 using HR.Data;
+using HR.Services;
 using HR.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace HR.Services.Data
 {
-    public class EmployeeService : IEmployeeService
+    public class EmployeeService : IEmployeeService, IDisposable
     {
         private readonly PersonnelDbContext _db;
 
@@ -30,6 +31,7 @@ namespace HR.Services.Data
                 .Include(e => e.MaritalStatus)
                 .Include(e => e.Supplement)!
                     .ThenInclude(s => s.Department)
+                .Include(e => e.SelfAssessment)
                 .AsQueryable();
 
             if (!includeDeleted)
@@ -53,6 +55,7 @@ namespace HR.Services.Data
                     .Include(e => e.MaritalStatus)
                     .Include(e => e.MilitaryStatus)
                     .Include(e => e.Religion)
+                    .Include(e => e.Denomination)
                     .Include(e => e.Supplement)!
                         .ThenInclude(s => s.Department)
                     .Include(e => e.Supplement)!
@@ -77,6 +80,12 @@ namespace HR.Services.Data
                         .ThenInclude(l => l.Language)
                     .Include(e => e.Languages)
                         .ThenInclude(l => l.ReadingLevel)
+                    .Include(e => e.Languages)
+                        .ThenInclude(l => l.WritingLevel)
+                    .Include(e => e.Languages)
+                        .ThenInclude(l => l.ComprehensionLevel)
+                    .Include(e => e.Languages)
+                        .ThenInclude(l => l.SpeakingLevel)
                     .Include(e => e.Softwares)
                         .ThenInclude(s => s.Software)
                     .Include(e => e.Softwares)
@@ -215,6 +224,7 @@ namespace HR.Services.Data
                 .Include(e => e.SacrificeRecords)
                 .Include(e => e.HiringRecords)
                 .Include(e => e.BackgroundRecords)
+                .Include(e => e.Addresses)
                 .Include(e => e.PersonFiles)
                 .Include(e => e.Abilities)
                 .Include(e => e.WorkInterests)
@@ -269,6 +279,18 @@ namespace HR.Services.Data
             ReplaceChildren(existing.SacrificeRecords, employee.SacrificeRecords, id, (x, empId) => { x.EmployeeId = empId; if (x.SacrificeRecordId == Guid.Empty) x.SacrificeRecordId = Guid.NewGuid(); });
             ReplaceChildren(existing.HiringRecords, employee.HiringRecords, id, (x, empId) => { x.EmployeeId = empId; if (x.HiringRecordId == Guid.Empty) x.HiringRecordId = Guid.NewGuid(); });
             ReplaceChildren(existing.BackgroundRecords, employee.BackgroundRecords, id, (x, empId) => { x.EmployeeId = empId; if (x.BackgroundRecordId == Guid.Empty) x.BackgroundRecordId = Guid.NewGuid(); });
+
+            var relatedAddresses = existing.Addresses.Where(a => a.RelatedPersonId != null).ToList();
+            existing.Addresses.Clear();
+            foreach (var kept in relatedAddresses)
+                existing.Addresses.Add(kept);
+            foreach (var item in employee.Addresses)
+            {
+                item.EmployeeId = id;
+                item.RelatedPersonId = null;
+                if (item.AddressId == Guid.Empty) item.AddressId = Guid.NewGuid();
+                existing.Addresses.Add(item);
+            }
             ReplaceChildren(existing.PersonFiles, employee.PersonFiles, id, (x, empId) => { x.EmployeeId = empId; if (x.PersonFileId == Guid.Empty) x.PersonFileId = Guid.NewGuid(); });
             ReplaceChildren(existing.Abilities, employee.Abilities, id, (x, empId) => { x.EmployeeId = empId; if (x.EmployeeAbilityId == Guid.Empty) x.EmployeeAbilityId = Guid.NewGuid(); });
             ReplaceChildren(existing.WorkInterests, employee.WorkInterests, id, (x, empId) => { x.EmployeeId = empId; if (x.EmployeeWorkInterestId == Guid.Empty) x.EmployeeWorkInterestId = Guid.NewGuid(); });
@@ -344,10 +366,55 @@ namespace HR.Services.Data
         {
             var employee = await _db.Employees
                 .Include(e => e.Supplement)
+                .Include(e => e.SelfAssessment)
+                .Include(e => e.Educations)
+                .Include(e => e.Courses)
+                .Include(e => e.BankAccounts)
+                .Include(e => e.PhoneNumbers)
+                .Include(e => e.Languages)
+                .Include(e => e.Softwares)
+                .Include(e => e.EmploymentHistories)
+                .Include(e => e.Citizenships)
+                .Include(e => e.ForeignTravels)
+                .Include(e => e.ForeignRelatives)
+                .Include(e => e.ForeignCooperations)
+                .Include(e => e.OrganizationCooperations)
+                .Include(e => e.OtherActivities)
+                .Include(e => e.SacrificeRecords)
+                .Include(e => e.HiringRecords)
+                .Include(e => e.BackgroundRecords)
+                .Include(e => e.PersonFiles)
+                .Include(e => e.Addresses)
+                .Include(e => e.Abilities)
+                .Include(e => e.WorkInterests)
+                .Include(e => e.RelatedPersons)
                 .FirstOrDefaultAsync(e => e.EmployeeId == employeeId);
 
             if (employee == null) return false;
 
+            _db.RemoveRange(employee.ForeignCooperations);
+            _db.RemoveRange(employee.Citizenships);
+            _db.RemoveRange(employee.BackgroundRecords);
+            _db.RemoveRange(employee.Addresses);
+            _db.RemoveRange(employee.PhoneNumbers);
+            _db.RemoveRange(employee.PersonFiles);
+            _db.RemoveRange(employee.Educations);
+            _db.RemoveRange(employee.Courses);
+            _db.RemoveRange(employee.BankAccounts);
+            _db.RemoveRange(employee.Languages);
+            _db.RemoveRange(employee.Softwares);
+            _db.RemoveRange(employee.EmploymentHistories);
+            _db.RemoveRange(employee.ForeignTravels);
+            _db.RemoveRange(employee.ForeignRelatives);
+            _db.RemoveRange(employee.OrganizationCooperations);
+            _db.RemoveRange(employee.OtherActivities);
+            _db.RemoveRange(employee.SacrificeRecords);
+            _db.RemoveRange(employee.HiringRecords);
+            _db.RemoveRange(employee.Abilities);
+            _db.RemoveRange(employee.WorkInterests);
+            _db.RemoveRange(employee.RelatedPersons);
+            if (employee.Supplement != null) _db.Remove(employee.Supplement);
+            if (employee.SelfAssessment != null) _db.Remove(employee.SelfAssessment);
             _db.Employees.Remove(employee);
             await _db.SaveChangesAsync();
             return true;
@@ -515,8 +582,13 @@ namespace HR.Services.Data
             if (string.IsNullOrWhiteSpace(employee.LastName))
                 throw new InvalidOperationException("نام خانوادگی الزامی است.");
 
-            if (string.IsNullOrWhiteSpace(employee.NationalCode))
-                throw new InvalidOperationException("کد ملی الزامی است.");
+            if (!NationalCode.IsValid(employee.NationalCode))
+                throw new InvalidOperationException("کد ملی نامعتبر است.");
+
+            var duplicateNationalCode = await _db.Employees.AnyAsync(e =>
+                e.NationalCode == employee.NationalCode && e.EmployeeId != employee.EmployeeId);
+            if (duplicateNationalCode)
+                throw new InvalidOperationException("این کد ملی قبلاً ثبت شده است.");
 
             if (employee.GenderId == 0)
                 throw new InvalidOperationException("جدول Gender خالی است یا مقدار جنسیت نامعتبر است.");
@@ -527,23 +599,15 @@ namespace HR.Services.Data
             if (employee.Supplement != null)
             {
                 if (employee.Supplement.DepartmentId <= 0)
-                {
-                    var anyDept = await _db.Departments.AsNoTracking().Select(d => d.DepartmentId).FirstOrDefaultAsync();
-                    if (anyDept <= 0)
-                        throw new InvalidOperationException("هیچ دپارتمانی در پایگاه داده نیست. ابتدا حداقل یک دپارتمان تعریف کنید.");
+                    throw new InvalidOperationException("دپارتمان را از فهرست انتخاب کنید.");
 
-                    employee.Supplement.DepartmentId = anyDept;
-                }
-                else
-                {
-                    var exists = await _db.Departments.AsNoTracking()
-                        .AnyAsync(d => d.DepartmentId == employee.Supplement.DepartmentId);
-                    if (!exists)
-                        throw new InvalidOperationException("دپارتمان انتخاب‌شده در پایگاه داده وجود ندارد.");
-                }
+                var exists = await _db.Departments.AsNoTracking()
+                    .AnyAsync(d => d.DepartmentId == employee.Supplement.DepartmentId);
+                if (!exists)
+                    throw new InvalidOperationException("دپارتمان انتخاب‌شده در پایگاه داده وجود ندارد.");
 
                 if (string.IsNullOrWhiteSpace(employee.Supplement.PersonnelCode))
-                    employee.Supplement.PersonnelCode = $"P{Guid.NewGuid():N}"[..10];
+                    throw new InvalidOperationException("کد پرسنلی الزامی است.");
             }
 
             foreach (var bank in employee.BankAccounts)
@@ -578,5 +642,7 @@ namespace HR.Services.Data
 
             return "خطا در ذخیره در پایگاه داده: " + root;
         }
+
+        public void Dispose() => _db.Dispose();
     }
 }

@@ -6,11 +6,6 @@ namespace HR.Data
 {
     public class PersonnelDbContext : DbContext
     {
-        // ==================== Connection String ====================
-        // این را مطابق سرور خودت تغییر بده
-        private const string ConnectionString =
-            "Server=.;Database=Personnel;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true";
-
         public PersonnelDbContext()
         {
         }
@@ -23,7 +18,7 @@ namespace HR.Data
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseSqlServer(ConnectionString, sqlOptions =>
+                optionsBuilder.UseSqlServer(PersonnelConnection.Resolve(), sqlOptions =>
                 {
                     sqlOptions.UseHierarchyId(); // پشتیبانی hierarchyid
                 });
@@ -194,6 +189,8 @@ namespace HR.Data
                 entity.HasOne(e => e.MaritalStatus).WithMany().HasForeignKey(e => e.MaritalStatusId);
                 entity.HasOne(e => e.MilitaryStatus).WithMany().HasForeignKey(e => e.MilitaryStatusId);
                 entity.HasOne(e => e.Religion).WithMany().HasForeignKey(e => e.ReligionId);
+                entity.HasOne(e => e.Denomination).WithMany().HasForeignKey(e => e.DenominationId).OnDelete(DeleteBehavior.NoAction);
+                entity.HasIndex(e => e.NationalCode).IsUnique();
 
                 entity.HasOne(e => e.Supplement)
                       .WithOne(s => s.Employee)
@@ -452,6 +449,113 @@ namespace HR.Data
             modelBuilder.Entity<AmountUnit>().ToTable("AmountUnit").HasKey(e => e.AmountUnitId);
             modelBuilder.Entity<GeoType>().ToTable("GeoType").HasKey(e => e.GeoTypeId);
 
+            // جداولی که نام مفرد SQL دارند؛ بدون ToTable، EF نام جمع DbSet را می‌خواهد.
+            modelBuilder.Entity<Citizenship>(entity =>
+            {
+                entity.ToTable("Citizenship");
+                entity.HasKey(e => e.CitizenshipId);
+                entity.Property(e => e.Description).HasMaxLength(250);
+
+                entity.HasOne(e => e.Employee).WithMany(emp => emp.Citizenships).HasForeignKey(e => e.EmployeeId).OnDelete(DeleteBehavior.NoAction);
+                entity.HasOne(e => e.RelatedPerson).WithMany().HasForeignKey(e => e.RelatedPersonId).OnDelete(DeleteBehavior.NoAction);
+                entity.HasOne(e => e.Reason).WithMany().HasForeignKey(e => e.CitizenshipReasonId).OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<ForeignTravel>(entity =>
+            {
+                entity.ToTable("ForeignTravel");
+                entity.HasKey(e => e.ForeignTravelId);
+                entity.Property(e => e.Description).HasMaxLength(250);
+
+                entity.HasOne(e => e.Employee).WithMany(emp => emp.ForeignTravels).HasForeignKey(e => e.EmployeeId).OnDelete(DeleteBehavior.NoAction);
+                entity.HasOne(e => e.TravelReason).WithMany().HasForeignKey(e => e.TravelReasonId).OnDelete(DeleteBehavior.NoAction);
+                entity.HasOne(e => e.TransportType).WithMany().HasForeignKey(e => e.TransportTypeId).OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<ForeignRelative>(entity =>
+            {
+                entity.ToTable("ForeignRelative");
+                entity.HasKey(e => e.ForeignRelativeId);
+                entity.Property(e => e.FirstName).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.LastName).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.Description).HasMaxLength(250);
+
+                entity.HasOne(e => e.Employee).WithMany(emp => emp.ForeignRelatives).HasForeignKey(e => e.EmployeeId).OnDelete(DeleteBehavior.NoAction);
+                entity.HasOne(e => e.AbroadReason).WithMany().HasForeignKey(e => e.AbroadReasonId).OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<ForeignCooperation>(entity =>
+            {
+                entity.ToTable("ForeignCooperation");
+                entity.HasKey(e => e.ForeignCooperationId);
+                entity.Property(e => e.CenterName).HasMaxLength(200).IsRequired();
+                entity.Property(e => e.Description).HasMaxLength(250);
+
+                entity.HasOne(e => e.Employee).WithMany(emp => emp.ForeignCooperations).HasForeignKey(e => e.EmployeeId).OnDelete(DeleteBehavior.NoAction);
+                entity.HasOne(e => e.RelatedPerson).WithMany().HasForeignKey(e => e.RelatedPersonId).OnDelete(DeleteBehavior.NoAction);
+                entity.HasOne(e => e.CenterType).WithMany().HasForeignKey(e => e.CenterTypeId).OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<OrganizationCooperation>(entity =>
+            {
+                entity.ToTable("OrganizationCooperation");
+                entity.HasKey(e => e.OrganizationCooperationId);
+                entity.Property(e => e.OrganizationName).HasMaxLength(200).IsRequired();
+                entity.Property(e => e.Description).HasMaxLength(250);
+
+                entity.HasOne(e => e.Employee).WithMany(emp => emp.OrganizationCooperations).HasForeignKey(e => e.EmployeeId).OnDelete(DeleteBehavior.NoAction);
+                entity.HasOne(e => e.SectorType).WithMany().HasForeignKey(e => e.SectorTypeId).OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<OtherActivity>(entity =>
+            {
+                entity.ToTable("OtherActivity");
+                entity.HasKey(e => e.OtherActivityId);
+                entity.Property(e => e.Title).HasMaxLength(200).IsRequired();
+                entity.Property(e => e.ExecutionPlace).HasMaxLength(200).IsRequired();
+                entity.Property(e => e.Description).HasMaxLength(250);
+
+                entity.HasOne(e => e.Employee).WithMany(emp => emp.OtherActivities).HasForeignKey(e => e.EmployeeId).OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<SacrificeRecord>(entity =>
+            {
+                entity.ToTable("SacrificeRecord");
+                entity.HasKey(e => e.SacrificeRecordId);
+                entity.Property(e => e.Amount).HasColumnType("decimal(6,2)");
+                entity.Property(e => e.Description).HasMaxLength(250);
+                entity.Property(e => e.RelatedPersonId).HasColumnName("RelatedPersonID");
+
+                entity.HasOne(e => e.Employee).WithMany(emp => emp.SacrificeRecords).HasForeignKey(e => e.EmployeeId).OnDelete(DeleteBehavior.NoAction);
+                entity.HasOne(e => e.Relationship).WithMany().HasForeignKey(e => e.SacrificeRelationshipId).OnDelete(DeleteBehavior.NoAction);
+                entity.HasOne(e => e.Type).WithMany().HasForeignKey(e => e.SacrificeTypeId).OnDelete(DeleteBehavior.NoAction);
+                entity.HasOne(e => e.AmountUnit).WithMany().HasForeignKey(e => e.AmountUnitId).OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<HiringRecord>(entity =>
+            {
+                entity.ToTable("HiringRecord");
+                entity.HasKey(e => e.HiringRecordId);
+                entity.Property(e => e.OrganizationName).HasMaxLength(200).IsRequired();
+                entity.Property(e => e.Description).HasMaxLength(500);
+
+                entity.HasOne(e => e.Employee).WithMany(emp => emp.HiringRecords).HasForeignKey(e => e.EmployeeId).OnDelete(DeleteBehavior.NoAction);
+                entity.HasOne(e => e.SectorType).WithMany().HasForeignKey(e => e.SectorTypeId).OnDelete(DeleteBehavior.NoAction);
+                entity.HasOne(e => e.Result).WithMany().HasForeignKey(e => e.HiringResultId).OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<BackgroundRecord>(entity =>
+            {
+                entity.ToTable("BackgroundRecord");
+                entity.HasKey(e => e.BackgroundRecordId);
+                entity.Property(e => e.Title).HasMaxLength(200).IsRequired();
+                entity.Property(e => e.Description).HasMaxLength(250);
+
+                entity.HasOne(e => e.Employee).WithMany(emp => emp.BackgroundRecords).HasForeignKey(e => e.EmployeeId).OnDelete(DeleteBehavior.NoAction);
+                entity.HasOne(e => e.RelatedPerson).WithMany().HasForeignKey(e => e.RelatedPersonId).OnDelete(DeleteBehavior.NoAction);
+                entity.HasOne(e => e.RecordType).WithMany().HasForeignKey(e => e.RecordTypeId).OnDelete(DeleteBehavior.NoAction);
+            });
+
             // Address mapping (column name difference)
             modelBuilder.Entity<Address>(entity =>
             {
@@ -460,6 +564,9 @@ namespace HR.Data
                 entity.Property(e => e.AddressText).HasColumnName("Address").HasMaxLength(500).IsRequired();
                 entity.Property(e => e.Title).HasMaxLength(50).IsRequired();
                 entity.Property(e => e.PostalCode).HasMaxLength(10);
+
+                entity.HasOne(e => e.Employee).WithMany(emp => emp.Addresses).HasForeignKey(e => e.EmployeeId).OnDelete(DeleteBehavior.NoAction);
+                entity.HasOne(e => e.RelatedPerson).WithMany().HasForeignKey(e => e.RelatedPersonId).OnDelete(DeleteBehavior.NoAction);
             });
 
             // PersonFile

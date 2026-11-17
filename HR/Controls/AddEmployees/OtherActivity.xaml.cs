@@ -28,7 +28,7 @@ namespace HR.Controls.AddEmployees
                 return;
             }
 
-            _list.Items.Add(new OtherActivityRecord
+            _list.Commit(new OtherActivityRecord
             {
                 Title = title,
                 Place = NullIfEmpty(OtherActivity_OptationPlaceTB.Text),
@@ -39,7 +39,13 @@ namespace HR.Controls.AddEmployees
         }
 
         private void DeleteOtherActivityDataBtn_Click(object sender, RoutedEventArgs e) => _list.DeleteSelected();
-        private void PersonalOtherActivityList_SelectionChanged(object sender, SelectionChangedEventArgs e) { }
+        private void PersonalOtherActivityList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (PersonalOtherActivityList.SelectedItem is not OtherActivityRecord item) return;
+            OtherActivity_NameTB.Text = item.Title;
+            OtherActivity_OptationPlaceTB.Text = item.Place ?? string.Empty;
+            OtherActivity_NoteTB.Text = item.Note ?? string.Empty;
+        }
 
         public void LoadFrom(EmployeeProfile profile) => _list.Replace(profile.OtherActivities);
         public void SaveTo(EmployeeProfile profile) => _list.CopyTo(profile.OtherActivities);

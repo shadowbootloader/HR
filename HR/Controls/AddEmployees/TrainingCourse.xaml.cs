@@ -41,7 +41,7 @@ namespace HR.Controls.AddEmployees
                 return;
             }
 
-            _items.Add(new TrainingCourseRecord
+            SectionList<TrainingCourseRecord>.Commit(_items, PersonalCourseList, new TrainingCourseRecord
             {
                 Title = title,
                 Institute = institute,
@@ -69,7 +69,16 @@ namespace HR.Controls.AddEmployees
             ImagePicker.Preview(CourseCertificateImage, _certificateImage);
         }
 
-        private void PersonalCourseList_SelectionChanged(object sender, SelectionChangedEventArgs e) { }
+        private void PersonalCourseList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (PersonalCourseList.SelectedItem is not TrainingCourseRecord item) return;
+            EducationalInstitutionTitleTB.Text = item.Title;
+            EducationalInstitutionNameTB.Text = item.Institute;
+            EducationalInstitutionTimeTB.Text = item.DurationText ?? string.Empty;
+            EducationalInstitutionNoteTB.Text = item.Note ?? string.Empty;
+            _certificateImage = item.CertificateImagePath;
+            ImagePicker.Preview(CourseCertificateImage, _certificateImage);
+        }
         private void PersonalCourseList_SizeChanged(object sender, SizeChangedEventArgs e) { }
 
         // ==================== IEmployeeSection ====================
