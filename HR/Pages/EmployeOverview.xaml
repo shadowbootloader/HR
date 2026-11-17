@@ -20,10 +20,10 @@
                 <controls:ProfileHeaderControl x:Name="Header" MinWidth="385" DockPanel.Dock="Top"   Height="400" VerticalAlignment="Top" HorizontalAlignment="Stretch" Margin="5,5,10,0">
 
                 </controls:ProfileHeaderControl>
-                <controls:SkillsProficienciesCard DockPanel.Dock="Top" Height="190" VerticalAlignment="Top" HorizontalAlignment="Stretch"  Margin="5,5,10,0" >
+                <controls:SkillsProficienciesCard x:Name="SkillsCard" DockPanel.Dock="Top" Height="190" VerticalAlignment="Top" HorizontalAlignment="Stretch"  Margin="5,5,10,0" >
 
                 </controls:SkillsProficienciesCard>
-                <controls:CertificatesCard MinWidth="385" Height="125" DockPanel.Dock="Top" HorizontalAlignment="Stretch" Margin="5,5,10,0">
+                <controls:CertificatesCard x:Name="Certificates" MinWidth="385" Height="125" DockPanel.Dock="Top" HorizontalAlignment="Stretch" Margin="5,5,10,0">
 
                 </controls:CertificatesCard>
             </DockPanel>
@@ -33,7 +33,7 @@
                 <controls:QuickInsightsCard x:Name="Insights" DockPanel.Dock="Top" Height="290" VerticalAlignment="Top" >
 
                 </controls:QuickInsightsCard>
-                <controls:StrengthsAreasCard Margin="0,5,0,0" DockPanel.Dock="Top"  VerticalAlignment="Top" >
+                <controls:StrengthsAreasCard x:Name="Strengths" Margin="0,5,0,0" DockPanel.Dock="Top"  VerticalAlignment="Top" >
 
                 </controls:StrengthsAreasCard>
                 <lvc:CartesianChart x:Name="ScoreChart" Height="160" Margin="0,8,8,0" DockPanel.Dock="Top"/>
@@ -44,13 +44,13 @@
         </ScrollViewer>
         <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Hidden">
             <DockPanel >
-                <controls:KeyCompetenciesCard DockPanel.Dock="Top" VerticalAlignment="Top" Margin=" 10,0,0,0">
+                <controls:KeyCompetenciesCard x:Name="Competencies" DockPanel.Dock="Top" VerticalAlignment="Top" Margin=" 10,0,0,0">
 
                 </controls:KeyCompetenciesCard>
-                <controls:PerformanceProgressCard DockPanel.Dock="Top" VerticalAlignment="Top" Margin=" 10,5,0,0">
+                <controls:PerformanceProgressCard x:Name="Performance" DockPanel.Dock="Top" VerticalAlignment="Top" Margin=" 10,5,0,0">
 
                 </controls:PerformanceProgressCard>
-                <controls:AchievementsFeedbackCard DockPanel.Dock="Top" VerticalAlignment="Top" Margin="10,5,0,0">
+                <controls:AchievementsFeedbackCard x:Name="Achievements" DockPanel.Dock="Top" VerticalAlignment="Top" Margin="10,5,0,0">
 
                 </controls:AchievementsFeedbackCard>
             </DockPanel>

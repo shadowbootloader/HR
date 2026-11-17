@@ -1,4 +1,5 @@
-﻿using System.Windows.Controls;
+﻿using System.Linq;
+using System.Windows.Controls;
 using LiveChartsCore;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
@@ -12,29 +13,16 @@ namespace HR.Controls
         public KeyCompetenciesCard()
         {
             InitializeComponent();
-            Loaded += (s, e) => LoadDefaultData();
-        }
-
-        private void LoadDefaultData()
-        {
-            var labels = new[]
-            {
-                "رهبری",
-                "ارتباطات",
-                "همکاری",
-                "حل مسئله",
-                "نتیجه‌گرایی",
-                "تفکر استراتژیک"
-            };
-
-            // مقادیر واقعی (مثل تصویر اصلی)
-            var values = new double[] { 5, 2, 4.5, 4.3, 3, 4.2 };
-
-            SetData(labels, values);
         }
 
         public void SetData(string[] labels, double[] values)
         {
+            if (labels.Length == 0 || values.Length == 0)
+            {
+                RadarChart.Series = Array.Empty<ISeries>();
+                return;
+            }
+
             // ========== سری اصلی داده ==========
             var mainSeries = new PolarLineSeries<double>
             {
@@ -61,12 +49,11 @@ namespace HR.Controls
 
             // ========== حلقه‌های شش‌ضلعی به جای دایره ==========
             var polygonRings = new List<ISeries>();
-            double[] ringLevels = { 1, 2, 3, 4, 5 };
+            double[] ringLevels = { 25, 50, 75, 100 };
 
             foreach (var level in ringLevels)
             {
-                // ۶ نقطه برای شش‌ضلعی (چون ۶ تا برچسب داری)
-                var ringValues = new double[] { level, level, level, level, level, level };
+                var ringValues = Enumerable.Repeat(level, Math.Max(labels.Length, 1)).ToArray();
 
                 polygonRings.Add(new PolarLineSeries<double>
                 {
@@ -112,7 +99,7 @@ namespace HR.Controls
         new PolarAxis
         {
             MinLimit = 0,
-            MaxLimit = 5,
+            MaxLimit = 100,
             ShowSeparatorLines = false,   // دایره‌ها را کاملاً خاموش می‌کند
             LabelsPaint = new SolidColorPaint(SKColors.Transparent),
             TextSize = 0,

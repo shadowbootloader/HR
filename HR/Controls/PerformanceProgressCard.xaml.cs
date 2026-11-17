@@ -11,21 +11,16 @@ namespace HR.Controls
         public PerformanceProgressCard()
         {
             InitializeComponent();
-            Loaded += (s, e) => LoadDefaultData();
-        }
-
-        private void LoadDefaultData()
-        {
-            var months = new[] { "ژوئن", "ژوئیه", "اوت", "سپتامبر", "اکتبر", "نوامبر",
-                                 "دسامبر", "ژانویه", "فوریه", "مارس", "آوریل", "مه" };
-
-            var values = new double[] { 32, 45, 38, 55, 70, 62, 78, 65, 82, 75, 87, 72 };
-
-            SetData(months, values);
         }
 
         public void SetData(string[] labels, double[] values)
         {
+            if (values.Length == 0)
+            {
+                ProgressChart.Series = Array.Empty<ISeries>();
+                return;
+            }
+
             ProgressChart.Series = new ISeries[]
 {
     new LineSeries<double>
