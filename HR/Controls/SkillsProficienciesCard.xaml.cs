@@ -17,33 +17,30 @@ namespace HR.Controls
         public SkillsProficienciesCard()
         {
             InitializeComponent();
-            Loaded += (s, e) => AddSkills();
         }
 
-        private void AddSkills()
+        public void ShowSkills(IReadOnlyList<(string Title, int Percent)> skills)
         {
             SkillsList.Children.Clear();
-
-            // داده‌های واقعی (می‌تونی از ViewModel بیاری)
-            var skills = new[]
+            if (skills.Count == 0)
             {
-                ("مدیریت افراد", 90, "AccountChildOutline"),
-                ("توسعه استعداد", 85, "HumanGreetingVariant"),
-                ("مدیریت ذینفعان", 88, "MicrophoneMessage"),
-                ("مدیریت تغییر", 80, "Strategy"),
-                ("منابع انسانی داده‌محور", 75, "FileDocumentEditOutline"),
-                ("تفکر استراتژیک", 82, "BullseyeArrow")
-            };
+                SkillsList.Children.Add(new TextBlock
+                {
+                    Text = "مهارتی با سطح استاندارد ثبت نشده است.",
+                    Foreground = System.Windows.Media.Brushes.White,
+                    Margin = new Thickness(8)
+                });
+                return;
+            }
 
             foreach (var skill in skills)
             {
-                var item = new SkillItem
+                SkillsList.Children.Add(new SkillItem
                 {
-                    Title = skill.Item1,
-                    Percentage = skill.Item2,
-                    Icon = skill.Item3
-                };
-                SkillsList.Children.Add(item);
+                    Title = skill.Title,
+                    Percentage = skill.Percent,
+                    Icon = "Star"
+                });
             }
         }
     }

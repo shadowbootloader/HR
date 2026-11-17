@@ -9,10 +9,10 @@ namespace HR.Models
 
     public class DeptActivityItem
     {
-        public string Title { get; set; }
-        public string Subtitle { get; set; }
-        public string Date { get; set; }
-        public string Time { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string Subtitle { get; set; } = string.Empty;
+        public string Date { get; set; } = string.Empty;
+        public string Time { get; set; } = string.Empty;
         public PackIconKind IconKind { get; set; }
     }
 }

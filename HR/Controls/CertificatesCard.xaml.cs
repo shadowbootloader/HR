@@ -10,26 +10,24 @@ namespace HR.Controls
         public CertificatesCard()
         {
             InitializeComponent();
-            Loaded += (s, e) => AddCertificates();
         }
 
-        private void AddCertificates()
+        public void ShowCertificates(IReadOnlyList<(string Title, string Detail)> items)
         {
             CertificatesList.Children.Clear();
-
-            // داده‌های نمونه (می‌تونی از ViewModel بیاری)
-            var certificates = new[]
+            if (items.Count == 0)
             {
-                ("گواهینامه SHRM-SCP", "2023", PackIconKind.FileCertificateOutline),
-                ("مدیریت تغییر Prosci", "2022", PackIconKind.EmailSealOutline),
-                ("متخصص آنالیتیکس منابع انسانی", "2022", PackIconKind.Bullseye)
-            };
-
-            foreach (var cert in certificates)
-            {
-                var item = CreateCertificateItem(cert.Item1, cert.Item2, cert.Item3);
-                CertificatesList.Children.Add(item);
+                CertificatesList.Children.Add(new TextBlock
+                {
+                    Text = "مدرک دوره‌ای ثبت نشده است.",
+                    Foreground = System.Windows.Media.Brushes.White,
+                    Margin = new Thickness(8)
+                });
+                return;
             }
+
+            foreach (var item in items)
+                CertificatesList.Children.Add(CreateCertificateItem(item.Title, item.Detail, PackIconKind.FileCertificateOutline));
         }
 
         private Grid CreateCertificateItem(string title, string year, PackIconKind icon)

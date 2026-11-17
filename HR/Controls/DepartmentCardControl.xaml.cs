@@ -8,7 +8,7 @@ namespace HR.Controls
     public partial class DepartmentCardControl : UserControl
     {
 
-        public event RoutedEventHandler CardClick;
+        public event RoutedEventHandler? CardClick;
 
 
         public enum CircleColor

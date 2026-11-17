@@ -65,16 +65,17 @@ namespace HR.Controls.Department
             var icon = panel.Children.OfType<PackIcon>().FirstOrDefault();
             var text = panel.Children.OfType<TextBlock>().FirstOrDefault();
 
-            ApplySeverityStyle(item.Severity, icon, text);
+            if (icon != null && text != null)
+                ApplySeverityStyle(item.Severity, icon, text);
         }
     }
 
     public class DeptRiskItem
     {
-        public string Title { get; set; }
-        public string Severity { get; set; }
-        public string Owner { get; set; }
-        public string OwnerRole { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string Severity { get; set; } = string.Empty;
+        public string Owner { get; set; } = string.Empty;
+        public string OwnerRole { get; set; } = string.Empty;
         
     }
 }

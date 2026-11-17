@@ -1,4 +1,5 @@
 using HR.Services.Assessments;
+using HR.Services.Data;
 
 namespace HR.Tests;
 
@@ -38,5 +39,17 @@ public class AssessmentSeedTests
         Assert.Equal(2, record.Dimensions.Count);
         Assert.Equal(1.2, record.Questions.Single(question => question.Code == "q3").Weight);
         Assert.Equal(3, record.Questions.Single(question => question.Code == "q2").Options.Single(option => option.Code == "b").Score);
+    }
+
+    [Fact]
+    public void SelfAssessment_ReusesTheSliderLabels_AndAveragesThem()
+    {
+        var definition = SelfAssessmentCatalog.Create();
+        Assert.Equal(ProfileInsights.Dimensions.Select(item => item.Label).ToArray(), definition.Questions.Select(item => item.Text).ToArray());
+
+        var attempt = SelfAssessmentCatalog.ToAttempt(Guid.NewGuid(), new SelfAssessmentScores { Discipline = 80, Speed = 40 }, DateTime.UtcNow);
+        Assert.Equal(10, attempt.Answers.Count);
+        Assert.Equal(80, attempt.Answers[0].NumericValue);
+        Assert.Equal(12, attempt.TotalScore);
     }
 }

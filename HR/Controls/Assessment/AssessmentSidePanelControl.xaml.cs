@@ -10,19 +10,19 @@ namespace HR.Controls.Assessment
 {
     public class SideMedalItem
     {
-        public string Title { get; set; }
+        public string Title { get; set; } = string.Empty;
         public int Points { get; set; }
         public PackIconKind IconKind { get; set; }
-        public Brush ToneBrush { get; set; }
+        public Brush ToneBrush { get; set; } = Brushes.Transparent;
     }
 
     public class SideActivityItem
     {
-        public string Time { get; set; }
-        public string Title { get; set; }
-        public string Detail { get; set; }
+        public string Time { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+        public string Detail { get; set; } = string.Empty;
         public PackIconKind IconKind { get; set; }
-        public Brush IconBrush { get; set; }
+        public Brush IconBrush { get; set; } = Brushes.Transparent;
         public Visibility DetailVisibility =>
             string.IsNullOrWhiteSpace(Detail) ? Visibility.Collapsed : Visibility.Visible;
     }
@@ -112,10 +112,10 @@ namespace HR.Controls.Assessment
             set => SetValue(NextGoalPointsProperty, value);
         }
 
-        public event RoutedEventHandler ViewAllMedals;
-        public event RoutedEventHandler AssignMedal;
-        public event RoutedEventHandler GoalDetails;
-        public event RoutedEventHandler ViewAllActivities;
+        public event RoutedEventHandler? ViewAllMedals;
+        public event RoutedEventHandler? AssignMedal;
+        public event RoutedEventHandler? GoalDetails;
+        public event RoutedEventHandler? ViewAllActivities;
 
         private void OnViewAllMedals(object s, RoutedEventArgs e) => ViewAllMedals?.Invoke(this, e);
         private void OnAssignMedal(object s, RoutedEventArgs e) => AssignMedal?.Invoke(this, e);
@@ -138,7 +138,7 @@ namespace HR.Controls.Assessment
 
 
 
-        public event RoutedEventHandler StartRecommendedTest;
+        public event RoutedEventHandler? StartRecommendedTest;
 
         private void OnStartRecommendedTest(object sender, RoutedEventArgs e)
             => StartRecommendedTest?.Invoke(this, e);

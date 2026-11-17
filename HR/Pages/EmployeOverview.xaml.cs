@@ -1,6 +1,7 @@
 ﻿using System.Windows.Controls;
 using System.Windows.Media;
 using HR.Services.Assessments;
+using HR.Services.Data;
 using LiveChartsCore;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
@@ -43,14 +44,62 @@ namespace HR.Pages
 
             try
             {
+                using var people = new EmployeeService();
                 using var assessments = new AssessmentService();
-                ShowAttempts(await assessments.HistoryAsync(Employee.Id));
+                var entity = await people.GetByIdAsync(Employee.Id);
+                var history = await assessments.HistoryAsync(Employee.Id);
+                var scores = entity?.SelfAssessment == null ? null : new SelfAssessmentScores
+                {
+                    Discipline = entity.SelfAssessment.Discipline,
+                    Speed = entity.SelfAssessment.Speed,
+                    Effort = entity.SelfAssessment.Effort,
+                    Negotiation = entity.SelfAssessment.Negotiation,
+                    Patience = entity.SelfAssessment.Patience,
+                    Creativity = entity.SelfAssessment.Creativity,
+                    Punctuality = entity.SelfAssessment.Punctuality,
+                    Teamwork = entity.SelfAssessment.Teamwork,
+                    Accuracy = entity.SelfAssessment.Accuracy,
+                    Planning = entity.SelfAssessment.Planning
+                };
+                var snapshot = ProfileInsights.Build(
+                    scores,
+                    history,
+                    entity?.Softwares.Select(item => new SkillBar { Title = item.Software?.Title ?? "", LevelTitle = item.SkillLevel?.Title }) ?? Array.Empty<SkillBar>(),
+                    entity?.Courses.Select(item => new CourseCertificate { Title = item.Title, Institution = item.InstitutionName, HasCertificate = item.CertificateFileId != null }) ?? Array.Empty<CourseCertificate>(),
+                    DateTime.Today);
+                ShowProfile(snapshot);
+                ShowAttempts(history);
             }
             catch (Exception ex)
             {
                 Evaluations.ClearItems();
                 Evaluations.AddItem("آزمون‌ها", ex.Message, PackIconKind.Alert, Brushes.Transparent, "");
             }
+        }
+
+        private void ShowProfile(ProfileSnapshot snapshot)
+        {
+            Competencies.SetData(
+                snapshot.Competencies.Select(item => item.Name).ToArray(),
+                snapshot.Competencies.Select(item => (double)item.Count).ToArray());
+            Performance.SetData(
+                snapshot.Performance.Select(item => item.Label).ToArray(),
+                snapshot.Performance.Select(item => (double)item.Count).ToArray());
+
+            Strengths.ClearAll();
+            if (snapshot.Strengths.Count == 0 && snapshot.Improvements.Count == 0)
+                Strengths.AddStrength(snapshot.HasSelfAssessment ? "موردی در آستانهٔ قوت یا بهبود نیست." : "خودارزیابی ثبت نشده است.");
+            foreach (var item in snapshot.Strengths) Strengths.AddStrength(item);
+            foreach (var item in snapshot.Improvements) Strengths.AddArea(item);
+
+            Achievements.ClearItems();
+            if (snapshot.Achievements.Count == 0)
+                Achievements.AddItem("—", "دستاوردی ثبت نشده", "نتیجهٔ آزمونی برای این کارمند نیست.", "•", Colors.Transparent);
+            foreach (var item in snapshot.Achievements)
+                Achievements.AddItem(item.SubmittedAt?.ToString("yyyy/MM/dd") ?? "—", item.Title, $"{item.TotalScore:0.#} · {item.LevelLabel}", "•", Colors.Transparent);
+
+            SkillsCard.ShowSkills(snapshot.Skills.Select(item => (item.Name, item.Count)).ToList());
+            Certificates.ShowCertificates(snapshot.Certificates.Select(item => (item.Title, item.Institution ?? "—")).ToList());
         }
 
         private void ShowAttempts(IReadOnlyList<AttemptSummary> history)

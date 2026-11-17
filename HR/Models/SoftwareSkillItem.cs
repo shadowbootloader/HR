@@ -7,9 +7,9 @@ namespace HR.Models
 {
     public class SoftwareSkillItem
     {
-        public string SoftwareName { get; set; }
-        public string SkillLevel { get; set; }   // ضعیف / متوسط / عالی
-        public string Note { get; set; }
+        public string SoftwareName { get; set; } = string.Empty;
+        public string SkillLevel { get; set; } = string.Empty;   // ضعیف / متوسط / عالی
+        public string Note { get; set; } = string.Empty;
 
         public string DisplayText => $"{SoftwareName} · {SkillLevel}";
         public Brush SkillLevelBrush

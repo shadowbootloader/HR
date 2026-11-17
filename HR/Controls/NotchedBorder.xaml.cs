@@ -18,12 +18,12 @@ namespace HR.Controls
     {
 
 
-        public string EmployeeIDStr { get; set; }
-        public string BirthDateStr { get; set; }
-        public string MarageStatusStr { get; set; }
-        public string PhoneNumberStr { get; set; }
-        public string JoinDateStr { get; set; }
-        public string ManagerStr { get; set; }
+        public string EmployeeIDStr { get; set; } = string.Empty;
+        public string BirthDateStr { get; set; } = string.Empty;
+        public string MarageStatusStr { get; set; } = string.Empty;
+        public string PhoneNumberStr { get; set; } = string.Empty;
+        public string JoinDateStr { get; set; } = string.Empty;
+        public string ManagerStr { get; set; } = string.Empty;
 
 
 
@@ -117,11 +117,11 @@ namespace HR.Controls
             set => SetValue(BackgroundProperty, value);
         }
 
-        public static readonly DependencyProperty BorderBrushProperty =
+        public static new readonly DependencyProperty BorderBrushProperty =
             DependencyProperty.Register(nameof(BorderBrush), typeof(Brush), typeof(NotchedBorder),
                 new PropertyMetadata(new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1E293B"))));
 
-        public Brush BorderBrush
+        public new Brush BorderBrush
         {
             get => (Brush)GetValue(BorderBrushProperty);
             set => SetValue(BorderBrushProperty, value);

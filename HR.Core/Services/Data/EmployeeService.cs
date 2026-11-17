@@ -1,5 +1,6 @@
 using HR.Data;
 using HR.Services;
+using HR.Services.Assessments;
 using HR.Services.Auth;
 using HR.Services.Files;
 using HR.Data.Entities;
@@ -31,8 +32,8 @@ namespace HR.Services.Data
             var query = _db.Employees
                 .Include(e => e.Gender)
                 .Include(e => e.MaritalStatus)
-                .Include(e => e.Supplement)!
-                    .ThenInclude(s => s.Department)
+                .Include(e => e.Supplement)
+                    .ThenInclude(s => s!.Department)
                 .Include(e => e.SelfAssessment)
                 .Include(e => e.Leaves)
                 .AsQueryable();
@@ -59,12 +60,12 @@ namespace HR.Services.Data
                     .Include(e => e.MilitaryStatus)
                     .Include(e => e.Religion)
                     .Include(e => e.Denomination)
-                    .Include(e => e.Supplement)!
-                        .ThenInclude(s => s.Department)
-                    .Include(e => e.Supplement)!
-                        .ThenInclude(s => s.InsuranceType)
-                    .Include(e => e.Supplement)!
-                        .ThenInclude(s => s.CooperationType)
+                    .Include(e => e.Supplement)
+                        .ThenInclude(s => s!.Department)
+                    .Include(e => e.Supplement)
+                        .ThenInclude(s => s!.InsuranceType)
+                    .Include(e => e.Supplement)
+                        .ThenInclude(s => s!.CooperationType)
                     .Include(e => e.Educations)
                         .ThenInclude(ed => ed.Degree)
                     .Include(e => e.Educations)
@@ -158,8 +159,8 @@ namespace HR.Services.Data
 
             return await _db.Employees
                 .Include(e => e.Gender)
-                .Include(e => e.Supplement)!
-                    .ThenInclude(s => s.Department)
+                .Include(e => e.Supplement)
+                    .ThenInclude(s => s!.Department)
                 .Where(e => !e.IsDeleted &&
                        (e.FirstName.Contains(term) ||
                         e.LastName.Contains(term) ||
@@ -193,6 +194,8 @@ namespace HR.Services.Data
                 await using var tx = await _db.Database.BeginTransactionAsync();
                 _db.Employees.Add(employee);
                 await _db.SaveChangesAsync();
+                if (employee.SelfAssessment != null)
+                    await new AssessmentService(_db).RecordSelfAssessmentAsync(employee.EmployeeId, ToScores(employee.SelfAssessment));
                 await tx.CommitAsync();
                 return employee;
             }
@@ -338,6 +341,8 @@ namespace HR.Services.Data
             {
                 await using var tx = await _db.Database.BeginTransactionAsync();
                 await _db.SaveChangesAsync();
+                if (existing.SelfAssessment != null)
+                    await new AssessmentService(_db).RecordSelfAssessmentAsync(existing.EmployeeId, ToScores(existing.SelfAssessment));
                 await tx.CommitAsync();
             }
             catch (DbUpdateException ex)
@@ -753,6 +758,20 @@ namespace HR.Services.Data
                     throw new InvalidOperationException("برای زبان، عنوان معتبر انتخاب نشده است (جدول Language را بررسی کنید).");
             }
         }
+
+        private static SelfAssessmentScores ToScores(EmployeeSelfAssessment source) => new()
+        {
+            Discipline = source.Discipline,
+            Speed = source.Speed,
+            Effort = source.Effort,
+            Negotiation = source.Negotiation,
+            Patience = source.Patience,
+            Creativity = source.Creativity,
+            Punctuality = source.Punctuality,
+            Teamwork = source.Teamwork,
+            Accuracy = source.Accuracy,
+            Planning = source.Planning
+        };
 
         private static string FormatDbError(DbUpdateException ex)
         {

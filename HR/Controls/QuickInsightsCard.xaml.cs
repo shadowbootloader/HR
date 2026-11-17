@@ -24,7 +24,7 @@ namespace HR.Controls
         }
 
         // متد عمومی برای اضافه کردن آیتم از بیرون
-        public void AddItem(string title, string description, string icon, Brush iconBackground, string changeText = null)
+        public void AddItem(string title, string description, string icon, Brush iconBackground, string? changeText = null)
         {
             var item = new InsightItem
             {
@@ -32,7 +32,7 @@ namespace HR.Controls
                 Description = description,
                 Icon = icon,
                 IconBackground = iconBackground,
-                ChangeText = changeText
+                ChangeText = changeText ?? string.Empty
             };
 
             ItemsPanel.Children.Add(item);

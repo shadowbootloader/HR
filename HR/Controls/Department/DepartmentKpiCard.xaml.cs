@@ -49,9 +49,9 @@ namespace HR.Controls.Department
         }
 
         // رنگ محاسبه‌شده برای Binding در XAML
-        private Brush _userAccent;
+        private Brush? _userAccent;
 
-        public new static readonly DependencyProperty AccentProperty =
+        public static readonly DependencyProperty AccentProperty =
             DependencyProperty.Register(nameof(Accent), typeof(Brush), typeof(DepartmentKpiCard),
                 new PropertyMetadata(null, (d, e) =>
                 {

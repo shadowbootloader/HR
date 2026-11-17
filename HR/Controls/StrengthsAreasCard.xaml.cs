@@ -8,21 +8,6 @@ namespace HR.Controls
         public StrengthsAreasCard()
         {
             InitializeComponent();
-            Loaded += (s, e) => LoadDefaultItems();
-        }
-
-        private void LoadDefaultItems()
-        {
-            // نقاط قوت (سبز)
-            AddStrength("رهبر استثنایی افراد");
-            AddStrength("ذهنیت استراتژیک");
-            AddStrength("نتیجه‌گرا");
-            AddStrength("اعتبار بالا");
-
-            // نقاط قابل بهبود (زرد/نارنجی)
-            AddArea("بهتر تفویض اختیار کند");
-            AddArea("مهارت‌های تحلیل داده را عمیق‌تر کند");
-            AddArea("حضور اجرایی خود را افزایش دهد");
         }
 
         // متد عمومی برای اضافه کردن نقطه قوت

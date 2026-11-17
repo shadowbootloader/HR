@@ -1,6 +1,7 @@
 using HR.Data;
 using HR.Data.Entities;
 using HR.Services.Auth;
+using HR.Services.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace HR.Services.Assessments
@@ -32,9 +33,47 @@ namespace HR.Services.Assessments
             await _db.SaveChangesAsync();
         }
 
+        public async Task EnsureSelfAssessmentAsync()
+        {
+            if (await _db.Assessments.AnyAsync(item => item.Code == SelfAssessmentCatalog.Code))
+                return;
+
+            _db.Assessments.Add(ToEntity(SelfAssessmentCatalog.Create(), AuthSession.ActorName));
+            await _db.SaveChangesAsync();
+        }
+
+        public async Task RecordSelfAssessmentAsync(Guid employeeId, SelfAssessmentScores scores, DateTime? when = null)
+        {
+            await EnsureSelfAssessmentAsync();
+            var attempt = SelfAssessmentCatalog.ToAttempt(employeeId, scores, when ?? DateTime.UtcNow);
+            var latest = await _db.AssessmentAttempts
+                .Include(item => item.Answers).ThenInclude(answer => answer.Question)
+                .Where(item => item.EmployeeId == employeeId && item.Assessment.Code == SelfAssessmentCatalog.Code)
+                .OrderByDescending(item => item.SubmittedAt)
+                .FirstOrDefaultAsync();
+
+            if (latest != null && SameScores(latest, attempt))
+                return;
+
+            await SaveAttemptAsync(attempt);
+        }
+
+        private static bool SameScores(AssessmentAttempt latest, AttemptSave incoming)
+        {
+            if (latest.Answers.Count != incoming.Answers.Count) return false;
+            foreach (var answer in incoming.Answers)
+            {
+                var stored = latest.Answers.FirstOrDefault(item => item.Question.Code == answer.QuestionCode);
+                if (stored == null || stored.NumericValue != answer.NumericValue) return false;
+            }
+
+            return true;
+        }
+
         public async Task<IReadOnlyList<AssessmentRecord>> ListAsync()
         {
             await EnsureManagerSeedAsync();
+            await EnsureSelfAssessmentAsync();
             var rows = await Query().Where(item => item.IsActive).OrderBy(item => item.Title).ToListAsync();
             return rows.Select(ToRecord).ToList();
         }

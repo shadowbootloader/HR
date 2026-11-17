@@ -177,7 +177,7 @@ namespace HR.Pages
                 Subtitle = subtitle,
                 CategoryText = categoryText,
                 CategoryIcon = categoryIcon,
-                CategoryBrush = (Brush)new BrushConverter().ConvertFrom(categoryColor),
+                CategoryBrush = new BrushConverter().ConvertFrom(categoryColor) as Brush ?? Brushes.Transparent,
                 Status = status,
                 Progress = progress,
                 LastDate = lastDate,
@@ -323,7 +323,7 @@ namespace HR.Pages
             return "همه";
         }
 
-        private static T FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
+        private static T? FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
         {
             for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
             {

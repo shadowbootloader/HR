@@ -44,8 +44,8 @@ namespace HR.Controls.AddEmployees
 
             var average = sum / _sliders.Count;
 
-            if (AverageScoreText != null)
-                AverageScoreText.Text = average.ToString("0");
+            if (AverageScoreText == null) return;
+            AverageScoreText.Text = average.ToString("0");
 
             AverageScoreText.Foreground = average switch
             {
