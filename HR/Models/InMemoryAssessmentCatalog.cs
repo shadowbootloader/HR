@@ -11,16 +11,7 @@ namespace HR.Models
         {
             _items = new List<AssessmentDefinition>
             {
-                ManagerEval(),
-                Simple("mbti",            "شخصیت‌شناسی MBTI",       "روانشناسی", QuestionType.Likert),
-                Simple("comm-skills",     "تست مهارت‌های ارتباطی",   "مهارتی",    QuestionType.SingleChoice),
-                Simple("decision",        "تست تصمیم‌گیری",          "موقعیتی",   QuestionType.Scale),
-                Simple("self-efficacy",   "تست خودکارآمدی",          "روانشناسی", QuestionType.Likert),
-                Simple("discipline",      "ارزیابی انضباط سازمانی",   "انضباطی",   QuestionType.Likert),
-                Simple("problem-solving", "تست حل مسئله",            "موقعیتی",   QuestionType.TextLong),
-                Simple("creativity",      "تست خلاقیت",              "توانمندی‌ها", QuestionType.Scale),
-                Simple("360",             "ارزیابی ۳۶۰ درجه",        "شغلی",      QuestionType.Likert),
-                Simple("motivation",      "تست انگیزش شغلی",         "روانشناسی", QuestionType.Likert),
+                ManagerEval()
             };
         }
 
@@ -34,87 +25,6 @@ namespace HR.Models
         public IReadOnlyList<AssessmentDefinition> GetAll() => _items;
 
         // =========================================================
-
-        private static AssessmentScoringConfig StandardScoring() => new()
-        {
-            Mode = AssessmentScoringConfig.ModeWeightedSum,
-            NormalizeTo100 = true,
-            Levels = new List<ScoreLevel>
-            {
-                new() { Min = 0,  Max = 49.99, Label = "نیاز به توسعه", ColorHex = "#FB7185" },
-                new() { Min = 50, Max = 74.99, Label = "قابل قبول",     ColorHex = "#FBBF24" },
-                new() { Min = 75, Max = 100,   Label = "قوی",           ColorHex = "#34D399" },
-            }
-        };
-
-        /// <summary>
-        /// یک آزمون نمونه با ۵ سؤال امتیازدار می‌سازد.
-        /// اگر نوع درخواستی متنی باشد، سؤالات عددی به Likert تبدیل می‌شوند
-        /// تا آزمون همیشه نمره قابل محاسبه داشته باشد.
-        /// </summary>
-        private static AssessmentDefinition Simple(string id, string title, string category, QuestionType type)
-        {
-            var def = new AssessmentDefinition
-            {
-                Id = id,
-                Title = title,
-                Category = category,
-                EstimatedMinutes = 10,
-                QuestionsPerPage = 2,
-                Scoring = StandardScoring()
-            };
-
-            var numericType = QuestionTypeInfo.IsText(type) ? QuestionType.Likert : type;
-            int min = numericType == QuestionType.Scale ? 0 : 1;
-            int max = numericType == QuestionType.Scale ? 10 : 5;
-
-            for (int i = 1; i <= 5; i++)
-            {
-                var q = new QuestionDefinition
-                {
-                    Id = $"q{i}",
-                    Order = i,
-                    Type = numericType,
-                    Required = true,
-                    Text = $"سؤال {i} از «{title}»",
-                    MinLabel = "کم",
-                    MaxLabel = "زیاد",
-                    Weight = 1,
-                    DimensionKey = "overall"
-                };
-
-                if (QuestionTypeInfo.IsNumeric(numericType))
-                {
-                    q.Min = min;
-                    q.Max = max;
-                }
-                else if (QuestionTypeInfo.IsChoice(numericType))
-                {
-                    q.Options = new List<OptionDefinition>
-                    {
-                        new() { Id = "a", Text = "گزینه الف", Score = 1 },
-                        new() { Id = "b", Text = "گزینه ب", Score = 2 },
-                        new() { Id = "c", Text = "گزینه ج", Score = 3 },
-                        new() { Id = "d", Text = "گزینه د", Score = 4 },
-                    };
-                }
-
-                def.Questions.Add(q);
-            }
-
-            // سؤال متنی: امتیاز می‌گیرد ولی نمره کل را پایین نمی‌کشد
-            def.Questions.Add(new QuestionDefinition
-            {
-                Id = "qText",
-                Order = 6,
-                Type = QuestionType.TextLong,
-                Text = "توضیح تکمیلی خود را بنویسید",
-                Required = false,
-                CountsTowardTotal = false
-            });
-
-            return def;
-        }
 
         private static AssessmentDefinition ManagerEval()
         {

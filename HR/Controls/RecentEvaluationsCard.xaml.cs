@@ -9,34 +9,6 @@ namespace HR.Controls
         public RecentEvaluationsCard()
         {
             InitializeComponent();
-            Loaded += (s, e) => LoadDefaultItems();
-        }
-
-        private void LoadDefaultItems()
-        {
-            AddItem(
-                title: "بازخورد ۳۶۰ درجه",
-                date: "آوریل ۲۰۲۴",
-                icon: PackIconKind.ClipboardCheckMultipleOutline,
-                iconBackground: new SolidColorBrush(Color.FromRgb(0x1E, 0x16, 0x30)),
-                status: "تکمیل شده"
-            );
-
-            AddItem(
-                title: "بررسی عملکرد میان‌سال",
-                date: "ژانویه ۲۰۲۴",
-                icon: PackIconKind.ClipboardCheckMultipleOutline,
-                iconBackground: new SolidColorBrush(Color.FromRgb(0x1E, 0x16, 0x30)),
-                status: "تکمیل شده"
-            );
-
-            AddItem(
-                title: "بررسی اهداف فصل دوم",
-                date: "ژوئن ۲۰۲۴",
-                icon: PackIconKind.ClipboardCheckMultipleOutline,
-                iconBackground: new SolidColorBrush(Color.FromRgb(0x1E, 0x16, 0x30)),
-                status: "در حال انجام"
-            );
         }
 
         // متد عمومی برای اضافه کردن آیتم
