@@ -19,7 +19,7 @@ namespace HR.Services.Data.Mapping
                     EmployeeId = entity.EmployeeId,
                     CountryId = await lookups.CountryAsync(citizenship.Country),
                     CitizenshipReasonId = await lookups.ByteFromTitleAsync<CitizenshipReason>(citizenship.Reason),
-                    StartDate = citizenship.StartDate ?? DateTime.Today,
+                    StartDate = MapperHelpers.RequireDate(citizenship.StartDate, "تاریخ شروع تابعیت"),
                     Description = citizenship.Note
                 });
             }

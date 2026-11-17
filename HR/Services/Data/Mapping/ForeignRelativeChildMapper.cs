@@ -22,7 +22,7 @@ namespace HR.Services.Data.Mapping
                     FirstName = first,
                     LastName = last,
                     AbroadReasonId = await lookups.ByteFromTitleAsync<AbroadReason>(record.Reason),
-                    StartDate = record.DepartureDate ?? DateTime.Today,
+                    StartDate = MapperHelpers.RequireDate(record.DepartureDate, "تاریخ عزیمت بستگان خارجی"),
                     GeoLocation = await lookups.CountryNodeAsync(record.Country),
                     Description = record.Note
                 });

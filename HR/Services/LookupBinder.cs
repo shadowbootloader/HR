@@ -17,6 +17,17 @@ namespace HR.Services
         /// ComboBox را از جدول Lookup پر می‌کند.
         /// برچسب‌ها از DB و مقدار هر آیتم شماره‌ی ترتیبی enum است.
         /// </summary>
+        public static string SelectedTitle(ComboBox combo)
+        {
+            if (combo.SelectedItem is ComboItem item && !string.IsNullOrWhiteSpace(item.Text))
+                return item.Text.Trim();
+            if (combo.SelectedItem is ComboBoxItem boxItem)
+                return boxItem.Content?.ToString()?.Trim() ?? string.Empty;
+            if (combo.SelectedItem is string text)
+                return text.Trim();
+            return combo.Text?.Trim() ?? string.Empty;
+        }
+
         public static async Task FillAsync<TEnum>(ComboBox combo, string tableKey, int valueOffset = 0)
             where TEnum : struct, Enum
         {

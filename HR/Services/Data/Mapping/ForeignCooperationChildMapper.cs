@@ -21,19 +21,13 @@ namespace HR.Services.Data.Mapping
                     EmployeeId = entity.EmployeeId,
                     FirstName = first,
                     LastName = last,
-                    FatherName = "—",
-                    NationalCode = MapperHelpers.SyntheticNationalCode(),
-                    BirthCertificateNumber = "—",
-                    BirthDate = DateTime.Today,
-                    IssueDate = DateTime.Today,
-                    JobTitle = "—",
                     Relationship = "همکار خارجی",
                     PersonRole = 1
                 };
 
                 entity.RelatedPersons.Add(person);
 
-                var start = record.StartDate ?? DateTime.Today;
+                var start = MapperHelpers.RequireDate(record.StartDate, "تاریخ شروع همکاری خارجی");
 
                 entity.ForeignCooperations.Add(new ForeignCooperation
                 {

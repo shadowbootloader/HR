@@ -50,6 +50,7 @@ namespace HR.Services.Data
         public const string ExemptionType = nameof(HR.Data.Entities.ExemptionType);
         public const string ExemptionReason = nameof(HR.Data.Entities.ExemptionReason);
         public const string Religion = nameof(HR.Data.Entities.Religion);
+        public const string Denomination = nameof(HR.Data.Entities.Denomination);
     }
 
     /// <summary>
@@ -191,31 +192,43 @@ namespace HR.Services.Data
         // ==================== حل یا ساخت ====================
 
         public Task<short> ResolveOrCreateAsync<TEntity>(string? title) where TEntity : class
-            => ResolveOrCreateAsync(typeof(TEntity), title);
+            => ResolveAsync(typeof(TEntity), title, createIfMissing: IsUserCatalog(typeof(TEntity)));
 
-        public async Task<short> ResolveOrCreateAsync(Type clrType, string? title)
+        /// <summary>
+        /// عنوان را به شناسه تبدیل می‌کند.
+        /// فقط Ability و Software (متن آزاد کاربر) در صورت نبودن ساخته می‌شوند.
+        /// دپارتمان و بقیه فهرست‌ها هرگز خودکار درج نمی‌شوند و ردیف اول انتخاب نمی‌شود.
+        /// </summary>
+        public async Task<short> ResolveAsync(Type clrType, string? title, bool createIfMissing)
         {
             var rows = _tables.TryGetValue(clrType, out var existing) ? existing : new List<LookupItem>();
             var text = title?.Trim();
 
-            if (string.IsNullOrEmpty(text)) return rows.FirstOrDefault()?.Id ?? 0;
+            if (string.IsNullOrEmpty(text) || text == "—")
+                throw new InvalidOperationException($"مقداری برای جدول {clrType.Name} انتخاب نشده است.");
 
             var match = rows.FirstOrDefault(x => string.Equals(x.Title, text, StringComparison.OrdinalIgnoreCase));
             if (match != null) return match.Id;
 
-            if (KeyProperty(clrType) == null) return rows.FirstOrDefault()?.Id ?? 0;
+            if (!createIfMissing || !IsUserCatalog(clrType) || KeyProperty(clrType) == null)
+                throw new InvalidOperationException(
+                    $"«{text}» در جدول {clrType.Name} وجود ندارد. آن را از فهرست انتخاب کنید یا در داده پایه ثبت کنید.");
 
             var task = (Task<LookupItem?>)CreatorMethod
                 .MakeGenericMethod(clrType)
                 .Invoke(null, new object[] { _db, text })!;
 
             var created = await task;
-            if (created == null) return rows.FirstOrDefault()?.Id ?? 0;
+            if (created == null)
+                throw new InvalidOperationException($"ثبت «{text}» در جدول {clrType.Name} ممکن نشد.");
 
             rows.Add(created);
             _tables[clrType] = rows;
             return created.Id;
         }
+
+        private static bool IsUserCatalog(Type clrType)
+            => clrType == typeof(HR.Data.Entities.Ability) || clrType == typeof(HR.Data.Entities.Software);
 
         public void Dispose()
         {

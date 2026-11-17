@@ -160,9 +160,43 @@
                 </ComboBox>
                 <ComboBox x:Name="PersonalReligionCombo" Style="{StaticResource DarkOutlinedComboBox}"
             Width="120"
+            materialDesign:HintAssist.Hint="دین" >
+
+                </ComboBox>
+                <ComboBox x:Name="PersonalDenominationCombo" Style="{StaticResource DarkOutlinedComboBox}"
+            Width="120"
             materialDesign:HintAssist.Hint="مذهب" >
 
                 </ComboBox>
+                <TextBox x:Name="PersonalEmailTb"
+         Style="{StaticResource DarkOutlinedTextBox}"
+         Width="200"
+         MaxLength="254"
+         materialDesign:HintAssist.Hint="ایمیل"/>
+                <TextBox x:Name="PersonalInsuranceTb"
+         Style="{StaticResource DarkOutlinedTextBox}"
+         Width="140"
+         MaxLength="10"
+         materialDesign:HintAssist.Hint="شماره بیمه"/>
+                <TextBox x:Name="PersonalResidenceTb"
+         Style="{StaticResource DarkOutlinedTextBox}"
+         Width="160"
+         materialDesign:HintAssist.Hint="محل سکونت"/>
+                <TextBox x:Name="PersonalAddressTitleTb"
+         Style="{StaticResource DarkOutlinedTextBox}"
+         Width="120"
+         MaxLength="50"
+         materialDesign:HintAssist.Hint="عنوان نشانی"/>
+                <TextBox x:Name="PersonalAddressTb"
+         Style="{StaticResource DarkOutlinedTextBox}"
+         Width="260"
+         MaxLength="500"
+         materialDesign:HintAssist.Hint="نشانی"/>
+                <TextBox x:Name="PersonalPostalTb"
+         Style="{StaticResource DarkOutlinedTextBox}"
+         Width="120"
+         MaxLength="10"
+         materialDesign:HintAssist.Hint="کد پستی"/>
             </WrapPanel>
 
         </Grid>

@@ -132,27 +132,30 @@ namespace HR.Controls.AddEmployees
 
             var start = EducationStartDateDP.SelectedDate;
             var end = EducationEndDateDP.SelectedDate;
+            if (start == null)
+            {
+                Warn("تاریخ شروع تحصیل را انتخاب کنید.");
+                return;
+            }
+
             if (start.HasValue && end.HasValue && end < start)
             {
                 Warn("تاریخ پایان نمی‌تواند قبل از تاریخ شروع باشد.");
                 return;
             }
 
-            double? gpa = null;
-            if (!string.IsNullOrWhiteSpace(EducationalMarksAvgTB.Text))
+            if (!double.TryParse(EducationalMarksAvgTB.Text?.Trim(), out var parsed) || parsed < 0 || parsed > 20)
             {
-                if (!double.TryParse(EducationalMarksAvgTB.Text.Trim(), out var parsed) || parsed < 0 || parsed > 20)
-                {
-                    Warn("معدل باید عددی بین ۰ تا ۲۰ باشد.");
-                    EducationalMarksAvgTB.Focus();
-                    return;
-                }
-                gpa = parsed;
+                Warn("معدل باید عددی بین ۰ تا ۲۰ باشد.");
+                EducationalMarksAvgTB.Focus();
+                return;
             }
 
             _items.Add(new EducationRecord
             {
                 Degree = GradeCombo.SelectedValue is DegreeLevel degree ? degree : DegreeLevel.Bachelor,
+                DegreeTitle = LookupBinder.SelectedTitle(GradeCombo),
+                StatusTitle = LookupBinder.SelectedTitle(EducationalStatusCombo),
                 Field = field,
                 University = university,
                 State = EducationStateNameTB.SelectedItem as string,
@@ -160,7 +163,7 @@ namespace HR.Controls.AddEmployees
                 Status = EducationalStatusCombo.SelectedValue is EducationStatusKind status
                     ? status
                     : EducationStatusKind.Studying,
-                Gpa = gpa,
+                Gpa = parsed,
                 StartDate = start,
                 EndDate = end,
                 ThesisTitle = NullIfEmpty(ResaleTB.Text),

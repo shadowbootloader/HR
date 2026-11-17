@@ -45,6 +45,8 @@ namespace HR.Controls.AddEmployees
 
             if (FindName("PersonalReligionCombo") is ComboBox religionCombo)
                 await LookupBinder.FillTitlesAsync(religionCombo, LookupKeys.Religion, addEmptyItem: true);
+            if (FindName("PersonalDenominationCombo") is ComboBox denominationCombo)
+                await LookupBinder.FillTitlesAsync(denominationCombo, LookupKeys.Denomination, addEmptyItem: true);
         }
 
         private static void Setup(ComboBox combo)
@@ -113,12 +115,19 @@ namespace HR.Controls.AddEmployees
 
             PersonalGenderList.SelectedIndex = profile.Gender == Gender.Female ? 1 : 0;
 
-            SelectByValue(PersonalMaritalStatusTb, profile.MaritalStatus);
-            SelectByValue(PersonalSarbaziTb, profile.MilitaryStatus);
+            SelectText(PersonalMaritalStatusTb, profile.MaritalStatusTitle);
+            SelectText(PersonalSarbaziTb, profile.MilitaryStatusTitle);
 
             SelectText(PersonalMoafiatStatusTb, profile.ExemptionType);
             SelectText(PersonalMoafiatTypeTb, profile.ExemptionReason);
             SelectText(PersonalReligionCombo, profile.Religion);
+            SelectText(PersonalDenominationCombo, profile.Denomination);
+            PersonalEmailTb.Text = profile.Email;
+            PersonalInsuranceTb.Text = profile.InsuranceNumber;
+            PersonalResidenceTb.Text = profile.Residence;
+            PersonalAddressTitleTb.Text = profile.AddressTitle;
+            PersonalAddressTb.Text = profile.AddressText;
+            PersonalPostalTb.Text = profile.PostalCode ?? string.Empty;
 
             _photo = profile.PhotoPath;
             _nationalCardImage = profile.NationalCardImagePath;
@@ -152,6 +161,15 @@ namespace HR.Controls.AddEmployees
             profile.ExemptionType = ComboText(PersonalMoafiatStatusTb);
             profile.ExemptionReason = ComboText(PersonalMoafiatTypeTb);
             profile.Religion = ComboText(PersonalReligionCombo);
+            profile.Denomination = ComboText(PersonalDenominationCombo);
+            profile.MaritalStatusTitle = LookupBinder.SelectedTitle(PersonalMaritalStatusTb);
+            profile.MilitaryStatusTitle = LookupBinder.SelectedTitle(PersonalSarbaziTb);
+            profile.Email = PersonalEmailTb.Text.Trim();
+            profile.InsuranceNumber = PersonalInsuranceTb.Text.Trim();
+            profile.Residence = PersonalResidenceTb.Text.Trim();
+            profile.AddressTitle = PersonalAddressTitleTb.Text.Trim();
+            profile.AddressText = PersonalAddressTb.Text.Trim();
+            profile.PostalCode = string.IsNullOrWhiteSpace(PersonalPostalTb.Text) ? null : PersonalPostalTb.Text.Trim();
 
             profile.PhotoPath = _photo;
             profile.NationalCardImagePath = _nationalCardImage;
@@ -177,6 +195,25 @@ namespace HR.Controls.AddEmployees
 
             if (PersonalBirthDateDP.SelectedDate == null)
             { message = "تاریخ تولد را انتخاب کنید."; return false; }
+
+            if (PersonalSodorDateDP.SelectedDate == null)
+            { message = "تاریخ صدور را انتخاب کنید."; return false; }
+
+            var email = PersonalEmailTb.Text?.Trim() ?? string.Empty;
+            if (!Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+            { message = "ایمیل معتبر وارد کنید."; return false; }
+
+            var insurance = PersonalInsuranceTb.Text?.Trim() ?? string.Empty;
+            if (!Regex.IsMatch(insurance, @"^\d{1,10}$"))
+            { message = "شماره بیمه باید عددی و حداکثر ۱۰ رقم باشد."; return false; }
+
+            var hasAddress = !string.IsNullOrWhiteSpace(PersonalAddressTb.Text);
+            if (hasAddress && string.IsNullOrWhiteSpace(PersonalAddressTitleTb.Text))
+            { message = "عنوان نشانی را وارد کنید."; return false; }
+
+            var postal = PersonalPostalTb.Text?.Trim() ?? string.Empty;
+            if (postal.Length > 0 && !Regex.IsMatch(postal, @"^\d{10}$"))
+            { message = "کد پستی باید ۱۰ رقم باشد."; return false; }
 
             message = string.Empty;
             return true;

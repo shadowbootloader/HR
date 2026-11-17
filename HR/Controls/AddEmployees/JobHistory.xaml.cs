@@ -77,6 +77,11 @@ namespace HR.Controls.AddEmployees
 
             var start = JobStartDateDP.SelectedDate;
             var end = JobEndDateDP.SelectedDate;
+            if (start == null)
+            {
+                Warn("تاریخ شروع را انتخاب کنید.");
+                return;
+            }
             if (start.HasValue && end.HasValue && end < start)
             {
                 Warn("تاریخ پایان نمی‌تواند قبل از تاریخ شروع باشد.");

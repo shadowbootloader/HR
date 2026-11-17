@@ -6,25 +6,44 @@ namespace HR.Services.Data.Mapping
 {
     internal static class MapperHelpers
     {
-        public static string Required(string? value) => string.IsNullOrWhiteSpace(value) ? "—" : value.Trim();
+        public static string Required(string? value) => Required(value, "این مقدار");
+
+        public static string Required(string? value, string field)
+        {
+            if (string.IsNullOrWhiteSpace(value) || value.Trim() == "—")
+                throw new InvalidOperationException($"{field} الزامی است.");
+            return value.Trim();
+        }
+
+        public static string EmptyIfMissing(string? value)
+            => string.IsNullOrWhiteSpace(value) || value.Trim() == "—" ? string.Empty : value.Trim();
+
+        public static DateTime RequireDate(DateTime? value, string field)
+        {
+            if (value == null)
+                throw new InvalidOperationException($"{field} الزامی است.");
+            return value.Value;
+        }
 
         public static string? DigitsOnly(string? value)
             => string.IsNullOrWhiteSpace(value) ? null : new string(value.Where(char.IsDigit).ToArray());
 
         public static string Sheba(string? value)
         {
-            var digits = DigitsOnly(value);
-            if (string.IsNullOrEmpty(digits)) return string.Empty;
-            if (digits.Length > 24) digits = digits[..24];
-            return "IR" + digits.PadLeft(24, '0');
+            var text = value?.Trim().ToUpperInvariant() ?? string.Empty;
+            if (text.StartsWith("IR", StringComparison.Ordinal)) text = text[2..];
+            var digits = new string(text.Where(char.IsDigit).ToArray());
+            if (digits.Length != 24)
+                throw new InvalidOperationException("شماره شبا باید ۲۴ رقم باشد.");
+            return "IR" + digits;
         }
 
         public static string Card(string? value)
         {
             var digits = DigitsOnly(value);
-            if (string.IsNullOrEmpty(digits)) return string.Empty;
-            if (digits.Length > 16) digits = digits[..16];
-            return digits.PadLeft(16, '0');
+            if (digits == null || digits.Length != 16)
+                throw new InvalidOperationException("شماره کارت باید ۱۶ رقم باشد.");
+            return digits;
         }
 
         public static string? JoinNote(string? first, string? second)
@@ -58,19 +77,13 @@ namespace HR.Services.Data.Mapping
         public static (string First, string Last) SplitName(string? fullName)
         {
             var text = fullName?.Trim();
-            if (string.IsNullOrEmpty(text)) return ("—", "—");
+            if (string.IsNullOrEmpty(text))
+                throw new InvalidOperationException("نام و نام خانوادگی الزامی است.");
 
             var index = text.LastIndexOf(' ');
-            if (index <= 0) return (text, "—");
+            if (index <= 0) return (text, text);
 
             return (text[..index].Trim(), text[(index + 1)..].Trim());
         }
-
-        /// <summary>کد ملی ساختگی ۱۰ رقمی برای بستگانی که کد ملی ندارند.</summary>
-        public static string SyntheticNationalCode()
-            => new string(Guid.NewGuid().ToByteArray()
-                .Take(5)
-                .Select(b => (char)('0' + (b % 10)))
-                .ToArray());
     }
 }

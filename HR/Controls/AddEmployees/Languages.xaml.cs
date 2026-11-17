@@ -85,7 +85,11 @@ namespace HR.Controls.AddEmployees
                 Reading = ReadLevel(ReadingCombo),
                 Writing = ReadLevel(WritingCombo),
                 Comprehension = ReadLevel(DarkMatlabCombo),
-                Speaking = ReadLevel(SpeakingCombo)
+                Speaking = ReadLevel(SpeakingCombo),
+                ReadingTitle = LookupBinder.SelectedTitle(ReadingCombo),
+                WritingTitle = LookupBinder.SelectedTitle(WritingCombo),
+                ComprehensionTitle = LookupBinder.SelectedTitle(DarkMatlabCombo),
+                SpeakingTitle = LookupBinder.SelectedTitle(SpeakingCombo)
             });
 
             if (LangNameTB.Items.Count > 0) LangNameTB.SelectedIndex = 0;

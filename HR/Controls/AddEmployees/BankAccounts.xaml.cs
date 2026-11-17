@@ -73,7 +73,7 @@ namespace HR.Controls.AddEmployees
             }
 
             var sheba = NormalizeSheba(ShebaNumberTB.Text);
-            if (sheba.Length > 0 && !IsValidSheba(sheba))
+            if (!IsValidSheba(sheba))
             {
                 Warn("شماره شبا باید با IR شروع شود و ۲۴ رقم داشته باشد.");
                 ShebaNumberTB.Focus();
@@ -81,7 +81,7 @@ namespace HR.Controls.AddEmployees
             }
 
             var card = DigitsOnly(CardNumberTB.Text);
-            if (card.Length > 0 && card.Length != 16)
+            if (card.Length != 16)
             {
                 Warn("شماره کارت باید ۱۶ رقم باشد.");
                 CardNumberTB.Focus();
@@ -96,7 +96,8 @@ namespace HR.Controls.AddEmployees
                 CardNumber = card,
                 AccountType = BankAccountTypeCB.SelectedValue is BankAccountType t
                     ? t
-                    : BankAccountType.Current
+                    : BankAccountType.Current,
+                AccountTypeTitle = LookupBinder.SelectedTitle(BankAccountTypeCB)
             });
 
             ClearForm();

@@ -17,17 +17,16 @@ namespace HR.Services.Data.Mapping
                 {
                     RelatedPersonId = Guid.NewGuid(),
                     EmployeeId = entity.EmployeeId,
-                    FirstName = MapperHelpers.Required(member.FirstName),
-                    LastName = MapperHelpers.Required(member.LastName),
-                    FatherName = MapperHelpers.Required(member.FatherName),
-                    NationalCode = string.IsNullOrWhiteSpace(member.NationalCode)
-                        ? MapperHelpers.SyntheticNationalCode()
-                        : member.NationalCode.Trim(),
-                    BirthCertificateNumber = "—",
-                    BirthDate = DateTime.Now,
-                    IssueDate = DateTime.Now,
-                    JobTitle = string.IsNullOrWhiteSpace(member.Note) ? "—" : member.Note.Trim(),
-                    Relationship = MapperHelpers.Required(member.Relation),
+                    FirstName = MapperHelpers.Required(member.FirstName, "نام بستگان"),
+                    LastName = MapperHelpers.Required(member.LastName, "نام خانوادگی بستگان"),
+                    FatherName = string.IsNullOrWhiteSpace(member.FatherName) ? null : member.FatherName.Trim(),
+                    NationalCode = string.IsNullOrWhiteSpace(member.NationalCode) ? null : member.NationalCode.Trim(),
+                    BirthCertificateNumber = null,
+                    BirthDate = null,
+                    IssueDate = null,
+                    JobTitle = null,
+                    Description = string.IsNullOrWhiteSpace(member.Note) ? null : member.Note.Trim(),
+                    Relationship = MapperHelpers.Required(member.Relation, "نسبت"),
                     PersonRole = 0,
                     PhoneNumber = string.IsNullOrWhiteSpace(member.PhoneNumber) ? null : member.PhoneNumber.Trim(),
                     Address = string.IsNullOrWhiteSpace(member.Address) ? null : member.Address.Trim()

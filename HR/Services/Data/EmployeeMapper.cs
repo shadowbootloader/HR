@@ -38,55 +38,70 @@ namespace HR.Services.Data
                 LastName = profile.LastName?.Trim() ?? string.Empty,
                 FatherName = profile.FatherName?.Trim() ?? string.Empty,
                 NationalCode = nationalCode,
-                BirthCertificateNumber = string.IsNullOrWhiteSpace(profile.IdNumber)
-                    ? "—"
-                    : profile.IdNumber.Trim(),
-                BirthDate = profile.BirthDate ?? DateTime.Today,
-                IssueDate = profile.IdIssueDate ?? DateTime.Today,
-                Email = BuildEmail(nationalCode),
+                BirthCertificateNumber = MapperHelpers.Required(profile.IdNumber, "شماره شناسنامه"),
+                BirthDate = MapperHelpers.RequireDate(profile.BirthDate, "تاریخ تولد"),
+                IssueDate = MapperHelpers.RequireDate(profile.IdIssueDate, "تاریخ صدور"),
+                Email = MapperHelpers.Required(profile.Email, "ایمیل"),
                 ChildrenCount = (byte)Math.Clamp(profile.ChildrenCount ?? 0, 0, 255),
-                InsuranceNumber = BuildInsuranceNumber(),
+                InsuranceNumber = MapperHelpers.Required(profile.InsuranceNumber, "شماره بیمه"),
                 Description = null,
                 IsDeleted = false,
-                GenderId = await lookups.FromEnumAsync<HR.Data.Entities.Gender, HR.Models.Gender>(profile.Gender, offset: 1),
-                MaritalStatusId = await lookups.FromEnumAsync<HR.Data.Entities.MaritalStatus, HR.Models.MaritalStatus>(profile.MaritalStatus, offset: 1),
-                MilitaryStatusId = profile.MilitaryStatus == HR.Models.MilitaryStatus.Unspecified
-                    ? null
-                    : await lookups.FromEnumAsync<HR.Data.Entities.MilitaryStatus, HR.Models.MilitaryStatus>(profile.MilitaryStatus, offset: 1),
+                GenderId = lookups.MatchTitle<HR.Data.Entities.Gender>(
+                    profile.Gender == HR.Models.Gender.Female ? new[] { "زن", "خانم" } : new[] { "مرد", "آقا" },
+                    "جنسیت"),
+                MaritalStatusId = await lookups.ByteFromTitleAsync<HR.Data.Entities.MaritalStatus>(profile.MaritalStatusTitle),
+                MilitaryStatusId = await lookups.ByteFromTitleOrNullAsync<HR.Data.Entities.MilitaryStatus>(profile.MilitaryStatusTitle),
                 ExemptionTypeId = await lookups.ByteFromTitleOrNullAsync<ExemptionType>(profile.ExemptionType),
                 ExemptionReasonId = await lookups.ByteFromTitleOrNullAsync<ExemptionReason>(profile.ExemptionReason),
                 ReligionId = await lookups.ByteFromTitleOrNullAsync<Religion>(profile.Religion),
+                DenominationId = await lookups.ByteFromTitleOrNullAsync<Denomination>(profile.Denomination),
                 BirthNode = await lookups.LocationByNameAsync(profile.BirthPlace),
-                IssueNode = await lookups.LocationByNameAsync(profile.IdIssuePlace)
+                IssueNode = await lookups.LocationByNameAsync(profile.IdIssuePlace),
+                ResidenceNode = await lookups.LocationByNameAsync(profile.Residence)
             };
+
+            if (!string.IsNullOrWhiteSpace(profile.AddressText))
+            {
+                entity.Addresses.Add(new Address
+                {
+                    AddressId = Guid.NewGuid(),
+                    EmployeeId = entity.EmployeeId,
+                    Title = MapperHelpers.Required(profile.AddressTitle, "عنوان نشانی"),
+                    AddressText = profile.AddressText.Trim(),
+                    PostalCode = string.IsNullOrWhiteSpace(profile.PostalCode) ? null : profile.PostalCode.Trim()
+                });
+            }
 
             var supp = profile.Supplementary;
 
             var hasJobInfo =
-                !string.IsNullOrWhiteSpace(profile.PersonnelCode) ||
-                !string.IsNullOrWhiteSpace(profile.Position) ||
-                !string.IsNullOrWhiteSpace(profile.DepartmentName) ||
+                Filled(profile.PersonnelCode) ||
+                Filled(profile.Position) ||
+                Filled(profile.DepartmentName) ||
                 profile.HireDate.HasValue ||
                 supp != null && (
-                    !string.IsNullOrWhiteSpace(supp.Position) ||
-                    !string.IsNullOrWhiteSpace(supp.InsuranceType) ||
-                    !string.IsNullOrWhiteSpace(supp.CooperationType) ||
+                    Filled(supp.Post) ||
+                    Filled(supp.Position) ||
+                    Filled(supp.InsuranceType) ||
+                    Filled(supp.CooperationType) ||
                     supp.StartDate.HasValue ||
                     supp.Salary > 0);
 
             if (hasJobInfo)
             {
+                if (string.IsNullOrWhiteSpace(profile.DepartmentName) || profile.DepartmentName.Trim() == "—")
+                    throw new InvalidOperationException("دپارتمان را از فهرست انتخاب کنید.");
+
                 var departmentId = await lookups.IdFromTitleAsync<Department>(profile.DepartmentName);
 
+                var positionTitle = FirstText(supp?.Post, profile.Position, supp?.Position);
                 entity.Supplement = new EmployeeSupplement
                 {
                     EmployeeSupplementId = Guid.NewGuid(),
                     EmployeeId = entity.EmployeeId,
-                    PositionTitle = (profile.Position ?? supp?.Position)?.Trim() ?? "—",
-                    PersonnelCode = string.IsNullOrWhiteSpace(profile.PersonnelCode)
-                        ? $"P{Guid.NewGuid():N}"[..10]
-                        : profile.PersonnelCode.Trim(),
-                    StartDate = supp?.StartDate ?? profile.HireDate ?? DateTime.Today,
+                    PositionTitle = MapperHelpers.Required(positionTitle, "سمت"),
+                    PersonnelCode = MapperHelpers.Required(profile.PersonnelCode, "کد پرسنلی"),
+                    StartDate = MapperHelpers.RequireDate(supp?.StartDate ?? profile.HireDate, "تاریخ شروع همکاری"),
                     EndDate = supp?.EndDate,
                     Salary = supp?.Salary ?? 0,
                     InsuranceTypeId = await lookups.ByteFromTitleAsync<InsuranceType>(supp?.InsuranceType),
@@ -121,6 +136,11 @@ namespace HR.Services.Data
                 IdNumber = entity.BirthCertificateNumber,
                 BirthDate = entity.BirthDate,
                 IdIssueDate = entity.IssueDate,
+                Email = entity.Email,
+                InsuranceNumber = entity.InsuranceNumber,
+                Denomination = entity.Denomination?.Title ?? string.Empty,
+                MaritalStatusTitle = entity.MaritalStatus?.Title,
+                MilitaryStatusTitle = entity.MilitaryStatus?.Title,
                 ChildrenCount = entity.ChildrenCount,
                 Gender = MapGenderBack(entity.GenderId, entity.Gender?.Title),
                 MaritalStatus = MapMaritalBack(entity.MaritalStatusId, entity.MaritalStatus?.Title),
@@ -153,7 +173,9 @@ namespace HR.Services.Data
                 profile.Educations.Add(new EducationRecord
                 {
                     Degree = MapDegreeBack(edu.DegreeId, edu.Degree?.Title),
+                    DegreeTitle = edu.Degree?.Title ?? string.Empty,
                     Status = MapEduStatusBack(edu.StatusId, edu.Status?.Title),
+                    StatusTitle = edu.Status?.Title ?? string.Empty,
                     Field = edu.FieldOfStudy,
                     University = edu.InstitutionName,
                     Gpa = (double)edu.GPA,
@@ -182,7 +204,8 @@ namespace HR.Services.Data
                     AccountNumber = b.AccountNumber,
                     ShebaNumber = b.Sheba,
                     CardNumber = b.CardNumber,
-                    AccountType = MapAccountTypeBack(b.AccountTypeId, b.AccountType?.Title)
+                    AccountType = MapAccountTypeBack(b.AccountTypeId, b.AccountType?.Title),
+                    AccountTypeTitle = b.AccountType?.Title ?? string.Empty
                 });
             }
 
@@ -192,6 +215,7 @@ namespace HR.Services.Data
                 {
                     Number = p.Number,
                     Kind = MapPhoneKindBack(p.PhoneNumberType, p.Type?.Title),
+                    KindTitle = p.Type?.Title ?? string.Empty,
                     StartDate = p.StartDate,
                     EndDate = p.EndDate,
                     Note = p.Description
@@ -210,7 +234,7 @@ namespace HR.Services.Data
                     Relation = r.Relationship,
                     PhoneNumber = r.PhoneNumber,
                     Address = r.Address,
-                    Note = r.JobTitle
+                    Note = !string.IsNullOrWhiteSpace(r.Description) ? r.Description : r.JobTitle
                 });
             }
 
@@ -222,7 +246,11 @@ namespace HR.Services.Data
                     Reading = MapLangLevelBack(l.ReadingLevelId, l.ReadingLevel?.Title),
                     Writing = MapLangLevelBack(l.WritingLevelId, l.WritingLevel?.Title),
                     Comprehension = MapLangLevelBack(l.ComprehensionLevelId, l.ComprehensionLevel?.Title),
-                    Speaking = MapLangLevelBack(l.SpeakingLevelId, l.SpeakingLevel?.Title)
+                    Speaking = MapLangLevelBack(l.SpeakingLevelId, l.SpeakingLevel?.Title),
+                    ReadingTitle = l.ReadingLevel?.Title ?? string.Empty,
+                    WritingTitle = l.WritingLevel?.Title ?? string.Empty,
+                    ComprehensionTitle = l.ComprehensionLevel?.Title ?? string.Empty,
+                    SpeakingTitle = l.SpeakingLevel?.Title ?? string.Empty
                 });
             }
 
@@ -232,6 +260,7 @@ namespace HR.Services.Data
                 {
                     SoftwareName = s.Software?.Title ?? string.Empty,
                     Level = MapSkillBack(s.SkillLevelId, s.SkillLevel?.Title),
+                    LevelTitle = s.SkillLevel?.Title ?? string.Empty,
                     Note = s.Description
                 });
             }
@@ -388,7 +417,8 @@ namespace HR.Services.Data
                 profile.Abilities.Add(new AbilityRecord
                 {
                     Title = a.Ability?.Title ?? string.Empty,
-                    Level = MapSkillBack(a.SkillLevelId, a.SkillLevel?.Title)
+                    Level = MapSkillBack(a.SkillLevelId, a.SkillLevel?.Title),
+                    LevelTitle = a.SkillLevel?.Title ?? string.Empty
                 });
             }
 
@@ -398,7 +428,8 @@ namespace HR.Services.Data
                 profile.WorkInterests.Add(new WorkInterestRecord
                 {
                     Title = w.Title,
-                    Level = MapInterestBack(w.InterestLevelId, w.InterestLevel?.Title)
+                    Level = MapInterestBack(w.InterestLevelId, w.InterestLevel?.Title),
+                    LevelTitle = w.InterestLevel?.Title ?? string.Empty
                 });
             }
 
@@ -433,6 +464,16 @@ namespace HR.Services.Data
 
             profile.BirthPlace = await lookups.LocationNameByNodeAsync(entity.BirthNode) ?? string.Empty;
             profile.IdIssuePlace = await lookups.LocationNameByNodeAsync(entity.IssueNode) ?? string.Empty;
+            profile.Residence = await lookups.LocationNameByNodeAsync(entity.ResidenceNode) ?? string.Empty;
+
+            var address = (entity.Addresses ?? Enumerable.Empty<Address>())
+                .FirstOrDefault(a => a.RelatedPersonId == null);
+            if (address != null)
+            {
+                profile.AddressTitle = address.Title;
+                profile.AddressText = address.AddressText;
+                profile.PostalCode = address.PostalCode;
+            }
 
             // Citizenship countries
             var citizenships = (entity.Citizenships ?? Enumerable.Empty<Citizenship>()).ToList();
@@ -479,18 +520,17 @@ namespace HR.Services.Data
             };
         }
 
-        private static string BuildEmail(string nationalCode)
-            => string.IsNullOrWhiteSpace(nationalCode)
-                ? $"{Guid.NewGuid():N}@personnel.local"
-                : $"{nationalCode}@personnel.local";
+        private static bool Filled(string? value)
+            => !string.IsNullOrWhiteSpace(value) && value.Trim() != "—";
 
-        private static string BuildInsuranceNumber()
+        private static string? FirstText(params string?[] values)
         {
-            var digits = new string(Guid.NewGuid().ToByteArray()
-                .Take(6)
-                .Select(b => (char)('0' + (b % 10)))
-                .ToArray());
-            return digits.PadRight(10, '0')[..10];
+            foreach (var value in values)
+            {
+                if (!string.IsNullOrWhiteSpace(value) && value.Trim() != "—")
+                    return value.Trim();
+            }
+            return null;
         }
 
         private static HR.Models.Gender MapGenderBack(byte id, string? title)

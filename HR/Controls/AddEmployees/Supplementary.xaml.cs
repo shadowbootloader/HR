@@ -19,8 +19,7 @@ namespace HR.Controls.AddEmployees
         {
             InitializeComponent();
 
-            // موقعیت سازمانی ستون متنی است و جدول Lookup ندارد
-            OragPlaceCombo.ItemsSource = Lookups.Positions;
+            OragPlaceCombo.ItemsSource = new[] { "—" }.Concat(Lookups.Positions).ToList();
             OragPlaceCombo.SelectedIndex = 0;
 
             Loaded += Supplementary_Loaded;
@@ -35,10 +34,13 @@ namespace HR.Controls.AddEmployees
                 var cache = await LookupCache.GetAsync();
 
                 var insurance = cache[LookupKeys.InsuranceType].Select(x => x.Title).ToList();
-                if (insurance.Count > 0) InsuranceTypeCombo.ItemsSource = insurance;
+                if (insurance.Count > 0) InsuranceTypeCombo.ItemsSource = new[] { "—" }.Concat(insurance).ToList();
 
                 var cooperation = cache[LookupKeys.CooperationType].Select(x => x.Title).ToList();
-                if (cooperation.Count > 0) CooperationTypeCombo.ItemsSource = cooperation;
+                if (cooperation.Count > 0) CooperationTypeCombo.ItemsSource = new[] { "—" }.Concat(cooperation).ToList();
+
+                var departments = cache[LookupKeys.Department].Select(x => x.Title).ToList();
+                DepartmentCombo.ItemsSource = new[] { "—" }.Concat(departments).ToList();
             }
             catch
             {
@@ -47,6 +49,7 @@ namespace HR.Controls.AddEmployees
 
             if (InsuranceTypeCombo.Items.Count > 0) InsuranceTypeCombo.SelectedIndex = 0;
             if (CooperationTypeCombo.Items.Count > 0) CooperationTypeCombo.SelectedIndex = 0;
+            if (DepartmentCombo.Items.Count > 0) DepartmentCombo.SelectedIndex = 0;
         }
 
         private void CVImageBtn_Click(object sender, RoutedEventArgs e)
@@ -62,6 +65,8 @@ namespace HR.Controls.AddEmployees
         {
             var info = profile.Supplementary;
 
+            PersonnelCodeTB.Text = profile.PersonnelCode;
+            SelectText(DepartmentCombo, profile.DepartmentName);
             SelectedPostTB.Text = info.Post ?? string.Empty;
             SelectText(OragPlaceCombo, info.Position);
             SelectText(InsuranceTypeCombo, info.InsuranceType);
@@ -80,10 +85,13 @@ namespace HR.Controls.AddEmployees
         {
             var info = profile.Supplementary;
 
+            profile.PersonnelCode = PersonnelCodeTB.Text?.Trim() ?? string.Empty;
+            profile.DepartmentName = BlankDash(DepartmentCombo.Text);
             info.Post = NullIfEmpty(SelectedPostTB.Text);
-            info.Position = OragPlaceCombo.Text?.Trim();
-            info.InsuranceType = InsuranceTypeCombo.Text?.Trim();
-            info.CooperationType = CooperationTypeCombo.Text?.Trim();
+            info.Position = BlankDash(OragPlaceCombo.Text);
+            profile.Position = info.Post ?? info.Position;
+            info.InsuranceType = BlankDash(InsuranceTypeCombo.Text);
+            info.CooperationType = BlankDash(CooperationTypeCombo.Text);
 
             info.StartDate = CooprationStartDateDP.SelectedDate;
             info.EndDate = CooprationEndDateDP.SelectedDate;
@@ -135,5 +143,11 @@ namespace HR.Controls.AddEmployees
         }
 
         private static string? NullIfEmpty(string? v) => string.IsNullOrWhiteSpace(v) ? null : v.Trim();
+
+        private static string? BlankDash(string? value)
+        {
+            var text = value?.Trim();
+            return string.IsNullOrWhiteSpace(text) || text == "—" ? null : text;
+        }
     }
 }

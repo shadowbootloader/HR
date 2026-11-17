@@ -21,10 +21,10 @@ namespace HR.Services.Data.Mapping
                 {
                     EmploymentHistoryId = Guid.NewGuid(),
                     EmployeeId = entity.EmployeeId,
-                    WorkplaceName = MapperHelpers.Required(job.Company),
-                    JobTitle = MapperHelpers.Required(job.JobTitle),
-                    PhoneNumber = MapperHelpers.Required(job.CompanyPhone),
-                    StartDate = job.StartDate ?? DateTime.Today,
+                    WorkplaceName = MapperHelpers.Required(job.Company, "نام موسسه"),
+                    JobTitle = MapperHelpers.Required(job.JobTitle, "سمت"),
+                    PhoneNumber = MapperHelpers.EmptyIfMissing(job.CompanyPhone),
+                    StartDate = MapperHelpers.RequireDate(job.StartDate, "تاریخ شروع سابقه شغلی"),
                     EndDate = job.EndDate,
                     EndReasonId = string.IsNullOrWhiteSpace(reason) || reason == NoneItem
                         ? null

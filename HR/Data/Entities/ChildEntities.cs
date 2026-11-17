@@ -81,13 +81,14 @@ namespace HR.Data.Entities
         public Guid EmployeeId { get; set; }
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
-        public string FatherName { get; set; } = string.Empty;
-        public string NationalCode { get; set; } = string.Empty;
-        public string BirthCertificateNumber { get; set; } = string.Empty;
-        public DateTime BirthDate { get; set; }
-        public DateTime IssueDate { get; set; }
-        public string JobTitle { get; set; } = string.Empty;
+        public string? FatherName { get; set; }
+        public string? NationalCode { get; set; }
+        public string? BirthCertificateNumber { get; set; }
+        public DateTime? BirthDate { get; set; }
+        public DateTime? IssueDate { get; set; }
+        public string? JobTitle { get; set; }
         public string Relationship { get; set; } = string.Empty;
+        public string? Description { get; set; }
         /// <summary>۰ = بستگان، ۱ = همکاری خارجی</summary>
         public byte PersonRole { get; set; }
         public string? PhoneNumber { get; set; }

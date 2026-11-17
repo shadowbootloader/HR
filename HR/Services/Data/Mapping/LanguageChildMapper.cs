@@ -18,10 +18,10 @@ namespace HR.Services.Data.Mapping
                     EmployeeLanguageId = Guid.NewGuid(),
                     EmployeeId = entity.EmployeeId,
                     LanguageId = await lookups.IdFromTitleAsync<Language>(language.Language),
-                    ReadingLevelId = await lookups.FromEnumAsync<HR.Data.Entities.SkillLevel, LanguageLevel>(language.Reading),
-                    WritingLevelId = await lookups.FromEnumAsync<HR.Data.Entities.SkillLevel, LanguageLevel>(language.Writing),
-                    ComprehensionLevelId = await lookups.FromEnumAsync<HR.Data.Entities.SkillLevel, LanguageLevel>(language.Comprehension),
-                    SpeakingLevelId = await lookups.FromEnumAsync<HR.Data.Entities.SkillLevel, LanguageLevel>(language.Speaking),
+                    ReadingLevelId = await lookups.ByteFromTitleAsync<HR.Data.Entities.SkillLevel>(language.ReadingTitle),
+                    WritingLevelId = await lookups.ByteFromTitleAsync<HR.Data.Entities.SkillLevel>(language.WritingTitle),
+                    ComprehensionLevelId = await lookups.ByteFromTitleAsync<HR.Data.Entities.SkillLevel>(language.ComprehensionTitle),
+                    SpeakingLevelId = await lookups.ByteFromTitleAsync<HR.Data.Entities.SkillLevel>(language.SpeakingTitle),
                     Description = null
                 });
             }

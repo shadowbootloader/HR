@@ -41,6 +41,7 @@ namespace HR.Controls.AddEmployees
             _items.Add(new AbilityRecord
             {
                 Title = name,
+                LevelTitle = (AbilityLevelCombo.SelectedItem as ComboBoxItem)?.Content?.ToString()?.Trim() ?? string.Empty,
                 Level = (AbilityLevelCombo.SelectedItem as ComboBoxItem)?.Content?.ToString() switch
                 {
                     "ضعیف" => SkillLevel.Weak,

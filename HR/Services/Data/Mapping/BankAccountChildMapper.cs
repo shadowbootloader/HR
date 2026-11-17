@@ -21,7 +21,7 @@ namespace HR.Services.Data.Mapping
                     AccountNumber = bank.AccountNumber?.Trim() ?? string.Empty,
                     Sheba = MapperHelpers.Sheba(bank.ShebaNumber),
                     CardNumber = MapperHelpers.Card(bank.CardNumber),
-                    AccountTypeId = await lookups.FromEnumAsync<AccountTypeBank, BankAccountType>(bank.AccountType),
+                    AccountTypeId = await lookups.ByteFromTitleAsync<AccountTypeBank>(bank.AccountTypeTitle),
                     Description = null
                 });
             }

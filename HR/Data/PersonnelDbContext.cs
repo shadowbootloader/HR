@@ -194,6 +194,8 @@ namespace HR.Data
                 entity.HasOne(e => e.MaritalStatus).WithMany().HasForeignKey(e => e.MaritalStatusId);
                 entity.HasOne(e => e.MilitaryStatus).WithMany().HasForeignKey(e => e.MilitaryStatusId);
                 entity.HasOne(e => e.Religion).WithMany().HasForeignKey(e => e.ReligionId);
+                entity.HasOne(e => e.Denomination).WithMany().HasForeignKey(e => e.DenominationId).OnDelete(DeleteBehavior.NoAction);
+                entity.HasIndex(e => e.NationalCode).IsUnique();
 
                 entity.HasOne(e => e.Supplement)
                       .WithOne(s => s.Employee)

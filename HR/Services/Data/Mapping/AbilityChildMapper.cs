@@ -19,8 +19,8 @@ namespace HR.Services.Data.Mapping
                 {
                     EmployeeAbilityId = Guid.NewGuid(),
                     EmployeeId = entity.EmployeeId,
-                    AbilityId = await lookups.IdFromTitleAsync<Ability>(item.Title),
-                    SkillLevelId = await lookups.FromEnumAsync<HR.Data.Entities.SkillLevel, HR.Models.SkillLevel>(item.Level),
+                    AbilityId = checked((int)await lookups.IdFromUserCatalogAsync<Ability>(item.Title)),
+                    SkillLevelId = await lookups.ByteFromTitleAsync<HR.Data.Entities.SkillLevel>(item.LevelTitle),
                     Description = null
                 });
             }

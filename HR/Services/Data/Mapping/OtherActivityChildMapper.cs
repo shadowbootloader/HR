@@ -17,8 +17,8 @@ namespace HR.Services.Data.Mapping
                     {
                         OtherActivityId = Guid.NewGuid(),
                         EmployeeId = entity.EmployeeId,
-                        Title = MapperHelpers.Required(record.Title),
-                        ExecutionPlace = MapperHelpers.Required(record.Place),
+                        Title = MapperHelpers.Required(record.Title, "عنوان فعالیت"),
+                        ExecutionPlace = MapperHelpers.EmptyIfMissing(record.Place),
                         Description = record.Note
                     });
                 }

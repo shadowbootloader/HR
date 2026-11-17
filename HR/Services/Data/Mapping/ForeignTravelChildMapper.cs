@@ -13,15 +13,13 @@ namespace HR.Services.Data.Mapping
 
             foreach (var trip in profile.TripsAbroad)
             {
-                var depart = trip.DepartDate ?? DateTime.Today;
-
                 entity.ForeignTravels.Add(new ForeignTravel
                 {
                     ForeignTravelId = Guid.NewGuid(),
                     EmployeeId = entity.EmployeeId,
                     TravelReasonId = await lookups.ByteFromTitleAsync<TravelReason>(trip.Reason),
-                    DepartureDate = depart,
-                    ReturnDate = trip.ReturnDate ?? depart,
+                    DepartureDate = MapperHelpers.RequireDate(trip.DepartDate, "تاریخ رفت"),
+                    ReturnDate = MapperHelpers.RequireDate(trip.ReturnDate, "تاریخ برگشت"),
                     TransportTypeId = await lookups.ByteFromTitleAsync<TransportType>(trip.Transport),
                     GeoOrigin = await lookups.CountryNodeAsync(trip.OriginCountry),
                     GeoDestination = await lookups.CountryNodeAsync(trip.DestinationCountry),
