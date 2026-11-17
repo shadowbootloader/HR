@@ -236,13 +236,13 @@ namespace HR.Services.Data
 
             await ValidateAsync(employee);
 
-            // فیلدهای اصلی (کلید را دست نمی‌زنیم)
+            // فیلدهای اصلی (کلید و پرچم حذف نرم را دست نمی‌زنیم)
             var id = existing.EmployeeId;
+            var wasDeleted = existing.IsDeleted;
             _db.Entry(existing).CurrentValues.SetValues(employee);
             existing.EmployeeId = id;
-            existing.IsDeleted = false;
+            existing.IsDeleted = wasDeleted;
 
-            // Supplement
             if (employee.Supplement != null)
             {
                 employee.Supplement.EmployeeId = id;
@@ -260,42 +260,36 @@ namespace HR.Services.Data
                     existing.Supplement.EmployeeId = id;
                 }
             }
+            else if (existing.Supplement != null)
+            {
+                _db.EmployeeSupplements.Remove(existing.Supplement);
+                existing.Supplement = null;
+            }
 
-            // جایگزینی کامل مجموعه‌های فرزند
+            // وابسته‌های RelatedPerson قبل از خود RelatedPerson حذف می‌شوند.
+            ReplaceChildren(existing.ForeignCooperations, employee.ForeignCooperations, id, (x, empId) => { x.EmployeeId = empId; if (x.ForeignCooperationId == Guid.Empty) x.ForeignCooperationId = Guid.NewGuid(); });
+            ReplaceChildren(existing.Citizenships, employee.Citizenships, id, (x, empId) => { x.EmployeeId = empId; if (x.CitizenshipId == Guid.Empty) x.CitizenshipId = Guid.NewGuid(); });
+            ReplaceChildren(existing.BackgroundRecords, employee.BackgroundRecords, id, (x, empId) => { x.EmployeeId = empId; if (x.BackgroundRecordId == Guid.Empty) x.BackgroundRecordId = Guid.NewGuid(); });
+            ReplaceChildren(existing.Addresses, employee.Addresses, id, (x, empId) => { x.EmployeeId = empId; x.RelatedPersonId = null; if (x.AddressId == Guid.Empty) x.AddressId = Guid.NewGuid(); });
+            ReplaceChildren(existing.PhoneNumbers, employee.PhoneNumbers, id, (x, empId) => { x.EmployeeId = empId; if (x.PhoneNumberId == Guid.Empty) x.PhoneNumberId = Guid.NewGuid(); });
+            ReplaceChildren(existing.PersonFiles, employee.PersonFiles, id, (x, empId) => { x.EmployeeId = empId; if (x.PersonFileId == Guid.Empty) x.PersonFileId = Guid.NewGuid(); });
+            ReplaceChildren(existing.RelatedPersons, employee.RelatedPersons, id, (x, empId) => { x.EmployeeId = empId; if (x.RelatedPersonId == Guid.Empty) x.RelatedPersonId = Guid.NewGuid(); });
+
             ReplaceChildren(existing.Educations, employee.Educations, id, (x, empId) => { x.EmployeeId = empId; if (x.EducationId == Guid.Empty) x.EducationId = Guid.NewGuid(); });
             ReplaceChildren(existing.Courses, employee.Courses, id, (x, empId) => { x.EmployeeId = empId; if (x.CourseId == Guid.Empty) x.CourseId = Guid.NewGuid(); });
             ReplaceChildren(existing.BankAccounts, employee.BankAccounts, id, (x, empId) => { x.EmployeeId = empId; if (x.BankAccountId == Guid.Empty) x.BankAccountId = Guid.NewGuid(); });
-            ReplaceChildren(existing.PhoneNumbers, employee.PhoneNumbers, id, (x, empId) => { x.EmployeeId = empId; if (x.PhoneNumberId == Guid.Empty) x.PhoneNumberId = Guid.NewGuid(); });
-            ReplaceChildren(existing.RelatedPersons, employee.RelatedPersons, id, (x, empId) => { x.EmployeeId = empId; if (x.RelatedPersonId == Guid.Empty) x.RelatedPersonId = Guid.NewGuid(); });
             ReplaceChildren(existing.Languages, employee.Languages, id, (x, empId) => { x.EmployeeId = empId; if (x.EmployeeLanguageId == Guid.Empty) x.EmployeeLanguageId = Guid.NewGuid(); });
             ReplaceChildren(existing.Softwares, employee.Softwares, id, (x, empId) => { x.EmployeeId = empId; if (x.EmployeeSoftwareId == Guid.Empty) x.EmployeeSoftwareId = Guid.NewGuid(); });
             ReplaceChildren(existing.EmploymentHistories, employee.EmploymentHistories, id, (x, empId) => { x.EmployeeId = empId; if (x.EmploymentHistoryId == Guid.Empty) x.EmploymentHistoryId = Guid.NewGuid(); });
-            ReplaceChildren(existing.Citizenships, employee.Citizenships, id, (x, empId) => { x.EmployeeId = empId; if (x.CitizenshipId == Guid.Empty) x.CitizenshipId = Guid.NewGuid(); });
             ReplaceChildren(existing.ForeignTravels, employee.ForeignTravels, id, (x, empId) => { x.EmployeeId = empId; if (x.ForeignTravelId == Guid.Empty) x.ForeignTravelId = Guid.NewGuid(); });
             ReplaceChildren(existing.ForeignRelatives, employee.ForeignRelatives, id, (x, empId) => { x.EmployeeId = empId; if (x.ForeignRelativeId == Guid.Empty) x.ForeignRelativeId = Guid.NewGuid(); });
-            ReplaceChildren(existing.ForeignCooperations, employee.ForeignCooperations, id, (x, empId) => { x.EmployeeId = empId; if (x.ForeignCooperationId == Guid.Empty) x.ForeignCooperationId = Guid.NewGuid(); });
             ReplaceChildren(existing.OrganizationCooperations, employee.OrganizationCooperations, id, (x, empId) => { x.EmployeeId = empId; if (x.OrganizationCooperationId == Guid.Empty) x.OrganizationCooperationId = Guid.NewGuid(); });
             ReplaceChildren(existing.OtherActivities, employee.OtherActivities, id, (x, empId) => { x.EmployeeId = empId; if (x.OtherActivityId == Guid.Empty) x.OtherActivityId = Guid.NewGuid(); });
             ReplaceChildren(existing.SacrificeRecords, employee.SacrificeRecords, id, (x, empId) => { x.EmployeeId = empId; if (x.SacrificeRecordId == Guid.Empty) x.SacrificeRecordId = Guid.NewGuid(); });
             ReplaceChildren(existing.HiringRecords, employee.HiringRecords, id, (x, empId) => { x.EmployeeId = empId; if (x.HiringRecordId == Guid.Empty) x.HiringRecordId = Guid.NewGuid(); });
-            ReplaceChildren(existing.BackgroundRecords, employee.BackgroundRecords, id, (x, empId) => { x.EmployeeId = empId; if (x.BackgroundRecordId == Guid.Empty) x.BackgroundRecordId = Guid.NewGuid(); });
-
-            var relatedAddresses = existing.Addresses.Where(a => a.RelatedPersonId != null).ToList();
-            existing.Addresses.Clear();
-            foreach (var kept in relatedAddresses)
-                existing.Addresses.Add(kept);
-            foreach (var item in employee.Addresses)
-            {
-                item.EmployeeId = id;
-                item.RelatedPersonId = null;
-                if (item.AddressId == Guid.Empty) item.AddressId = Guid.NewGuid();
-                existing.Addresses.Add(item);
-            }
-            ReplaceChildren(existing.PersonFiles, employee.PersonFiles, id, (x, empId) => { x.EmployeeId = empId; if (x.PersonFileId == Guid.Empty) x.PersonFileId = Guid.NewGuid(); });
             ReplaceChildren(existing.Abilities, employee.Abilities, id, (x, empId) => { x.EmployeeId = empId; if (x.EmployeeAbilityId == Guid.Empty) x.EmployeeAbilityId = Guid.NewGuid(); });
             ReplaceChildren(existing.WorkInterests, employee.WorkInterests, id, (x, empId) => { x.EmployeeId = empId; if (x.EmployeeWorkInterestId == Guid.Empty) x.EmployeeWorkInterestId = Guid.NewGuid(); });
 
-            // SelfAssessment 1:1
             if (employee.SelfAssessment != null)
             {
                 if (existing.SelfAssessment == null)
@@ -312,6 +306,11 @@ namespace HR.Services.Data
                     existing.SelfAssessment.EmployeeSelfAssessmentId = sid;
                     existing.SelfAssessment.EmployeeId = id;
                 }
+            }
+            else if (existing.SelfAssessment != null)
+            {
+                _db.Set<EmployeeSelfAssessment>().Remove(existing.SelfAssessment);
+                existing.SelfAssessment = null;
             }
 
 
@@ -337,13 +336,18 @@ namespace HR.Services.Data
             return existing;
         }
 
-        private static void ReplaceChildren<T>(
+        private void ReplaceChildren<T>(
             ICollection<T> existing,
-            ICollection<T> incoming,
+            ICollection<T>? incoming,
             Guid employeeId,
             Action<T, Guid> prepare) where T : class
         {
-            existing.Clear();
+            foreach (var old in existing.ToList())
+            {
+                existing.Remove(old);
+                _db.Remove(old);
+            }
+
             if (incoming == null) return;
             foreach (var item in incoming)
             {
@@ -391,6 +395,18 @@ namespace HR.Services.Data
                 .FirstOrDefaultAsync(e => e.EmployeeId == employeeId);
 
             if (employee == null) return false;
+
+            var managedDepartments = await _db.Departments
+                .Where(d => d.ManagerEmployeeId == employeeId
+                         || d.DeputyEmployeeId == employeeId
+                         || d.CashCustodianEmployeeId == employeeId)
+                .ToListAsync();
+            foreach (var department in managedDepartments)
+            {
+                if (department.ManagerEmployeeId == employeeId) department.ManagerEmployeeId = null;
+                if (department.DeputyEmployeeId == employeeId) department.DeputyEmployeeId = null;
+                if (department.CashCustodianEmployeeId == employeeId) department.CashCustodianEmployeeId = null;
+            }
 
             _db.RemoveRange(employee.ForeignCooperations);
             _db.RemoveRange(employee.Citizenships);

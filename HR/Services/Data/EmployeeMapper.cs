@@ -181,7 +181,8 @@ namespace HR.Services.Data
                     Gpa = (double)edu.GPA,
                     StartDate = edu.StartDate,
                     EndDate = edu.EndDate,
-                    ThesisTitle = edu.ThesisTitle
+                    ThesisTitle = edu.ThesisTitle,
+                    CertificateImagePath = FilePath(entity, edu.CertificateFileId)
                 });
             }
 
@@ -192,7 +193,8 @@ namespace HR.Services.Data
                     Title = c.Title,
                     Institute = c.InstitutionName,
                     DurationText = c.DurationHours.ToString(),
-                    Note = c.Description
+                    Note = c.Description,
+                    CertificateImagePath = FilePath(entity, c.CertificateFileId)
                 });
             }
 
@@ -522,6 +524,12 @@ namespace HR.Services.Data
 
         private static bool Filled(string? value)
             => !string.IsNullOrWhiteSpace(value) && value.Trim() != "—";
+
+        private static string FilePath(Employee entity, Guid? fileId)
+        {
+            if (fileId == null) return string.Empty;
+            return entity.PersonFiles?.FirstOrDefault(p => p.PersonFileId == fileId)?.FileAddress ?? string.Empty;
+        }
 
         private static string? FirstText(params string?[] values)
         {
