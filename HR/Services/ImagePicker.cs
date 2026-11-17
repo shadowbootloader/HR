@@ -2,58 +2,28 @@
 using System.IO;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
+using HR.Services.Files;
 
 namespace HR.Services
 {
     /// <summary>
-    /// انتخاب تصویر از دیسک، کپی آن در پوشه رسانه برنامه و نمایش پیش‌نمایش.
-    /// فقط نام فایل ذخیره می‌شود (نه مسیر کامل) تا در SQL Server قابل نگهداری باشد.
+    /// انتخاب فایل از دیسک و مرحله‌سازی آن در ریشه ذخیره قابل تنظیم.
+    /// مسیر نسبی برمی‌گردد تا بعد از ذخیره به پوشه کارمند یا دپارتمان منتقل شود.
     /// </summary>
     public static class ImagePicker
     {
-        private const string AppFolderName = "HRSuite";
-        private const string MediaFolderName = "Media";
+        public static string? Pick() => Choose(FileKind.Image,
+            "تصاویر (*.jpg;*.jpeg;*.png;*.bmp;*.gif;*.webp)|*.jpg;*.jpeg;*.png;*.bmp;*.gif;*.webp");
 
-        public static string MediaRoot =>
-            Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                AppFolderName,
-                MediaFolderName);
+        public static string? PickDocument() => Choose(FileKind.Document,
+            "مدارک (*.jpg;*.jpeg;*.png;*.bmp;*.pdf)|*.jpg;*.jpeg;*.png;*.bmp;*.pdf");
 
-        /// <summary>انتخاب تصویر؛ در صورت انصراف null برمی‌گرداند.</summary>
-        public static string? Pick()
-        {
-            var dialog = new Microsoft.Win32.OpenFileDialog
-            {
-                Title = "انتخاب تصویر",
-                Filter = "تصاویر (*.jpg;*.jpeg;*.png;*.bmp)|*.jpg;*.jpeg;*.png;*.bmp",
-                CheckFileExists = true
-            };
-
-            return dialog.ShowDialog() == true ? Store(dialog.FileName) : null;
-        }
-
-        /// <summary>کپی فایل در پوشه رسانه و برگرداندن نام فایل ذخیره‌شده.</summary>
-        public static string Store(string sourcePath)
-        {
-            Directory.CreateDirectory(MediaRoot);
-
-            var extension = Path.GetExtension(sourcePath);
-            var fileName = $"{Guid.NewGuid():N}{extension}";
-            var target = Path.Combine(MediaRoot, fileName);
-
-            File.Copy(sourcePath, target, overwrite: true);
-            return fileName;
-        }
-
-        /// <summary>نمایش تصویر ذخیره‌شده روی کنترل مقصد.</summary>
         public static void Preview(Image target, string? storedName)
         {
             if (target == null) return;
 
-            var fullPath = FullPath(storedName);
-
-            if (fullPath.Length == 0 || !File.Exists(fullPath))
+            var fullPath = FileStorageService.Load().FullPath(storedName);
+            if (fullPath.Length == 0 || !File.Exists(fullPath) || !IsImage(fullPath))
             {
                 target.Source = null;
                 return;
@@ -69,9 +39,28 @@ namespace HR.Services
             target.Source = bitmap;
         }
 
-        public static string FullPath(string? storedName)
-            => string.IsNullOrWhiteSpace(storedName)
-                ? string.Empty
-                : Path.Combine(MediaRoot, storedName);
+        private static string? Choose(FileKind kind, string filter)
+        {
+            var dialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Title = "انتخاب فایل",
+                Filter = filter,
+                CheckFileExists = true
+            };
+
+            if (dialog.ShowDialog() != true) return null;
+            return FileStorageService.Load().Stage(dialog.FileName, kind).RelativePath;
+        }
+
+        private static bool IsImage(string path)
+        {
+            var extension = Path.GetExtension(path);
+            return extension.Equals(".jpg", StringComparison.OrdinalIgnoreCase)
+                   || extension.Equals(".jpeg", StringComparison.OrdinalIgnoreCase)
+                   || extension.Equals(".png", StringComparison.OrdinalIgnoreCase)
+                   || extension.Equals(".bmp", StringComparison.OrdinalIgnoreCase)
+                   || extension.Equals(".gif", StringComparison.OrdinalIgnoreCase)
+                   || extension.Equals(".webp", StringComparison.OrdinalIgnoreCase);
+        }
     }
 }

@@ -1,5 +1,6 @@
 using HR.Data;
 using HR.Services;
+using HR.Services.Files;
 using HR.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -182,6 +183,7 @@ namespace HR.Services.Data
 
             NormalizeForInsert(employee);
             await ValidateAsync(employee);
+            await new DocumentLinkService().SyncEmployeeAsync(_db, employee);
 
             try
             {
@@ -322,6 +324,8 @@ namespace HR.Services.Data
                     : null;
             }
 
+            await new DocumentLinkService().SyncEmployeeAsync(_db, employee);
+
             try
             {
                 await using var tx = await _db.Database.BeginTransactionAsync();
@@ -407,6 +411,8 @@ namespace HR.Services.Data
                 if (department.DeputyEmployeeId == employeeId) department.DeputyEmployeeId = null;
                 if (department.CashCustodianEmployeeId == employeeId) department.CashCustodianEmployeeId = null;
             }
+
+            await new DocumentLinkService().RemoveEmployeeAsync(_db, employeeId);
 
             _db.RemoveRange(employee.ForeignCooperations);
             _db.RemoveRange(employee.Citizenships);
