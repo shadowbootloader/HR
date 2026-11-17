@@ -93,6 +93,8 @@ namespace HR.Data
         public DbSet<SacrificeRelationship> SacrificeRelationships => Set<SacrificeRelationship>();
         public DbSet<AmountUnit> AmountUnits => Set<AmountUnit>();
         public DbSet<GeoType> GeoTypes => Set<GeoType>();
+        public DbSet<DocumentType> DocumentTypes => Set<DocumentType>();
+        public DbSet<Document> Documents => Set<Document>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -492,7 +494,7 @@ namespace HR.Data
                 entity.Property(e => e.Description).HasMaxLength(250);
 
                 entity.HasOne(e => e.Employee).WithMany(emp => emp.ForeignCooperations).HasForeignKey(e => e.EmployeeId).OnDelete(DeleteBehavior.NoAction);
-                entity.HasOne(e => e.RelatedPerson).WithMany().HasForeignKey(e => e.RelatedPersonId).OnDelete(DeleteBehavior.NoAction);
+                entity.HasOne(e => e.RelatedPerson).WithMany(p => p.ForeignCooperations).HasForeignKey(e => e.RelatedPersonId).OnDelete(DeleteBehavior.NoAction);
                 entity.HasOne(e => e.CenterType).WithMany().HasForeignKey(e => e.CenterTypeId).OnDelete(DeleteBehavior.NoAction);
             });
 
@@ -575,6 +577,30 @@ namespace HR.Data
                 entity.ToTable("PersonFile");
                 entity.HasKey(e => e.PersonFileId);
                 entity.Property(e => e.FileAddress).HasMaxLength(500).IsRequired();
+            });
+
+            modelBuilder.Entity<DocumentType>(entity =>
+            {
+                entity.ToTable("DocumentType");
+                entity.HasKey(e => e.DocumentTypeId);
+                entity.Property(e => e.Title).HasMaxLength(50).IsRequired();
+                entity.HasIndex(e => e.Title).IsUnique();
+            });
+
+            modelBuilder.Entity<Document>(entity =>
+            {
+                entity.ToTable("Document");
+                entity.HasKey(e => e.DocumentId);
+                entity.Property(e => e.OriginalFileName).HasMaxLength(260).IsRequired();
+                entity.Property(e => e.StoredRelativePath).HasMaxLength(500).IsRequired();
+                entity.Property(e => e.ContentType).HasMaxLength(127).IsRequired();
+                entity.Property(e => e.Sha256).HasMaxLength(64).IsFixedLength().IsRequired();
+                entity.Property(e => e.CreatedBy).HasMaxLength(100);
+                entity.Property(e => e.IsDeleted).HasDefaultValue(false);
+
+                entity.HasOne(e => e.Employee).WithMany().HasForeignKey(e => e.EmployeeId).OnDelete(DeleteBehavior.NoAction);
+                entity.HasOne(e => e.Department).WithMany().HasForeignKey(e => e.DepartmentId).OnDelete(DeleteBehavior.NoAction);
+                entity.HasOne(e => e.Type).WithMany().HasForeignKey(e => e.DocumentTypeId).OnDelete(DeleteBehavior.NoAction);
             });
         }
     }

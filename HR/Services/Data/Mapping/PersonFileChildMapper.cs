@@ -1,5 +1,6 @@
 using System;
-using System.IO;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using HR.Data.Entities;
 using HR.Models;
@@ -16,33 +17,46 @@ namespace HR.Services.Data.Mapping
             await AddIfAny(entity, lookups, profile.MilitaryImagePath, "پایان خدمت");
             await AddIfAny(entity, lookups, profile.Supplementary?.ResumePath, "رزومه");
 
-            if (profile.Educations != null)
+            await LinkCertificates(entity, lookups, profile.Educations, entity.Educations,
+                edu => edu.CertificateImagePath, (row, file) => row.CertificateFileId = file.PersonFileId, "مدرک تحصیلی");
+            await LinkCertificates(entity, lookups, profile.Courses, entity.Courses,
+                course => course.CertificateImagePath, (row, file) => row.CertificateFileId = file.PersonFileId, "مدرک دوره");
+        }
+
+        private static async Task LinkCertificates<TProfile, TEntity>(
+            Employee entity,
+            LookupResolver lookups,
+            IEnumerable<TProfile>? profileRows,
+            IEnumerable<TEntity> entityRows,
+            Func<TProfile, string?> pathOf,
+            Action<TEntity, PersonFile> assign,
+            string fileTypeTitle)
+        {
+            if (profileRows == null) return;
+            var left = profileRows.ToList();
+            var right = entityRows.ToList();
+            var count = Math.Min(left.Count, right.Count);
+            for (var i = 0; i < count; i++)
             {
-                foreach (var edu in profile.Educations)
-                    await AddIfAny(entity, lookups, edu.CertificateImagePath, "مدرک تحصیلی");
+                var file = await AddIfAny(entity, lookups, pathOf(left[i]), fileTypeTitle);
+                if (file != null) assign(right[i], file);
             }
         }
 
-        private static async Task AddIfAny(Employee entity, LookupResolver lookups, string? path, string fileTypeTitle)
+        private static async Task<PersonFile?> AddIfAny(Employee entity, LookupResolver lookups, string? path, string fileTypeTitle)
         {
-            if (string.IsNullOrWhiteSpace(path) || path.Trim() == "—") return;
+            if (string.IsNullOrWhiteSpace(path) || path.Trim() == "—") return null;
 
-            long size = 0;
-            try
-            {
-                if (File.Exists(path))
-                    size = new FileInfo(path).Length;
-            }
-            catch { /* ignore */ }
-
-            entity.PersonFiles.Add(new PersonFile
+            var file = new PersonFile
             {
                 PersonFileId = Guid.NewGuid(),
                 EmployeeId = entity.EmployeeId,
                 FileTypeId = await lookups.ByteFromTitleAsync<FileType>(fileTypeTitle),
                 FileAddress = path.Trim(),
-                FileSize = size
-            });
+                FileSize = 0
+            };
+            entity.PersonFiles.Add(file);
+            return file;
         }
     }
 }

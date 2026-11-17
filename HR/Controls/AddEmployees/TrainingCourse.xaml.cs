@@ -62,7 +62,7 @@ namespace HR.Controls.AddEmployees
 
         private void CourseCertificateImageBtn_Click(object sender, RoutedEventArgs e)
         {
-            var picked = ImagePicker.Pick();
+            var picked = ImagePicker.PickDocument();
             if (picked == null) return;
 
             _certificateImage = picked;

@@ -73,7 +73,7 @@ namespace HR.Controls.AddEmployees
 
         private void NationalCardImageBtn_Click(object sender, RoutedEventArgs e)
         {
-            var picked = ImagePicker.Pick();
+            var picked = ImagePicker.PickDocument();
             if (picked == null) return;
 
             _nationalCardImage = picked;
@@ -82,7 +82,7 @@ namespace HR.Controls.AddEmployees
 
         private void IDImageBtn_Click(object sender, RoutedEventArgs e)
         {
-            var picked = ImagePicker.Pick();
+            var picked = ImagePicker.PickDocument();
             if (picked == null) return;
 
             _idCardImage = picked;
@@ -91,7 +91,7 @@ namespace HR.Controls.AddEmployees
 
         private void SarbaziImageBtn_Click(object sender, RoutedEventArgs e)
         {
-            var picked = ImagePicker.Pick();
+            var picked = ImagePicker.PickDocument();
             if (picked == null) return;
 
             _militaryImage = picked;

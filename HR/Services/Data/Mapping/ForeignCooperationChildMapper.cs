@@ -29,10 +29,9 @@ namespace HR.Services.Data.Mapping
 
                 var start = MapperHelpers.RequireDate(record.StartDate, "تاریخ شروع همکاری خارجی");
 
-                entity.ForeignCooperations.Add(new ForeignCooperation
+                person.ForeignCooperations.Add(new ForeignCooperation
                 {
                     ForeignCooperationId = Guid.NewGuid(),
-                    EmployeeId = entity.EmployeeId,
                     RelatedPersonId = person.RelatedPersonId,
                     StartDate = start,
                     EndDate = record.EndDate,

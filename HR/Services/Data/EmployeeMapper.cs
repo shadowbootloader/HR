@@ -181,7 +181,8 @@ namespace HR.Services.Data
                     Gpa = (double)edu.GPA,
                     StartDate = edu.StartDate,
                     EndDate = edu.EndDate,
-                    ThesisTitle = edu.ThesisTitle
+                    ThesisTitle = edu.ThesisTitle,
+                    CertificateImagePath = FilePath(entity, edu.CertificateFileId)
                 });
             }
 
@@ -192,7 +193,8 @@ namespace HR.Services.Data
                     Title = c.Title,
                     Institute = c.InstitutionName,
                     DurationText = c.DurationHours.ToString(),
-                    Note = c.Description
+                    Note = c.Description,
+                    CertificateImagePath = FilePath(entity, c.CertificateFileId)
                 });
             }
 
@@ -382,9 +384,17 @@ namespace HR.Services.Data
                 .Where(r => r.PersonRole == 1)
                 .ToDictionary(r => r.RelatedPersonId);
 
-            foreach (var fc in entity.ForeignCooperations ?? Enumerable.Empty<HR.Data.Entities.ForeignCooperation>())
+            var foreignCooperations = (entity.ForeignCooperations ?? Enumerable.Empty<HR.Data.Entities.ForeignCooperation>())
+                .Concat((entity.RelatedPersons ?? Enumerable.Empty<RelatedPerson>())
+                    .SelectMany(r => r.ForeignCooperations ?? Enumerable.Empty<HR.Data.Entities.ForeignCooperation>()))
+                .GroupBy(c => c.ForeignCooperationId)
+                .Select(g => g.First());
+
+            foreach (var fc in foreignCooperations)
             {
-                coopPeople.TryGetValue(fc.RelatedPersonId, out var person);
+                RelatedPerson? person = null;
+                if (fc.RelatedPersonId is Guid personId)
+                    coopPeople.TryGetValue(personId, out person);
                 var (country, note) = MapperHelpers.SplitJoined(fc.Description);
                 profile.ForeignCooperations.Add(new ForeignCooperationRecord
                 {
@@ -522,6 +532,12 @@ namespace HR.Services.Data
 
         private static bool Filled(string? value)
             => !string.IsNullOrWhiteSpace(value) && value.Trim() != "—";
+
+        private static string FilePath(Employee entity, Guid? fileId)
+        {
+            if (fileId == null) return string.Empty;
+            return entity.PersonFiles?.FirstOrDefault(p => p.PersonFileId == fileId)?.FileAddress ?? string.Empty;
+        }
 
         private static string? FirstText(params string?[] values)
         {

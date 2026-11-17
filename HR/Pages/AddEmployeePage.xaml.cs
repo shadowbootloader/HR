@@ -148,6 +148,7 @@ namespace HR.Pages
         {
             if (_isSaving) return;
 
+            await LoadRemainingSectionsAsync();
             var sections = EnumerateSections().ToList();
 
             if (sections.Count == 0)

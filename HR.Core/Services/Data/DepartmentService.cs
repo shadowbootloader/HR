@@ -1,5 +1,6 @@
 using HR.Data;
 using HR.Data.Entities;
+using HR.Services.Files;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -95,6 +96,8 @@ namespace HR.Services.Data
             {
                 _db.Departments.Add(department);
                 await _db.SaveChangesAsync();
+                await new DocumentLinkService().SyncDepartmentLogoAsync(_db, department);
+                await _db.SaveChangesAsync();
                 return department;
             }
             catch (DbUpdateException ex)
@@ -165,6 +168,7 @@ namespace HR.Services.Data
 
             try
             {
+                await new DocumentLinkService().SyncDepartmentLogoAsync(_db, existing);
                 await _db.SaveChangesAsync();
                 return existing;
             }
@@ -200,8 +204,9 @@ namespace HR.Services.Data
                 throw new InvalidOperationException("این دپارتمان دارای زیرمجموعه است و قابل حذف نیست.");
 
             if (dept.Employees.Any())
-                throw new InvalidOperationException("این دپارتمان دارای کارمند است و قابل حذف نیست.");
+                throw new InvalidOperationException("این دپارتمان دارای کارمند است و قابل حذف نیست. ابتدا کارکنان را منتقل یا حذف کنید.");
 
+            await new DocumentLinkService().RemoveDepartmentAsync(_db, id);
             _db.Departments.Remove(dept);
             await _db.SaveChangesAsync();
             return true;
