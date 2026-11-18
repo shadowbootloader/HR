@@ -265,10 +265,9 @@ namespace HR.Services.Data
                 }
                 else
                 {
-                    var sid = existing.Supplement.EmployeeSupplementId;
+                    employee.Supplement.EmployeeSupplementId = existing.Supplement.EmployeeSupplementId;
+                    employee.Supplement.EmployeeId = id;
                     _db.Entry(existing.Supplement).CurrentValues.SetValues(employee.Supplement);
-                    existing.Supplement.EmployeeSupplementId = sid;
-                    existing.Supplement.EmployeeId = id;
                 }
             }
             else if (existing.Supplement != null)
@@ -315,10 +314,9 @@ namespace HR.Services.Data
                 }
                 else
                 {
-                    var sid = existing.SelfAssessment.EmployeeSelfAssessmentId;
+                    employee.SelfAssessment.EmployeeSelfAssessmentId = existing.SelfAssessment.EmployeeSelfAssessmentId;
+                    employee.SelfAssessment.EmployeeId = id;
                     _db.Entry(existing.SelfAssessment).CurrentValues.SetValues(employee.SelfAssessment);
-                    existing.SelfAssessment.EmployeeSelfAssessmentId = sid;
-                    existing.SelfAssessment.EmployeeId = id;
                 }
             }
             else if (existing.SelfAssessment != null)
