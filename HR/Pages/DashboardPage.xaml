@@ -5,53 +5,119 @@
       Background="#0B1120"
       FlowDirection="RightToLeft"
       FontFamily="pack://application:,,,/Fonts/#B Nazanin"
-      Foreground="White">
+      Foreground="White"
+      SizeChanged="Page_SizeChanged">
+    <Page.Resources>
+        <Style x:Key="Card" TargetType="Border">
+            <Setter Property="Background" Value="#111827"/>
+            <Setter Property="BorderBrush" Value="#1E293B"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="16"/>
+        </Style>
+        <Style x:Key="Empty" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#94A3B8"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+    </Page.Resources>
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="20">
-            <!--<TextBlock x:Name="HeadcountText" Text="در حال بارگذاری..." FontSize="22" FontWeight="Bold" Margin="0,0,0,16"/>-->
+            <TextBlock Text="داشبورد منابع انسانی" FontSize="24" FontWeight="Bold" Margin="0,0,0,14"/>
+            <UniformGrid x:Name="KpiGrid" Columns="6" Margin="0,0,0,16">
+                <Border Style="{StaticResource Card}" Margin="0,0,8,8"><StackPanel><TextBlock Text="کل پرسنل فعال" Foreground="#94A3B8"/><TextBlock x:Name="KpiActive" FontSize="28" FontWeight="Bold" Margin="0,6,0,0"/><TextBlock x:Name="KpiActiveSub" Foreground="#64748B" FontSize="12"/></StackPanel></Border>
+                <Border Style="{StaticResource Card}" Margin="0,0,8,8"><StackPanel><TextBlock Text="تازه‌واردهای ۳۰ روز" Foreground="#94A3B8"/><TextBlock x:Name="KpiNew" FontSize="28" FontWeight="Bold" Margin="0,6,0,0"/><TextBlock x:Name="KpiNewSub" Foreground="#64748B" FontSize="12"/></StackPanel></Border>
+                <Border Style="{StaticResource Card}" Margin="0,0,8,8"><StackPanel><TextBlock Text="در مرخصی امروز" Foreground="#94A3B8"/><TextBlock x:Name="KpiLeave" FontSize="28" FontWeight="Bold" Margin="0,6,0,0"/><TextBlock x:Name="KpiLeaveSub" Foreground="#64748B" FontSize="12"/></StackPanel></Border>
+                <Border Style="{StaticResource Card}" Margin="0,0,8,8"><StackPanel><TextBlock Text="تعداد دپارتمان" Foreground="#94A3B8"/><TextBlock x:Name="KpiDepts" FontSize="28" FontWeight="Bold" Margin="0,6,0,0"/><TextBlock Text="واحد فعال" Foreground="#64748B" FontSize="12"/></StackPanel></Border>
+                <Border Style="{StaticResource Card}" Margin="0,0,8,8"><StackPanel><TextBlock Text="ظرفیت پرشده" Foreground="#94A3B8"/><TextBlock x:Name="KpiCapacity" FontSize="28" FontWeight="Bold" Margin="0,6,0,0"/><TextBlock x:Name="KpiCapacitySub" Foreground="#64748B" FontSize="12"/></StackPanel></Border>
+                <Border Style="{StaticResource Card}" Margin="0"><StackPanel><TextBlock Text="آزمون‌های این ماه" Foreground="#94A3B8"/><TextBlock x:Name="KpiTests" FontSize="28" FontWeight="Bold" Margin="0,6,0,0"/><TextBlock Text="بدون خودارزیابی" Foreground="#64748B" FontSize="12"/></StackPanel></Border>
+            </UniformGrid>
 
-            <Border Background="#111827" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="12" Padding="16" Margin="0,0,0,16">
-                <StackPanel>
-                    <TextBlock Text="استخدام در دوازده ماه اخیر" FontSize="16" Margin="0,0,0,8"/>
-                    <Grid MinHeight="220">
-                        <lvc:CartesianChart x:Name="HiresChart" Height="240"/>
-                        <TextBlock x:Name="HiresEmpty" Text="داده‌ای برای نمایش نیست" Foreground="#94A3B8" FontSize="15"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
-                    </Grid>
-                </StackPanel>
-            </Border>
-
-            <Border Background="#111827" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="12" Padding="16" Margin="0,0,0,16">
-                <StackPanel>
-                    <TextBlock Text="تعداد نفرات هر دپارتمان" FontSize="16" Margin="0,0,0,8"/>
-                    <Grid MinHeight="180">
-                        <lvc:CartesianChart x:Name="DepartmentChart"/>
-                        <TextBlock x:Name="DepartmentEmpty" Text="داده‌ای برای نمایش نیست" Foreground="#94A3B8" FontSize="15"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
-                    </Grid>
-                </StackPanel>
-            </Border>
-
-            <UniformGrid Columns="2">
-                <Border Background="#111827" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="12" Padding="16" Margin="0,0,8,0">
+            <Grid Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1.4*"/>
+                    <ColumnDefinition Width="16"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Border Grid.Column="0" Style="{StaticResource Card}">
                     <StackPanel>
-                        <TextBlock Text="وضعیت" FontSize="16" Margin="0,0,0,8"/>
-                        <Grid Height="260">
-                            <lvc:PieChart x:Name="StatusChart"/>
-                            <TextBlock x:Name="StatusEmpty" Text="داده‌ای برای نمایش نیست" Foreground="#94A3B8" FontSize="15"
-                                       HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
+                        <TextBlock Text="نیرو در برابر ظرفیت دپارتمان" FontSize="16" Margin="0,0,0,8"/>
+                        <Grid MinHeight="220">
+                            <lvc:CartesianChart x:Name="DepartmentChart"/>
+                            <TextBlock x:Name="DepartmentEmpty" Text="دپارتمان فعالی نیست" Style="{StaticResource Empty}" Visibility="Collapsed"/>
                         </Grid>
                     </StackPanel>
                 </Border>
-                <Border Background="#111827" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="12" Padding="16" Margin="8,0,0,0">
+                <Border Grid.Column="2" Style="{StaticResource Card}">
                     <StackPanel>
-                        <TextBlock Text="جنسیت" FontSize="16" Margin="0,0,0,8"/>
+                        <TextBlock Text="وضعیت نیروها" FontSize="16" Margin="0,0,0,8"/>
                         <Grid Height="260">
-                            <lvc:PieChart x:Name="GenderChart"/>
-                            <TextBlock x:Name="GenderEmpty" Text="داده‌ای برای نمایش نیست" Foreground="#94A3B8" FontSize="15"
-                                       HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
+                            <lvc:PieChart x:Name="StatusChart"/>
+                            <TextBlock x:Name="StatusEmpty" Text="داده‌ای برای نمایش نیست" Style="{StaticResource Empty}" Visibility="Collapsed"/>
                         </Grid>
                     </StackPanel>
+                </Border>
+            </Grid>
+
+            <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="استخدام و شروع مرخصی در دوازده ماه" FontSize="16" Margin="0,0,0,8"/>
+                    <Grid MinHeight="240">
+                        <lvc:CartesianChart x:Name="TrendChart" Height="240"/>
+                        <TextBlock x:Name="TrendEmpty" Text="در این بازه استخدام یا مرخصی ثبت نشده" Style="{StaticResource Empty}" Visibility="Collapsed"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <Grid Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="16"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Border Grid.Column="0" Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="جنسیت" FontSize="16" Margin="0,0,0,8"/>
+                        <Grid Height="240">
+                            <lvc:PieChart x:Name="GenderChart"/>
+                            <TextBlock x:Name="GenderEmpty" Text="داده‌ای برای نمایش نیست" Style="{StaticResource Empty}" Visibility="Collapsed"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="2" Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="گروه سنی" FontSize="16" Margin="0,0,0,8"/>
+                        <Grid Height="240">
+                            <lvc:CartesianChart x:Name="AgeChart"/>
+                            <TextBlock x:Name="AgeEmpty" Text="تاریخ تولد ثبت نشده" Style="{StaticResource Empty}" Visibility="Collapsed"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <UniformGrid x:Name="ListGrid" Columns="3">
+                <Border Style="{StaticResource Card}" Margin="0,0,8,0">
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Top" Text="تازه‌واردها" FontSize="16" Margin="0,0,0,8"/>
+                        <TextBlock x:Name="NewEmpty" DockPanel.Dock="Top" Text="تازه‌واردی در ۳۰ روز اخیر نیست" Style="{StaticResource Empty}" Visibility="Collapsed"/>
+                        <StackPanel x:Name="NewList"/>
+                    </DockPanel>
+                </Border>
+                <Border Style="{StaticResource Card}" Margin="4,0">
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Top" Text="مرخصی‌های جاری" FontSize="16" Margin="0,0,0,8"/>
+                        <TextBlock x:Name="LeaveEmpty" DockPanel.Dock="Top" Text="مرخصی بازی برای امروز نیست" Style="{StaticResource Empty}" Visibility="Collapsed"/>
+                        <StackPanel x:Name="LeaveList"/>
+                    </DockPanel>
+                </Border>
+                <Border Style="{StaticResource Card}" Margin="8,0,0,0">
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Top" Text="آزمون‌های اخیر" FontSize="16" Margin="0,0,0,8"/>
+                        <TextBlock x:Name="AttemptEmpty" DockPanel.Dock="Top" Text="آزمونی به‌جز خودارزیابی ثبت نشده" Style="{StaticResource Empty}" Visibility="Collapsed"/>
+                        <StackPanel x:Name="AttemptList"/>
+                    </DockPanel>
                 </Border>
             </UniformGrid>
         </StackPanel>

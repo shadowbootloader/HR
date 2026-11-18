@@ -60,6 +60,53 @@ public class DashboardTests
         Assert.Equal(RosterStatus.Deleted, RosterStatus.Resolve(true, null, false, today, today));
         Assert.Equal(RosterStatus.Active, RosterStatus.Resolve(false, null, false, null, today));
     }
+
+    [Fact]
+    public void Cards_UseCapacityLeavesAndIgnoreSelfSliders()
+    {
+        var today = new DateTime(2026, 11, 17);
+        var snapshot = DashboardAggregator.Build(
+            new[]
+            {
+                new DashboardPerson
+                {
+                    FullName = "نگار",
+                    Department = "مالی",
+                    StartDate = today,
+                    BirthDate = new DateTime(1998, 1, 1),
+                    PhotoPath = "a.png"
+                },
+                new DashboardPerson
+                {
+                    FullName = "آیدا",
+                    Department = "مالی",
+                    StartDate = today.AddYears(-2),
+                    OnLeave = true,
+                    LeaveType = "استحقاقی",
+                    LeaveEnd = today.AddDays(2),
+                    BirthDate = new DateTime(1980, 1, 1)
+                }
+            },
+            today,
+            new[] { new DashboardDepartment { Name = "مالی", Capacity = 4, IsActive = true } },
+            new[] { today },
+            new[]
+            {
+                new DashboardAttempt { Code = "self-sliders", Title = "خود", EmployeeName = "نگار", SubmittedAt = today, Score = 10 },
+                new DashboardAttempt { Code = "disc-short", Title = "DISC", EmployeeName = "آیدا", SubmittedAt = today, Score = 70, Level = "بالا" }
+            });
+
+        Assert.Equal(1, snapshot.NewHireCount);
+        Assert.Equal(1, snapshot.OnLeaveCount);
+        Assert.Equal(1, snapshot.DepartmentCount);
+        Assert.Equal(50, snapshot.CapacityPercent);
+        Assert.Equal(1, snapshot.AssessmentsThisMonth);
+        Assert.Equal("نگار", Assert.Single(snapshot.NewHires).Title);
+        Assert.Contains("استحقاقی", Assert.Single(snapshot.OpenLeaves).Subtitle);
+        Assert.Equal("DISC", Assert.Single(snapshot.RecentAttempts).Title);
+        Assert.Equal(2, snapshot.DepartmentLoads.Single().Actual);
+        Assert.Equal(1, snapshot.LeaveStarts.Single(item => item.Month == new System.Globalization.PersianCalendar().GetMonth(today)).Count);
+    }
 }
 
 [Collection("sqlserver")]
