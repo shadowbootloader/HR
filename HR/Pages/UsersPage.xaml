@@ -5,6 +5,30 @@
       FlowDirection="RightToLeft"
       FontFamily="pack://application:,,,/Fonts/#B Nazanin"
       Foreground="White">
+    <Page.Resources>
+        <Style x:Key="UserColumnHeader" TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="#0F172A"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="BorderBrush" Value="#1E293B"/>
+            <Setter Property="BorderThickness" Value="0,0,1,1"/>
+            <Setter Property="HorizontalContentAlignment" Value="Right"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DataGridColumnHeader">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="#38BDF8"
+                                BorderThickness="0,0,0,1"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Right" VerticalAlignment="Center" RecognizesAccessKey="True"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Page.Resources>
     <Grid Margin="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -20,6 +44,8 @@
         <DataGrid x:Name="UserGrid" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True"
                   Background="#111827" Foreground="White" BorderBrush="#334155" RowBackground="#0F172A"
                   AlternatingRowBackground="#111827" HeadersVisibility="Column" FlowDirection="RightToLeft"
+                  GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#1E293B"
+                  ColumnHeaderStyle="{StaticResource UserColumnHeader}"
                   SelectionChanged="UserGrid_SelectionChanged" CanUserAddRows="False">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="نام کاربری" Binding="{Binding Username}" Width="*"/>
