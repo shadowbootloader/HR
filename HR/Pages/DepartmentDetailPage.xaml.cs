@@ -2,10 +2,13 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Navigation;
+using HR.Controls;
+using HR.Data;
 using HR.Models;
 using HR.Services;
 using HR.Services.Auth;
 using HR.Services.Data;
+using HR.Services.Org;
 using MaterialDesignThemes.Wpf;
 
 namespace HR.Pages
@@ -16,6 +19,11 @@ namespace HR.Pages
 
         private readonly DepartmentModel? _department;
         private static readonly PersianCalendar Calendar = new();
+        private readonly List<EmployeeModel> _staff = new();
+        private int _staffPage = 1;
+        private const int StaffPageSize = 8;
+        private bool _staffLoaded;
+        private bool _chartLoaded;
 
         public DepartmentDetailPage() : this(null) { }
 
@@ -113,9 +121,7 @@ namespace HR.Pages
 
                 FinanceCard.Budget = (long)(dept.AnnualBudget ?? 0);
                 FinanceCard.Spent = 0;
-
-                MembersList.ItemsSource = members;
-                MembersEmpty.Visibility = members.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+                ShowTab(0);
             }
             catch (Exception ex)
             {
@@ -175,8 +181,94 @@ namespace HR.Pages
                 NavigationService.GoBack();
         }
 
-        private void DeptTabs_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private async void DeptTabs_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (!IsLoaded || DeptTabs == null) return;
+            var index = DeptTabs.SelectedIndex;
+            ShowTab(index);
+            if (index == 1) await LoadStaffAsync();
+            if (index == 2) await LoadChartAsync();
+        }
+
+        private void ShowTab(int index)
+        {
+            if (SummaryPanel == null) return;
+            SummaryPanel.Visibility = index == 0 ? Visibility.Visible : Visibility.Collapsed;
+            StaffPanel.Visibility = index == 1 ? Visibility.Visible : Visibility.Collapsed;
+            ChartPanel.Visibility = index == 2 ? Visibility.Visible : Visibility.Collapsed;
+            WorkPanel.Visibility = index is 3 or 4 ? Visibility.Visible : Visibility.Collapsed;
+            ProjectsCard.Visibility = index == 3 ? Visibility.Visible : Visibility.Collapsed;
+            FinanceCard.Visibility = index == 4 ? Visibility.Visible : Visibility.Collapsed;
+            ContractsCard.Visibility = index == 4 ? Visibility.Visible : Visibility.Collapsed;
+            ReportsPanel.Visibility = index == 5 ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private async System.Threading.Tasks.Task LoadStaffAsync()
+        {
+            if (_department == null || _staffLoaded) 
+            {
+                RenderStaff();
+                return;
+            }
+            using var people = new EmployeeService();
+            var rows = await people.GetAllAsync(includeDeleted: true);
+            _staff.Clear();
+            foreach (var employee in rows.Where(item => item.Supplement?.DepartmentId == _department.Id))
+                _staff.Add(EmployeeListPage.MapToModel(employee));
+            _staffLoaded = true;
+            EmployeeRowControl.NavigationRequested -= OnStaffNavigate;
+            EmployeeRowControl.NavigationRequested += OnStaffNavigate;
+            RenderStaff();
+        }
+
+        private void OnStaffNavigate(Page page) => NavigationRequested?.Invoke(page);
+
+        private void RenderStaff()
+        {
+            var term = StaffSearch.Text?.Trim() ?? string.Empty;
+            var filtered = _staff.Where(item =>
+                string.IsNullOrWhiteSpace(term) ||
+                item.FullName.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                item.PersonnelCode.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                item.Position.Contains(term, StringComparison.OrdinalIgnoreCase)).ToList();
+            var pages = Math.Max(1, (int)Math.Ceiling(filtered.Count / (double)StaffPageSize));
+            if (_staffPage > pages) _staffPage = pages;
+            StaffList.Items.Clear();
+            foreach (var item in filtered.Skip((_staffPage - 1) * StaffPageSize).Take(StaffPageSize))
+                StaffList.Items.Add(new EmployeeRowControl { DataContext = item });
+            StaffEmpty.Visibility = filtered.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+            StaffPageText.Text = filtered.Count == 0
+                ? "موردی یافت نشد"
+                : $"صفحه {_staffPage} از {pages} · {filtered.Count} نفر";
+        }
+
+        private void StaffSearch_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            _staffPage = 1;
+            if (_staffLoaded) RenderStaff();
+        }
+
+        private void StaffPrev_Click(object sender, RoutedEventArgs e)
+        {
+            if (_staffPage > 1) { _staffPage--; RenderStaff(); }
+        }
+
+        private void StaffNext_Click(object sender, RoutedEventArgs e)
+        {
+            _staffPage++;
+            RenderStaff();
+        }
+
+        private async System.Threading.Tasks.Task LoadChartAsync()
+        {
+            if (_department == null || _chartLoaded) return;
+            await using var db = new PersonnelDbContext();
+            var tree = OrgChartLayout.Build(
+                await OrgChartPage.LoadDepartmentsAsync(db),
+                await OrgChartPage.LoadPeopleAsync(db),
+                _department.Id);
+            DeptChart.Show(tree);
+            _chartLoaded = true;
         }
     }
 }

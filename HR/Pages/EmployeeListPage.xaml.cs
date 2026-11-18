@@ -120,7 +120,7 @@ namespace HR.Pages
             }
         }
 
-        private static EmployeeModel MapToModel(HR.Data.Entities.Employee e)
+        public static EmployeeModel MapToModel(HR.Data.Entities.Employee e)
         {
             return new EmployeeModel
             {
