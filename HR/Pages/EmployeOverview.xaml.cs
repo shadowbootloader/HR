@@ -1,4 +1,5 @@
-﻿using System.Windows.Controls;
+﻿using System.Globalization;
+using System.Windows.Controls;
 using System.Windows.Media;
 using HR.Services.Assessments;
 using HR.Services.Data;

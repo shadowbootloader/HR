@@ -29,7 +29,7 @@
                 <!-- دایره پیشرفت -->
                 <Grid Width="65" Height="65" Margin="20,10,16,0">
                     <!-- حلقه پس‌زمینه -->
-                    <local:CircularProgressBar Value="87"
+                    <local:CircularProgressBar x:Name="PerformanceRing" Value="0"
        Maximum="100"
        StrokeThickness="7"
        TrackColor="#FF293A61"
@@ -48,7 +48,7 @@
                         </local:CircularProgressBar.GradientStops>
                     </local:CircularProgressBar>
                     <!-- درصد وسط -->
-                    <TextBlock Text="87%"
+                    <TextBlock Text="—"
                                x:Name="PerformsncePercentTB"
                                FontSize="16"
                                FontWeight="Bold"
@@ -59,7 +59,7 @@
 
                 <!-- متن‌های سمت راست گیج -->
                 <StackPanel VerticalAlignment="Center" Margin="20,0">
-                    <TextBlock Text="عالی" HorizontalAlignment="Center"
+                    <TextBlock Text="—" HorizontalAlignment="Center"
                                x:Name="LevelTB"
                                FontSize="18"
                                FontWeight="SemiBold"
@@ -71,7 +71,7 @@
                             CornerRadius="8"
                             Padding="10,4"
                             HorizontalAlignment="Left">
-                        <TextBlock Text="برتر 15%"
+                        <TextBlock Text="بدون آزمون"
                                    x:Name="StatusTB"
                                    FontSize="14"
                                    FontWeight="SemiBold"

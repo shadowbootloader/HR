@@ -76,12 +76,12 @@ Margin="0,15,18,0">
             </StackPanel>
             
             <StackPanel Orientation="Vertical"   HorizontalAlignment="Stretch" VerticalAlignment="Top">
-                <TextBlock x:Name="EmployeeID" FontWeight="Bold" FlowDirection="RightToLeft" FontSize="14" Margin="0,5,0,5"  Text="{Binding Path=EmployeeIDStr}" Foreground="White" FontFamily="pack://application:,,,/Fonts/#B Nazanin"/>
-                <TextBlock x:Name="BirthDate" FontWeight="Bold" FlowDirection="RightToLeft" FontSize="14" Margin="0,5,0,5"  Text="{Binding Path=BirthDateStr}" Foreground="White" FontFamily="pack://application:,,,/Fonts/#B Nazanin"/>
-                <TextBlock x:Name="MarageStatus" FontWeight="Bold" FlowDirection="RightToLeft" FontSize="14" Margin="0,5,0,5"  Text="{Binding Path=MarageStatusStr}" Foreground="White" FontFamily="pack://application:,,,/Fonts/#B Nazanin"/>
-                <TextBlock x:Name="PhoneNumber" FontWeight="Bold" FlowDirection="RightToLeft" FontSize="14" Margin="0,5,0,5"  Text="{Binding Path=PhoneNumberStr}" Foreground="White" FontFamily="pack://application:,,,/Fonts/#B Nazanin"/>
-                <TextBlock x:Name="JoinDate" FontWeight="Bold" FlowDirection="RightToLeft" FontSize="14" Margin="0,5,0,5"  Text="{Binding Path=JoinDateStr}" Foreground="White" FontFamily="pack://application:,,,/Fonts/#B Nazanin"/>
-                <TextBlock x:Name="Manager" FontWeight="Bold" FlowDirection="RightToLeft" FontSize="14" Margin="0,5,0,5"  Text="{Binding Path=ManagerStr}" Foreground="White" FontFamily="pack://application:,,,/Fonts/#B Nazanin"/>
+                <TextBlock x:Name="EmployeeID" FontWeight="Bold" FlowDirection="RightToLeft" FontSize="14" Margin="0,5,0,5"  Text="—" Foreground="White" FontFamily="pack://application:,,,/Fonts/#B Nazanin"/>
+                <TextBlock x:Name="BirthDate" FontWeight="Bold" FlowDirection="RightToLeft" FontSize="14" Margin="0,5,0,5"  Text="—" Foreground="White" FontFamily="pack://application:,,,/Fonts/#B Nazanin"/>
+                <TextBlock x:Name="MarageStatus" FontWeight="Bold" FlowDirection="RightToLeft" FontSize="14" Margin="0,5,0,5"  Text="—" Foreground="White" FontFamily="pack://application:,,,/Fonts/#B Nazanin"/>
+                <TextBlock x:Name="PhoneNumber" FontWeight="Bold" FlowDirection="RightToLeft" FontSize="14" Margin="0,5,0,5"  Text="—" Foreground="White" FontFamily="pack://application:,,,/Fonts/#B Nazanin"/>
+                <TextBlock x:Name="JoinDate" FontWeight="Bold" FlowDirection="RightToLeft" FontSize="14" Margin="0,5,0,5"  Text="—" Foreground="White" FontFamily="pack://application:,,,/Fonts/#B Nazanin"/>
+                <TextBlock x:Name="Manager" FontWeight="Bold" FlowDirection="RightToLeft" FontSize="14" Margin="0,5,0,5"  Text="—" Foreground="White" FontFamily="pack://application:,,,/Fonts/#B Nazanin"/>
             </StackPanel>
         </DockPanel>
         

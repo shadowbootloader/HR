@@ -35,7 +35,9 @@
 
 1. متغیر محیطی `PERSONNEL_CONNECTION`
 2. `ConnectionStrings:Personnel` در `HR/appsettings.json`
-3. پیش‌فرض: `Server=.;Database=Personnel;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true`
+3. پیش‌فرض: `Server=.;Database=Personnel;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=True`
+
+`Server=.` همان instance پیش‌فرض محلی (`MSSQLSERVER`) است، نه `SQLEXPRESS` و نه LocalDB. نام پایگاه `Personnel` است. سرویس SQL Server باید در حال اجرا باشد و پایگاه با `HR/DB/LastPersonnel.sql` ساخته شده باشد. فایل `HR/appsettings.json` با ساخت پروژه در خروجی کپی می‌شود. اگر `PERSONNEL_CONNECTION` تنظیم شده باشد، بر appsettings و این پیش‌فرض اولویت دارد.
 
 **مسیر ذخیره فایل‌ها** (عکس پرسنلی، مدارک، لوگوی دپارتمان) به ترتیب اولویت:
 
