@@ -23,7 +23,7 @@
                 <controls:SkillsProficienciesCard x:Name="SkillsCard" DockPanel.Dock="Top" Height="190" VerticalAlignment="Top" HorizontalAlignment="Stretch"  Margin="5,5,10,0" >
 
                 </controls:SkillsProficienciesCard>
-                <controls:CertificatesCard x:Name="Certificates" MinWidth="385" Height="125" DockPanel.Dock="Top" HorizontalAlignment="Stretch" Margin="5,5,10,0">
+                <controls:CertificatesCard x:Name="Certificates" MinWidth="385" Height="125" DockPanel.Dock="Top" VerticalAlignment="Top" HorizontalAlignment="Stretch" Margin="5,5,10,0">
 
                 </controls:CertificatesCard>
             </DockPanel>
