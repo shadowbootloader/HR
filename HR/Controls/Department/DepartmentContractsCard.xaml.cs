@@ -13,15 +13,6 @@ namespace HR.Controls.Department
         public DepartmentContractsCard()
         {
             InitializeComponent();
-
-            // نمونه مطابق عکس/لیست تو
-            CompletedCount = 18;      // تکمیل شده
-            ExpiringCount = 4;        // در حال اتمام
-            CancelledCount = 4;       // لغو شده
-            ReviewingCount = 3;       // در حال بررسی
-            InitialApprovalCount = 5; // تایید اولیه
-            ProblemCount = 2;         // دارای مشکل
-
             RebuildChart();
         }
 

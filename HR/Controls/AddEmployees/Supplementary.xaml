@@ -30,7 +30,12 @@
             <ComboBox x:Name="DepartmentCombo"
                 Style="{StaticResource DarkOutlinedComboBox}"
                 Width="180"
-                materialDesign:HintAssist.Hint="دپارتمان"/>
+                materialDesign:HintAssist.Hint="دپارتمان (اختیاری)"
+                SelectionChanged="DepartmentCombo_SelectionChanged"/>
+            <ComboBox x:Name="DirectManagerCombo"
+                Style="{StaticResource DarkOutlinedComboBox}"
+                Width="220"
+                materialDesign:HintAssist.Hint="مدیر مستقیم (اختیاری)"/>
             <TextBox x:Name="SelectedPostTB"
          Style="{StaticResource DarkOutlinedTextBox}"
          Width="180"

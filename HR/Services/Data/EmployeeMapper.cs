@@ -99,10 +99,9 @@ namespace HR.Services.Data
 
             if (hasJobInfo)
             {
-                if (string.IsNullOrWhiteSpace(profile.DepartmentName) || profile.DepartmentName.Trim() == "—")
-                    throw new InvalidOperationException("دپارتمان را از فهرست انتخاب کنید.");
-
-                var departmentId = await lookups.IdFromTitleAsync<Department>(profile.DepartmentName);
+                short? departmentId = null;
+                if (!string.IsNullOrWhiteSpace(profile.DepartmentName) && profile.DepartmentName.Trim() != "—")
+                    departmentId = await lookups.IdFromTitleAsync<Department>(profile.DepartmentName);
 
                 var positionTitle = FirstText(supp?.Post, profile.Position, supp?.Position);
                 entity.Supplement = new EmployeeSupplement
@@ -116,7 +115,8 @@ namespace HR.Services.Data
                     Salary = supp?.Salary ?? 0,
                     InsuranceTypeId = await lookups.ByteFromTitleAsync<InsuranceType>(supp?.InsuranceType),
                     CooperationTypeId = await lookups.ByteFromTitleAsync<CooperationType>(supp?.CooperationType),
-                    DepartmentId = departmentId
+                    DepartmentId = departmentId,
+                    DirectManagerEmployeeId = departmentId == null ? null : profile.DirectManagerEmployeeId
                 };
             }
 
@@ -158,9 +158,11 @@ namespace HR.Services.Data
                 ExemptionType = entity.ExemptionType?.Title ?? string.Empty,
                 ExemptionReason = entity.ExemptionReason?.Title ?? string.Empty,
                 Religion = entity.Religion?.Title ?? string.Empty,
+                EmployeeKey = entity.EmployeeId,
                 PersonnelCode = entity.Supplement?.PersonnelCode ?? string.Empty,
                 Position = entity.Supplement?.PositionTitle,
                 DepartmentName = entity.Supplement?.Department?.Title,
+                DirectManagerEmployeeId = entity.Supplement?.DirectManagerEmployeeId,
                 HireDate = entity.Supplement?.StartDate,
                 Status = entity.IsDeleted ? EmployeeStatus.Terminated : EmployeeStatus.Active
             };

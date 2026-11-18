@@ -65,7 +65,7 @@
                                          VerticalAlignment="Center"/>
                     </Grid>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock x:Name="ManagerNameText" Text="سارا احمدی"
+                        <TextBlock x:Name="ManagerNameText" Text="{Binding ManagerName, ElementName=Root}"
                            Foreground="White" FontSize="16" FontWeight="SemiBold"/>
                         <TextBlock Text="مدیر دپارتمان" Foreground="#22D3EE" FontSize="14" Margin="0,2,0,0"/>
                     </StackPanel>
@@ -91,7 +91,7 @@
                                  HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Grid>
                                 <StackPanel VerticalAlignment="Center">
-                                    <TextBlock x:Name="DeputyNameText" Text="مهدی کاظمی"
+                                    <TextBlock x:Name="DeputyNameText" Text="{Binding DeputyName, ElementName=Root}"
                    Foreground="#E2E8F0" FontSize="16"/>
                                     <TextBlock Text="جانشین مدیر" Foreground="#94A3B8" FontSize="14"/>
                                 </StackPanel>
@@ -114,7 +114,7 @@
                                  HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Grid>
                                 <StackPanel VerticalAlignment="Center">
-                                    <TextBlock x:Name="PettyCashNameText" Text="رضا کریمی"
+                                    <TextBlock x:Name="PettyCashNameText" Text="{Binding PettyCashName, ElementName=Root}"
                    Foreground="#E2E8F0" FontSize="16"/>
                                     <TextBlock Text="تنخواه‌دار" Foreground="#94A3B8" FontSize="14"/>
                                 </StackPanel>
@@ -331,6 +331,7 @@
         VerticalAlignment="Top"/>
 
                 <!-- لیست -->
+                <TextBlock x:Name="ActivityEmpty" Text="استخدام اخیری ثبت نشده است" Foreground="#94A3B8" Margin="8" HorizontalAlignment="Center"/>
                 <ItemsControl x:Name="ActivityItems">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>

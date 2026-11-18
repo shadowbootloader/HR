@@ -30,6 +30,7 @@ HorizontalAlignment="Stretch"
 VerticalAlignment="Top">
 
             </Line>
+            <TextBlock Text="دستاوردی در پایگاه ثبت نشده است" Foreground="#94A3B8" Margin="8" HorizontalAlignment="Center"/>
             <ItemsControl x:Name="Items">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>

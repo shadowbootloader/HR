@@ -12,6 +12,16 @@ namespace HR.Controls.AddEmployees
     public partial class Supplementary : UserControl, IEmployeeSection
     {
         private string _resumePath = string.Empty;
+        private Guid _selfId;
+        private Guid? _pendingManager;
+        private EmployeeProfile? _pendingProfile;
+        private bool _applying;
+
+        private sealed class PersonPick
+        {
+            public Guid Id { get; init; }
+            public string Label { get; init; } = string.Empty;
+        }
 
         public string SectionTitle => "اطلاعات تکمیلی";
 
@@ -47,9 +57,64 @@ namespace HR.Controls.AddEmployees
                 // دیتابیس در دسترس نیست → لیست پیش‌فرض خالی می‌ماند
             }
 
-            if (InsuranceTypeCombo.Items.Count > 0) InsuranceTypeCombo.SelectedIndex = 0;
-            if (CooperationTypeCombo.Items.Count > 0) CooperationTypeCombo.SelectedIndex = 0;
-            if (DepartmentCombo.Items.Count > 0) DepartmentCombo.SelectedIndex = 0;
+            if (InsuranceTypeCombo.Items.Count > 0 && InsuranceTypeCombo.SelectedIndex < 0) InsuranceTypeCombo.SelectedIndex = 0;
+            if (CooperationTypeCombo.Items.Count > 0 && CooperationTypeCombo.SelectedIndex < 0) CooperationTypeCombo.SelectedIndex = 0;
+            if (DepartmentCombo.Items.Count > 0 && DepartmentCombo.SelectedIndex < 0) DepartmentCombo.SelectedIndex = 0;
+            BindManagers(Array.Empty<PersonPick>(), null);
+            ApplyPending();
+        }
+
+        private async void DepartmentCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_applying) return;
+            var title = BlankDash(DepartmentCombo.SelectedItem?.ToString() ?? DepartmentCombo.Text);
+            if (title == null)
+            {
+                BindManagers(Array.Empty<PersonPick>(), null);
+                return;
+            }
+
+            try
+            {
+                using var departments = new DepartmentService();
+                var department = (await departments.GetAllAsync()).FirstOrDefault(item => item.Title == title);
+                if (department == null)
+                {
+                    BindManagers(Array.Empty<PersonPick>(), null);
+                    return;
+                }
+
+                using var people = new EmployeeService();
+                var options = await people.ListDirectManagerOptionsAsync(department.DepartmentId, _selfId == Guid.Empty ? null : _selfId);
+                var selected = _pendingManager;
+                _pendingManager = null;
+                BindManagers(options.Select(item => new PersonPick { Id = item.EmployeeId, Label = item.Label }), selected);
+            }
+            catch (Exception ex)
+            {
+                NotificationService.Warning("مدیر مستقیم", ex.Message);
+            }
+        }
+
+        private void BindManagers(IEnumerable<PersonPick> people, Guid? selected)
+        {
+            var items = new List<PersonPick> { new() { Id = Guid.Empty, Label = "—" } };
+            items.AddRange(people);
+            DirectManagerCombo.ItemsSource = items;
+            DirectManagerCombo.DisplayMemberPath = nameof(PersonPick.Label);
+            DirectManagerCombo.SelectedValuePath = nameof(PersonPick.Id);
+            DirectManagerCombo.SelectedValue = selected is Guid id && items.Any(item => item.Id == id) ? id : Guid.Empty;
+        }
+
+        private void ApplyPending()
+        {
+            if (_pendingProfile == null || DepartmentCombo.Items.Count == 0) return;
+            _applying = true;
+            SelectText(DepartmentCombo, _pendingProfile.DepartmentName);
+            _selfId = _pendingProfile.EmployeeKey;
+            _pendingManager = _pendingProfile.DirectManagerEmployeeId;
+            _applying = false;
+            DepartmentCombo_SelectionChanged(DepartmentCombo, null!);
         }
 
         private void CVImageBtn_Click(object sender, RoutedEventArgs e)
@@ -64,9 +129,11 @@ namespace HR.Controls.AddEmployees
         public void LoadFrom(EmployeeProfile profile)
         {
             var info = profile.Supplementary;
+            _pendingProfile = profile;
+            _selfId = profile.EmployeeKey;
 
             PersonnelCodeTB.Text = profile.PersonnelCode;
-            SelectText(DepartmentCombo, profile.DepartmentName);
+            ApplyPending();
             SelectedPostTB.Text = info.Post ?? string.Empty;
             SelectText(OragPlaceCombo, info.Position);
             SelectText(InsuranceTypeCombo, info.InsuranceType);
@@ -87,6 +154,9 @@ namespace HR.Controls.AddEmployees
 
             profile.PersonnelCode = PersonnelCodeTB.Text?.Trim() ?? string.Empty;
             profile.DepartmentName = BlankDash(DepartmentCombo.Text);
+            profile.DirectManagerEmployeeId = DirectManagerCombo.SelectedValue is Guid manager && manager != Guid.Empty
+                ? manager
+                : null;
             info.Post = NullIfEmpty(SelectedPostTB.Text);
             info.Position = BlankDash(OragPlaceCombo.Text);
             profile.Position = info.Post ?? info.Position;

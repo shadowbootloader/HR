@@ -82,11 +82,18 @@ TargetType="{x:Type materialDesign:PackIcon}">
 
                 <!-- هدر: آیکون + نام دپارتمان + وضعیت -->
                 <DockPanel Grid.Row="0" Margin="0,0,0,12" LastChildFill="True">
-                    <materialDesign:PackIcon DockPanel.Dock="Right" Kind="{Binding IconKind, ElementName=Root}" Style="{StaticResource NeonIcon}"
-                     Width="40" Height="40"
-                     Foreground="#7DD3FC"
-                     HorizontalAlignment="Center"
-                     VerticalAlignment="Center"/>
+                    <Grid DockPanel.Dock="Right" Width="44" Height="44" FlowDirection="LeftToRight">
+                        <materialDesign:PackIcon x:Name="LogoIcon" Kind="{Binding IconKind, ElementName=Root}" Style="{StaticResource NeonIcon}"
+                         Width="36" Height="36"
+                         Foreground="#7DD3FC"
+                         HorizontalAlignment="Center"
+                         VerticalAlignment="Center"/>
+                        <Ellipse x:Name="LogoEllipse" Width="44" Height="44" Visibility="Collapsed">
+                            <Ellipse.Fill>
+                                <ImageBrush x:Name="LogoBrush" Stretch="UniformToFill" AlignmentX="Center" AlignmentY="Center"/>
+                            </Ellipse.Fill>
+                        </Ellipse>
+                    </Grid>
 
                     <Border DockPanel.Dock="Left" Margin="0,10,10,10"
                         CornerRadius="10"

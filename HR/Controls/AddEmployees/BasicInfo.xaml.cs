@@ -123,13 +123,15 @@ namespace HR.Controls.AddEmployees
             if (picked == null) return;
 
             _photo = picked;
-            if (PhotoBrushTarget is Image photoTarget)
-                ImagePicker.Preview(photoTarget, _photo);
-            PhotoEllipse.Visibility = Visibility.Visible;
+            ShowPortrait(_photo);
         }
 
-        /// <summary>ImageBrush جایی برای تنظیم Source ندارد، پس یک Image پشت آن می‌گذاریم.</summary>
-        private Image? PhotoBrushTarget => FindName("PhotoPreviewImage") as Image;
+        private void ShowPortrait(string? storedPath)
+        {
+            var image = ImagePicker.Load(storedPath);
+            PhotoBrush.ImageSource = image;
+            PhotoEllipse.Visibility = image == null ? Visibility.Collapsed : Visibility.Visible;
+        }
 
         private void NationalCardImageBtn_Click(object sender, RoutedEventArgs e)
         {
@@ -192,9 +194,7 @@ namespace HR.Controls.AddEmployees
             _idCardImage = profile.IdCardImagePath;
             _militaryImage = profile.MilitaryImagePath;
 
-            if (PhotoBrushTarget is Image loadedPhoto)
-                ImagePicker.Preview(loadedPhoto, _photo);
-            PhotoEllipse.Visibility = string.IsNullOrEmpty(_photo) ? Visibility.Collapsed : Visibility.Visible;
+            ShowPortrait(_photo);
 
             ImagePicker.Preview(NationalCardImage, _nationalCardImage);
             ImagePicker.Preview(IDImage, _idCardImage);

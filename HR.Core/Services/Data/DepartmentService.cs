@@ -10,6 +10,14 @@ using System.Threading.Tasks;
 
 namespace HR.Services.Data
 {
+    public sealed class DepartmentMemberRow
+    {
+        public string FullName { get; init; } = string.Empty;
+        public string PersonnelCode { get; init; } = string.Empty;
+        public string Position { get; init; } = string.Empty;
+        public DateTime? StartDate { get; init; }
+    }
+
     public class DepartmentService : IDepartmentService, IDisposable
     {
         private readonly PersonnelDbContext _db;
@@ -210,15 +218,31 @@ namespace HR.Services.Data
             }
         }
 
+        public async Task<List<DepartmentMemberRow>> ListMembersAsync(short departmentId)
+        {
+            return await _db.EmployeeSupplements.AsNoTracking()
+                .Where(item => item.DepartmentId == departmentId && !item.Employee.IsDeleted)
+                .OrderBy(item => item.Employee.LastName)
+                .ThenBy(item => item.Employee.FirstName)
+                .Select(item => new DepartmentMemberRow
+                {
+                    FullName = (item.Employee.FirstName + " " + item.Employee.LastName).Trim(),
+                    PersonnelCode = item.PersonnelCode,
+                    Position = item.PositionTitle,
+                    StartDate = item.StartDate
+                })
+                .ToListAsync();
+        }
+
         public async Task<Dictionary<short, int>> CountMembersAsync()
         {
             var rows = await _db.EmployeeSupplements
-                .Where(s => !s.Employee.IsDeleted)
+                .Where(s => s.DepartmentId != null && !s.Employee.IsDeleted)
                 .GroupBy(s => s.DepartmentId)
                 .Select(g => new { g.Key, Count = g.Count() })
                 .ToListAsync();
 
-            return rows.ToDictionary(x => x.Key, x => x.Count);
+            return rows.Where(x => x.Key != null).ToDictionary(x => x.Key!.Value, x => x.Count);
         }
 
         public async Task<bool> DeleteAsync(short id)
@@ -226,17 +250,20 @@ namespace HR.Services.Data
             AccessGuard.RequirePeopleManagement();
             var dept = await _db.Departments
                 .Include(d => d.Children)
-                .Include(d => d.Employees)
+                .Include(d => d.Employees).ThenInclude(employee => employee.Employee)
                 .Include(d => d.Offices)
                 .FirstOrDefaultAsync(d => d.DepartmentId == id);
 
             if (dept == null) return false;
 
             if (dept.Children.Any())
-                throw new InvalidOperationException("این دپارتمان دارای زیرمجموعه است و قابل حذف نیست.");
+                throw new InvalidOperationException("این دپارتمان زیرمجموعه دارد و قابل حذف نیست. ابتدا دپارتمان‌های فرزند را جابه‌جا یا حذف کنید.");
+
+            if (dept.Employees.Any(row => row.Employee != null && !row.Employee.IsDeleted))
+                throw new InvalidOperationException("این دپارتمان کارمند فعال دارد و قابل حذف نیست. ابتدا کارکنان را به دپارتمان دیگری منتقل کنید.");
 
             if (dept.Employees.Any())
-                throw new InvalidOperationException("این دپارتمان دارای کارمند است و قابل حذف نیست. ابتدا کارکنان را منتقل یا حذف کنید.");
+                throw new InvalidOperationException("پرونده کارمند حذف‌شده هنوز به این دپارتمان وصل است و قابل حذف نیست.");
 
             await new DocumentLinkService().RemoveDepartmentAsync(_db, id);
             _db.Departments.Remove(dept);

@@ -1,10 +1,12 @@
-﻿using System;
+﻿using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Navigation;
+using HR.Models;
 using HR.Services;
 using HR.Services.Auth;
 using HR.Services.Data;
+using MaterialDesignThemes.Wpf;
 
 namespace HR.Pages
 {
@@ -13,6 +15,7 @@ namespace HR.Pages
         public event Action<Page>? NavigationRequested;
 
         private readonly DepartmentModel? _department;
+        private static readonly PersianCalendar Calendar = new();
 
         public DepartmentDetailPage() : this(null) { }
 
@@ -20,11 +23,10 @@ namespace HR.Pages
         {
             InitializeComponent();
             _department = department;
-
-            Loaded += (_, __) => BindDepartment();
+            Loaded += async (_, _) => await BindDepartmentAsync();
         }
 
-        private void BindDepartment()
+        private async System.Threading.Tasks.Task BindDepartmentAsync()
         {
             if (AuthSession.Current?.CanManagePeople != true)
             {
@@ -32,36 +34,103 @@ namespace HR.Pages
                 DeleteDepartmentBtn.Visibility = Visibility.Collapsed;
             }
 
-            if (_department == null) return;
+            if (_department == null)
+            {
+                DeptTitleText.Text = "دپارتمانی انتخاب نشده";
+                return;
+            }
 
-            DeptTitleText.Text = _department.Name;
-            ManagerNameText.Text = _department.Manager;
-            PerformanceLabelText.Text = _department.Status;
+            try
+            {
+                using var service = new DepartmentService();
+                var dept = await service.GetByIdAsync(_department.Id);
+                var members = dept == null
+                    ? new List<DepartmentMemberRow>()
+                    : await service.ListMembersAsync(_department.Id);
 
-            KpiMembers.Title = "تعداد کل کارکنان";
-            KpiMembers.ValueText = _department.MembersCount.ToString();
+                if (dept == null)
+                {
+                    DeptTitleText.Text = _department.Name;
+                    return;
+                }
 
-            KpiPerformance.Title = "میانگین عملکرد";
-            KpiPerformance.ValueText = _department.Performance.ToString("0") + "٪";
+                DeptTitleText.Text = dept.Title;
+                var manager = Person(dept.Manager);
+                var deputy = Person(dept.Deputy);
+                var cashier = Person(dept.CashCustodian);
+                ManagerNameText.Text = "مدیر: " + manager;
+                PerformanceLabelText.Text = dept.IsActive ? "فعال" : "غیرفعال";
 
-            KpiEvaluation.Title = "پیشرفت ارزیابی";
-            KpiEvaluation.ValueText = _department.EvaluationProgress.ToString("0") + "٪";
+                var logo = ImagePicker.Load(dept.LogoPath);
+                DeptLogoBrush.ImageSource = logo;
+                DeptLogoEllipse.Visibility = logo == null ? Visibility.Collapsed : Visibility.Visible;
 
-            KpiProjects.Title = "پروژه‌های فعال";
-            KpiProjects.ValueText = _department.ProjectsCount.ToString();
+                var capacity = dept.ApprovedCapacity?.ToString() ?? "—";
+                KpiMembers.Title = "تعداد کارکنان";
+                KpiMembers.ValueText = members.Count.ToString();
+                KpiMembers.SubText = "از ظرفیت " + capacity;
 
-            KpiProjectProgress.Title = "پیشرفت پروژه‌ها";
-            KpiProjectProgress.ValueText = _department.ProjectProgress.ToString("0") + "٪";
+                KpiPerformance.Title = "رده حفاظتی";
+                KpiPerformance.ValueText = string.IsNullOrWhiteSpace(dept.SecurityLevel) ? "—" : dept.SecurityLevel;
+                KpiPerformance.SubText = "ثبت‌شده در پرونده";
 
-            KpiStatus.Title = "وضعیت دپارتمان";
-            KpiStatus.ValueText = _department.Status;
+                var office = dept.Offices.FirstOrDefault();
+                KpiEvaluation.Title = "محل";
+                KpiEvaluation.ValueText = office == null ? "—" : office.Name;
+                KpiEvaluation.SubText = office == null ? "دفتری ثبت نشده" : string.Join("، ", new[] { office.City, office.Address }.Where(text => !string.IsNullOrWhiteSpace(text)));
 
-            LeaderPanel.ManagerName = _department.Manager;
-            LeaderPanel.ManagerTitle = "مدیر " + _department.Name;
+                KpiProjects.Title = "زیرمجموعه";
+                KpiProjects.ValueText = dept.Children.Count.ToString();
+                KpiProjects.SubText = "دپارتمان فرزند";
 
-            // FinanceCard.UsedPercent را Rebuild() خودش ست می‌کند،
-            // پس اگر مقدار دستی بدهیم با تغییر Budget/Spent پاک می‌شود.
-            FinanceCard.UsedPercent = _department.ProjectProgress;
+                var recent = members.Count(item => item.StartDate.HasValue && item.StartDate.Value.Date >= DateTime.Today.AddDays(-30));
+                KpiProjectProgress.Title = "استخدام اخیر";
+                KpiProjectProgress.ValueText = recent.ToString();
+                KpiProjectProgress.SubText = "۳۰ روز اخیر";
+
+                KpiStatus.Title = "وضعیت دپارتمان";
+                KpiStatus.ValueText = dept.IsActive ? "فعال" : "غیرفعال";
+                KpiStatus.SubText = dept.Parent == null ? "بدون والد" : "والد: " + dept.Parent.Title;
+
+                LeaderPanel.ManagerName = manager;
+                LeaderPanel.ManagerTitle = "مدیر " + dept.Title;
+                LeaderPanel.DeputyName = deputy;
+                LeaderPanel.PettyCashName = cashier;
+                LeaderPanel.LeadershipScore = 0;
+                LeaderPanel.SatisfactionScore = 0;
+                LeaderPanel.GrowthScore = 0;
+                LeaderPanel.SetActivities(members
+                    .Where(item => item.StartDate.HasValue)
+                    .OrderByDescending(item => item.StartDate)
+                    .Take(5)
+                    .Select(item => new DeptActivityItem
+                    {
+                        Title = item.FullName,
+                        Subtitle = string.IsNullOrWhiteSpace(item.Position) ? "شروع همکاری" : item.Position,
+                        Date = ToPersian(item.StartDate),
+                        IconKind = PackIconKind.AccountPlus
+                    }));
+
+                FinanceCard.Budget = (long)(dept.AnnualBudget ?? 0);
+                FinanceCard.Spent = 0;
+
+                MembersList.ItemsSource = members;
+                MembersEmpty.Visibility = members.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+            }
+            catch (Exception ex)
+            {
+                NotificationService.Warning("دپارتمان", ex.Message);
+            }
+        }
+
+        private static string Person(HR.Data.Entities.Employee? employee)
+            => employee == null ? "—" : $"{employee.FirstName} {employee.LastName}".Trim();
+
+        private static string ToPersian(DateTime? date)
+        {
+            if (date == null) return "—";
+            var value = date.Value;
+            return $"{Calendar.GetYear(value):0000}/{Calendar.GetMonth(value):00}/{Calendar.GetDayOfMonth(value):00}";
         }
 
         private void EditDepartment_Click(object sender, RoutedEventArgs e)
@@ -108,7 +177,6 @@ namespace HR.Pages
 
         private void DeptTabs_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-
         }
     }
 }

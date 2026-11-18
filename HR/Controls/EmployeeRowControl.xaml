@@ -42,17 +42,15 @@ TargetType="{x:Type materialDesign:PackIcon}">
                 <!-- Actions -->
             </Grid.ColumnDefinitions>
 
-            <!-- Avatar -->
-            <Border Grid.Column="0" Width="40" Height="40" CornerRadius="20" BorderBrush="#3B82F6" BorderThickness="2" ClipToBounds="True">
-                <Grid>
-                    <materialDesign:PackIcon x:Name="AvatarIcon" Kind="Account" Style="{StaticResource LawnGreenNeonIcon}" HorizontalAlignment="Center" Width="28" Height="28" />
-                    <Image x:Name="AvatarImage" Width="40" Height="40" Stretch="UniformToFill" Visibility="Collapsed">
-                        <Image.Clip>
-                            <EllipseGeometry Center="20,20" RadiusX="20" RadiusY="20"/>
-                        </Image.Clip>
-                    </Image>
-                </Grid>
-            </Border>
+            <!-- Avatar: ImageBrush روی بیضی، چون EllipseGeometry در FlowDirection راست‌به‌چپ نیم‌دایره می‌شود -->
+            <Grid Grid.Column="0" Width="40" Height="40" HorizontalAlignment="Center" VerticalAlignment="Center" FlowDirection="LeftToRight">
+                <Ellipse Width="40" Height="40" Stroke="#3B82F6" StrokeThickness="2" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Ellipse.Fill>
+                        <ImageBrush x:Name="AvatarBrush" Stretch="UniformToFill" AlignmentX="Center" AlignmentY="Center"/>
+                    </Ellipse.Fill>
+                </Ellipse>
+                <materialDesign:PackIcon x:Name="AvatarIcon" Kind="Account" Style="{StaticResource LawnGreenNeonIcon}" HorizontalAlignment="Center" VerticalAlignment="Center" Width="24" Height="24" />
+            </Grid>
 
             <!-- Name + Email -->
             <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10,0,0,0">
