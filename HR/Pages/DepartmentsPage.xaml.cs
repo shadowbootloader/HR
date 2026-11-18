@@ -71,7 +71,8 @@ namespace HR.Pages
                         StatusBackground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(style.Item3)),
                         StatusForeground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(style.Item4)),
                         IconKind = style.Item1,
-                        StatusCircle = style.Item2
+                        StatusCircle = style.Item2,
+                        LogoPath = d.LogoPath
                     });
                 }
 
@@ -125,5 +126,6 @@ namespace HR.Pages
         public Brush StatusForeground { get; set; } = Brushes.Black;
         public PackIconKind IconKind { get; set; }
         public CircleColor StatusCircle { get; set; }
+        public string? LogoPath { get; set; }
     }
 }

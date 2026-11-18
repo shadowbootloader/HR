@@ -105,6 +105,7 @@ namespace HR.Pages
                     Id = department.DepartmentId,
                     Name = department.Title,
                     Manager = department.Manager == null ? "—" : $"{department.Manager.FirstName} {department.Manager.LastName}".Trim(),
+                    LogoPath = department.LogoPath,
                     Status = department.IsActive ? "فعال" : "غیرفعال",
                     StatusBackground = Brushes.Transparent,
                     StatusForeground = Brushes.White,

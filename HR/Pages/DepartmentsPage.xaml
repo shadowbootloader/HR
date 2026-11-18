@@ -117,6 +117,7 @@ Cursor="Hand">
                                 StatusBackground="{Binding StatusBackground}"
                                 StatusForeground="{Binding StatusForeground}"
                                 IconKind="{Binding IconKind}"
+                                LogoPath="{Binding LogoPath}"
                                 StatusCircle="{Binding StatusCircle}"
                                 MouseLeftButtonUp="DepartmentCard_Click"/>
                         </DataTemplate>

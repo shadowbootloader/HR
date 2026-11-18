@@ -141,6 +141,16 @@ TargetType="{x:Type TextBlock}">
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
 
                     <!-- عنوان و زیرعنوان -->
+                    <Border Width="56" Height="56" CornerRadius="12" Background="#1E293B" Margin="0,0,12,0" VerticalAlignment="Center" FlowDirection="LeftToRight">
+                        <Grid>
+                            <materialDesign:PackIcon Kind="Domain" Width="28" Height="28" Foreground="#64748B" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <Ellipse x:Name="DeptLogoEllipse" Visibility="Collapsed">
+                                <Ellipse.Fill>
+                                    <ImageBrush x:Name="DeptLogoBrush" Stretch="UniformToFill" AlignmentX="Center" AlignmentY="Center"/>
+                                </Ellipse.Fill>
+                            </Ellipse>
+                        </Grid>
+                    </Border>
                     <StackPanel VerticalAlignment="Center">
                         <TextBlock x:Name="DeptTitleText"
                                Text="دپارتمان"

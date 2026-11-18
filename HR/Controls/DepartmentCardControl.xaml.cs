@@ -1,6 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using HR.Services;
 using MaterialDesignThemes.Wpf;
 
 namespace HR.Controls
@@ -48,6 +49,28 @@ namespace HR.Controls
         }
 
 
+
+        public static readonly DependencyProperty LogoPathProperty =
+            DependencyProperty.Register(nameof(LogoPath), typeof(string), typeof(DepartmentCardControl),
+                new PropertyMetadata(null, OnLogoPathChanged));
+
+        public string? LogoPath
+        {
+            get => (string?)GetValue(LogoPathProperty);
+            set => SetValue(LogoPathProperty, value);
+        }
+
+        private static void OnLogoPathChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+            => ((DepartmentCardControl)d).ShowLogo(e.NewValue as string);
+
+        private void ShowLogo(string? path)
+        {
+            if (LogoBrush == null || LogoEllipse == null || LogoIcon == null) return;
+            var image = ImagePicker.Load(path);
+            LogoBrush.ImageSource = image;
+            LogoEllipse.Visibility = image == null ? Visibility.Collapsed : Visibility.Visible;
+            LogoIcon.Visibility = image == null ? Visibility.Visible : Visibility.Collapsed;
+        }
 
         public static readonly DependencyProperty DepartmentNameProperty =
             DependencyProperty.Register(nameof(DepartmentName), typeof(string), typeof(DepartmentCardControl),

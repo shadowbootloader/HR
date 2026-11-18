@@ -36,6 +36,9 @@ namespace HR.Pages
 
             DeptTitleText.Text = _department.Name;
             ManagerNameText.Text = _department.Manager;
+            var logo = ImagePicker.Load(_department.LogoPath);
+            DeptLogoBrush.ImageSource = logo;
+            DeptLogoEllipse.Visibility = logo == null ? Visibility.Collapsed : Visibility.Visible;
             PerformanceLabelText.Text = _department.Status;
 
             KpiMembers.Title = "تعداد کل کارکنان";
