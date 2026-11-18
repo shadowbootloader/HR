@@ -83,7 +83,7 @@
                     </Button>
                 </DockPanel>
             </Border>
-            <lvc:CartesianChart x:Name="ScoreChart" DockPanel.Dock="Top" Height="150" Margin="0,0,8,8"/>
+            <lvc:CartesianChart x:Name="ScoreChart" DockPanel.Dock="Top" Height="150" Margin="0,0,8,8" Visibility="Collapsed"/>
             
 
             <Border BorderBrush="#FF005689" Margin="0,0,5,10" CornerRadius="8" BorderThickness="1" Padding="10,10,5,5">
