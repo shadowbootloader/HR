@@ -10,7 +10,8 @@ namespace HR.Services.Files
     public enum FileKind
     {
         Image,
-        Document
+        Document,
+        Audio
     }
 
     public sealed record StoredFile(
@@ -32,6 +33,16 @@ namespace HR.Services.Files
         private static readonly HashSet<string> ImageExtensions = new(StringComparer.OrdinalIgnoreCase)
         {
             ".jpg", ".jpeg", ".png", ".bmp", ".gif", ".webp"
+        };
+
+        private static readonly HashSet<string> DocumentExtensions = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ".pdf", ".txt", ".docx"
+        };
+
+        private static readonly HashSet<string> AudioExtensions = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ".mp3", ".wav", ".m4a"
         };
 
         private readonly long _maxImageBytes;
@@ -272,7 +283,8 @@ namespace HR.Services.Files
         private static bool IsAllowed(string extension, FileKind kind)
         {
             if (ImageExtensions.Contains(extension)) return true;
-            return kind == FileKind.Document && extension.Equals(".pdf", StringComparison.OrdinalIgnoreCase);
+            if (kind == FileKind.Document && DocumentExtensions.Contains(extension)) return true;
+            return kind == FileKind.Audio && AudioExtensions.Contains(extension);
         }
 
         public static string ContentTypeFor(string extension) => extension.ToLowerInvariant() switch

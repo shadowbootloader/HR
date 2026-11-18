@@ -106,6 +106,7 @@ namespace HR.Data
         public DbSet<AppUser> AppUsers => Set<AppUser>();
         public DbSet<Role> Roles => Set<Role>();
         public DbSet<UserRole> UserRoles => Set<UserRole>();
+        public DbSet<InterviewRecord> InterviewRecords => Set<InterviewRecord>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -726,6 +727,17 @@ namespace HR.Data
                 entity.HasKey(e => new { e.AppUserId, e.RoleId });
                 entity.HasOne(e => e.User).WithMany(u => u.Roles).HasForeignKey(e => e.AppUserId).OnDelete(DeleteBehavior.Cascade);
                 entity.HasOne(e => e.Role).WithMany(r => r.Users).HasForeignKey(e => e.RoleId).OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<InterviewRecord>(entity =>
+            {
+                entity.ToTable("InterviewRecord");
+                entity.HasKey(e => e.InterviewId);
+                entity.Property(e => e.Interviewer).HasMaxLength(100).IsRequired();
+                entity.Property(e => e.Notes).HasMaxLength(500);
+                entity.Property(e => e.TranscriptPath).HasMaxLength(500);
+                entity.Property(e => e.AudioPath).HasMaxLength(500);
+                entity.HasOne(e => e.Employee).WithMany().HasForeignKey(e => e.EmployeeId).OnDelete(DeleteBehavior.Cascade);
             });
         }
     }

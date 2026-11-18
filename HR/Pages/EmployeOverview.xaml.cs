@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using HR.Services.Assessments;
@@ -15,6 +16,7 @@ namespace HR.Pages
     {
         /// <summary>کارمندی که این صفحه نمایش می‌دهد (ممکن است null باشد).</summary>
         public EmployeeModel? Employee { get; }
+        private string? _interviewAudio;
 
         public EmployeOverview() : this(null) { }
 
@@ -117,6 +119,18 @@ namespace HR.Pages
                         ? "بخش ناقصی نمانده است."
                         : "ناقص: " + string.Join("، ", report.Missing);
                 }
+
+                var interviews = entity == null ? Array.Empty<HR.Data.Entities.InterviewRecord>() : await new HR.Services.Files.InterviewService().ListAsync(entity.EmployeeId);
+                _interviewAudio = interviews.Select(item => item.AudioPath).FirstOrDefault(path => !string.IsNullOrWhiteSpace(path));
+                InterviewList.Text = interviews.Count == 0
+                    ? "مصاحبه‌ای ثبت نشده است."
+                    : string.Join("\n", interviews.Select(item => $"{item.HeldOn:yyyy/MM/dd} — {item.Interviewer}" + (string.IsNullOrWhiteSpace(item.Notes) ? "" : " — " + item.Notes) + (string.IsNullOrWhiteSpace(item.TranscriptPath) ? "" : " — متن دارد") + (string.IsNullOrWhiteSpace(item.AudioPath) ? "" : " — صدا دارد")));
+                if (!string.IsNullOrWhiteSpace(_interviewAudio))
+                {
+                    var full = HR.Services.Files.FileStorageService.Load().FullPath(_interviewAudio);
+                    if (System.IO.File.Exists(full))
+                        InterviewAudio.Source = new Uri(full);
+                }
             }
             catch (Exception ex)
             {
@@ -124,6 +138,14 @@ namespace HR.Pages
                 Evaluations.AddItem("آزمون‌ها", ex.Message, PackIconKind.Alert, Brushes.Transparent, "");
             }
         }
+
+        private void PlayInterview_Click(object sender, RoutedEventArgs e)
+        {
+            if (InterviewAudio.Source == null) return;
+            InterviewAudio.Play();
+        }
+
+        private void PauseInterview_Click(object sender, RoutedEventArgs e) => InterviewAudio.Pause();
 
         private static string? ToPersianDate(DateTime? date)
         {
