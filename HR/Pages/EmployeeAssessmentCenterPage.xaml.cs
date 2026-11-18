@@ -56,15 +56,40 @@ namespace HR.Pages
             EmployeePicker.ItemsSource = null;
             foreach (var employee in await _employees.GetAllAsync())
             {
-                _people.Add(new EmployeePick(employee.EmployeeId, $"{employee.FirstName} {employee.LastName}".Trim()));
+                var name = $"{employee.FirstName} {employee.LastName}".Trim();
+                var code = employee.Supplement?.PersonnelCode ?? "";
+                var department = employee.Supplement?.Department?.Title ?? "";
+                _people.Add(new EmployeePick(employee.EmployeeId, string.Join(" · ", new[] { name, code, department }.Where(part => !string.IsNullOrWhiteSpace(part))), $"{name} {code} {department}"));
             }
 
             EmployeePicker.ItemsSource = _people;
-            var linked = AuthSession.Current?.EmployeeId;
-            var selected = _people.FirstOrDefault(person => person.Id == linked) ?? _people.FirstOrDefault();
-            EmployeePicker.SelectedItem = selected;
+            EmployeePicker.SelectedItem = null;
             _loadingPeople = false;
-            await ReloadAssessmentsAsync();
+            ShowNoSelection();
+        }
+
+        private void PersonSearch_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            var term = PersonSearch.Text?.Trim() ?? string.Empty;
+            _loadingPeople = true;
+            EmployeePicker.ItemsSource = string.IsNullOrWhiteSpace(term)
+                ? _people.ToList()
+                : _people.Where(person => person.Search.Contains(term, StringComparison.OrdinalIgnoreCase)).ToList();
+            _loadingPeople = false;
+        }
+
+        private void ShowNoSelection()
+        {
+            _definitions = new();
+            _history = new();
+            _allRows.Clear();
+            RefreshList();
+            Hero.EmployeeName = "کارمندی انتخاب نشده";
+            Hero.Role = "";
+            if (SelectPrompt != null) SelectPrompt.Visibility = Visibility.Visible;
+            ScoreChart.Series = Array.Empty<ISeries>();
+            BindSide(Array.Empty<AttemptSummary>());
+            UpdateFooterStats();
         }
 
         private async void EmployeePicker_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -90,7 +115,13 @@ namespace HR.Pages
             }
 
             var person = EmployeePicker.SelectedItem as EmployeePick;
-            Hero.EmployeeName = person?.Name ?? "کارمندی انتخاب نشده";
+            if (person == null)
+            {
+                ShowNoSelection();
+                return;
+            }
+            if (SelectPrompt != null) SelectPrompt.Visibility = Visibility.Collapsed;
+            Hero.EmployeeName = person.Name;
             Hero.Role = AuthSession.Current?.RoleLabel ?? "";
             BindRows();
             BindChart(_history);
@@ -402,5 +433,5 @@ namespace HR.Pages
         public string Title { get; set; } = "";
     }
 
-    public sealed record EmployeePick(Guid Id, string Name);
+    public sealed record EmployeePick(Guid Id, string Name, string Search);
 }
