@@ -15,7 +15,7 @@ namespace HR.Controls
             ItemsPanel.Children.Clear();
             foreach (var fact in facts)
             {
-                if (string.IsNullOrWhiteSpace(fact.Description) || fact.Description == "—") continue;
+                if (string.IsNullOrWhiteSpace(fact.Description)) continue;
                 AddItem(fact.Title, fact.Description, "•", new SolidColorBrush(Color.FromRgb(0x2A, 0x4A, 0x6B)));
             }
 

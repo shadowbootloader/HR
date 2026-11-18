@@ -94,6 +94,7 @@ namespace HR.Services.Data
             }
 
             var history = attempts
+                .Where(item => item.AssessmentCode != SelfAssessmentCatalog.Code)
                 .Where(item => item.SubmittedAt != null && item.TotalScore != null)
                 .OrderBy(item => item.SubmittedAt)
                 .ToList();

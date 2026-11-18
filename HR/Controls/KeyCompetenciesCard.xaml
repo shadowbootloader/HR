@@ -22,7 +22,7 @@
             <Grid Margin="8,6,8,4" Grid.Column="0">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Top">
                     <materialDesign:PackIcon Kind="StarFourPoints" DockPanel.Dock="Left"   Foreground="#4FC3F7" VerticalAlignment="Center" Margin="0,3,8,0"/>
-                    <TextBlock Text="شایستگی‌های کلیدی"
+                    <TextBlock Text="خودارزیابی"
                                FontSize="16"
                                FontWeight="Bold"
                                Foreground="White"

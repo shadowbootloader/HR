@@ -39,12 +39,6 @@ namespace HR.Pages
 
             Header.Bind(Employee.FullName, Employee.Position, Employee.Department, Employee.Email);
             Header.BindStatus(Employee.Status);
-            Insights.ShowFacts(
-                ("کد ملی", Employee.NationalCode),
-                ("کد پرسنلی", Employee.PersonnelCode),
-                ("وضعیت", Employee.Status),
-                ("ایمیل", Employee.Email),
-                ("دپارتمان", Employee.Department));
 
             try
             {
@@ -107,6 +101,7 @@ namespace HR.Pages
                     DateTime.Today);
                 ShowProfile(snapshot);
                 ShowAttempts(history);
+                Insights.ShowFacts(OverviewFacts.Build(entity, history, DateTime.Today));
             }
             catch (Exception ex)
             {

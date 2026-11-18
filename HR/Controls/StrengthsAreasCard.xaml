@@ -15,7 +15,7 @@
             <!-- عنوان -->
             <DockPanel  Margin="7,0,7,10">
                 <materialDesign:PackIcon Kind="StarFourPoints" DockPanel.Dock="Left"   Foreground="#4FC3F7" VerticalAlignment="Center" Margin="0,3,8,0"/>
-                <TextBlock DockPanel.Dock="Left" Text="نقاط قوت و نقاط قابل بهبود"
+                <TextBlock DockPanel.Dock="Left" Text="خودارزیابی: قوت و بهبود"
                            FontSize="18"
                            FontWeight="SemiBold"
                            Foreground="White"

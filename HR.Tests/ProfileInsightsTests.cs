@@ -26,7 +26,8 @@ public class ProfileInsightsTests
             new SelfAssessmentScores { Discipline = 90, Speed = 30, Effort = 50 },
             new[]
             {
-                new AttemptSummary { Title = "ارزیابی مدیر", TotalScore = 80, SubmittedAt = new DateTime(2026, 11, 1), LevelLabel = "قوی" }
+                new AttemptSummary { Title = "ارزیابی مدیر", AssessmentCode = "manager-eval", TotalScore = 80, SubmittedAt = new DateTime(2026, 11, 1), LevelLabel = "قوی" },
+                new AttemptSummary { Title = "خودارزیابی", AssessmentCode = SelfAssessmentCatalog.Code, TotalScore = 12, SubmittedAt = new DateTime(2026, 11, 2), LevelLabel = "نیاز به توسعه" }
             },
             new[]
             {

@@ -155,20 +155,8 @@ namespace HR.Pages
             return text[0].ToString();
         }
 
-        private static (double Value, string Label) PerformanceOf(HR.Data.Entities.Employee employee)
-        {
-            var assessment = employee.SelfAssessment;
-            if (assessment == null) return (0, "—");
-
-            var average = new double[]
-            {
-                assessment.Discipline, assessment.Speed, assessment.Effort, assessment.Negotiation,
-                assessment.Patience, assessment.Creativity, assessment.Punctuality,
-                assessment.Teamwork, assessment.Accuracy, assessment.Planning
-            }.Average();
-
-            return (average, average.ToString("0"));
-        }
+        private static (double Value, string Label) PerformanceOf(HR.Data.Entities.Employee _)
+            => (0, "—");
 
         // ==================== فیلتر و صفحه‌بندی ====================
 
