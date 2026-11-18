@@ -61,17 +61,22 @@ namespace HR.Pages
                 using var employeeService = new EmployeeService();
                 var employees = await employeeService.GetAllAsync();
                 var people = employees
-                    .Select(e => new EmployeePick(e.EmployeeId, $"{e.FirstName} {e.LastName}".Trim()))
+                    .Select(e => new EmployeePick(
+                        e.EmployeeId,
+                        string.IsNullOrWhiteSpace(e.Supplement?.PersonnelCode)
+                            ? $"{e.FirstName} {e.LastName}".Trim()
+                            : $"{e.FirstName} {e.LastName}".Trim() + " — " + e.Supplement.PersonnelCode))
                     .OrderBy(x => x.Name)
                     .ToList();
-                people.Insert(0, new EmployeePick(null, "—"));
+                people.Insert(0, new EmployeePick(Guid.Empty, "—"));
 
                 BindEmployeeCombo(DepertmentManagerCB, people);
                 BindEmployeeCombo(DepartmentDeputyCB, people);
                 BindEmployeeCombo(DepartmentCashCustodian, people);
 
-                DepartmentStatusCB.SelectedIndex = 0;
+                DepartmentHFStatusCB.ItemsSource = new[] { "—" }.Concat(SecurityLevels.All).ToList();
                 DepartmentHFStatusCB.SelectedIndex = 0;
+                DepartmentStatusCB.SelectedIndex = 0;
 
                 if (_editingId.HasValue)
                     await LoadForEditAsync(_editingId.Value);
@@ -105,18 +110,7 @@ namespace HR.Pages
             DepartMentID.Text = dept.DepartmentId.ToString();
             DepartmentStatusCB.SelectedIndex = dept.IsActive ? 0 : 1;
 
-            if (!string.IsNullOrWhiteSpace(dept.SecurityLevel))
-            {
-                for (int i = 0; i < DepartmentHFStatusCB.Items.Count; i++)
-                {
-                    if (DepartmentHFStatusCB.Items[i] is ComboBoxItem item &&
-                        string.Equals(item.Content?.ToString(), dept.SecurityLevel, StringComparison.Ordinal))
-                    {
-                        DepartmentHFStatusCB.SelectedIndex = i;
-                        break;
-                    }
-                }
-            }
+            DepartmentHFStatusCB.SelectedItem = string.IsNullOrWhiteSpace(dept.SecurityLevel) ? "—" : dept.SecurityLevel;
 
             ParentDepartmentCB.SelectedValue = dept.ParentDepartmentId;
             StartDateDP.SelectedDate = dept.EstablishedDate;
@@ -125,9 +119,9 @@ namespace HR.Pages
             AnnualBudget.Text = dept.AnnualBudget?.ToString("N0", Fa) ?? "";
             PettyCashLimit.Text = dept.PettyCashLimit?.ToString("N0", Fa) ?? "";
 
-            DepertmentManagerCB.SelectedValue = dept.ManagerEmployeeId;
-            DepartmentDeputyCB.SelectedValue = dept.DeputyEmployeeId;
-            DepartmentCashCustodian.SelectedValue = dept.CashCustodianEmployeeId;
+            DepertmentManagerCB.SelectedValue = dept.ManagerEmployeeId ?? Guid.Empty;
+            DepartmentDeputyCB.SelectedValue = dept.DeputyEmployeeId ?? Guid.Empty;
+            DepartmentCashCustodian.SelectedValue = dept.CashCustodianEmployeeId ?? Guid.Empty;
 
             _logoPath = dept.LogoPath;
             ImagePicker.Preview(LogoImage, _logoPath);
@@ -207,7 +201,8 @@ namespace HR.Pages
                 capacity = cap;
 
             var statusText = (DepartmentStatusCB.SelectedItem as ComboBoxItem)?.Content?.ToString();
-            var security = (DepartmentHFStatusCB.SelectedItem as ComboBoxItem)?.Content?.ToString();
+            var security = DepartmentHFStatusCB.SelectedItem as string;
+            if (string.IsNullOrWhiteSpace(security) || security == "—") security = null;
 
             var entity = new Department
             {
@@ -218,9 +213,9 @@ namespace HR.Pages
                 EstablishedDate = StartDateDP.SelectedDate,
                 ApprovedCapacity = capacity,
                 LogoPath = _logoPath,
-                ManagerEmployeeId = DepertmentManagerCB.SelectedValue as Guid?,
-                DeputyEmployeeId = DepartmentDeputyCB.SelectedValue as Guid?,
-                CashCustodianEmployeeId = DepartmentCashCustodian.SelectedValue as Guid?,
+                ManagerEmployeeId = SelectedEmployee(DepertmentManagerCB),
+                DeputyEmployeeId = SelectedEmployee(DepartmentDeputyCB),
+                CashCustodianEmployeeId = SelectedEmployee(DepartmentCashCustodian),
                 CostCenterCode = string.IsNullOrWhiteSpace(AccountingCode.Text) ? null : AccountingCode.Text.Trim(),
                 AnnualBudget = ParseMoney(AnnualBudget.Text),
                 PettyCashLimit = ParseMoney(PettyCashLimit.Text)
@@ -343,8 +338,11 @@ namespace HR.Pages
 
         // ==================== مدل‌های کمکی UI ====================
 
+        private static Guid? SelectedEmployee(ComboBox combo)
+            => combo.SelectedValue is Guid id && id != Guid.Empty ? id : null;
+
         private sealed record ParentItem(short? Id, string Title);
-        private sealed record EmployeePick(Guid? Id, string Name);
+        private sealed record EmployeePick(Guid Id, string Name);
 
         private sealed class OfficeRow
         {
