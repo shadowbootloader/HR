@@ -77,7 +77,40 @@ namespace HR.Services.Data
                 })
                 .ToListAsync();
 
-            return DashboardAggregator.Build(rows, day, departments, leaveStarts, attempts);
+            var snapshot = DashboardAggregator.Build(rows, day, departments, leaveStarts, attempts);
+            var reports = await new ProfileCompletenessReader(_db).ReadAllAsync();
+            var names = rows.Where(person => !person.IsDeleted).ToDictionary(person => person.EmployeeId, person => person.FullName);
+            var actual = rows.Where(person => !person.IsDeleted && person.Department != null)
+                .GroupBy(person => person.Department!)
+                .ToDictionary(group => group.Key, group => group.Count());
+            var departmentRows = await _db.Departments.AsNoTracking()
+                .Select(department => new
+                {
+                    department.DepartmentId,
+                    department.Title,
+                    HasManager = department.ManagerEmployeeId != null,
+                    HasDeputy = department.DeputyEmployeeId != null,
+                    HasLogo = department.LogoPath != null && department.LogoPath != "",
+                    HasParent = department.ParentDepartmentId != null,
+                    Actual = 0,
+                    Capacity = department.ApprovedCapacity ?? 0
+                })
+                .ToListAsync();
+            var overdue = await _db.AssessmentAssignments.AsNoTracking()
+                .Where(item => item.DueDate < day && !item.Assessment.Attempts.Any(attempt => attempt.EmployeeId == item.EmployeeId && attempt.SubmittedAt != null))
+                .Select(item => new
+                {
+                    item.Assessment.Title,
+                    Name = (item.Employee.FirstName + " " + item.Employee.LastName).Trim(),
+                    item.EmployeeId,
+                    item.DueDate
+                })
+                .ToListAsync();
+            snapshot.Issues = ProfileIssues.Build(
+                reports.Where(pair => names.ContainsKey(pair.Key)).Select(pair => (pair.Key, names[pair.Key], pair.Value)),
+                departmentRows.Select(department => (department.DepartmentId, department.Title, department.HasManager, department.HasDeputy, department.HasLogo, department.HasParent, department.Title == "ستاد مرکزی", actual.TryGetValue(department.Title, out var count) ? count : 0, department.Capacity)),
+                overdue.Select(item => (item.Title, item.Name, item.EmployeeId, item.DueDate))).ToList();
+            return snapshot;
         }
 
         public void Dispose()

@@ -16,6 +16,9 @@ public class PersonalityAssessmentTests
             Assert.Contains(item.Questions, question => !string.IsNullOrWhiteSpace(question.Text));
         });
         Assert.Equal(10, all.Single(item => item.Code == "big-five-short").Questions.Count);
+        Assert.Equal("شخصیتی", all.Single(item => item.Code == "eq-short").Category);
+        Assert.Equal("رغبت شغلی", all.Single(item => item.Code == "riasec-short").Category);
+        Assert.Equal("مهارتی", AssessmentService.CategoryByCode["manager-eval"]);
     }
 
     [Fact]

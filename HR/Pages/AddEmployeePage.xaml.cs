@@ -22,7 +22,7 @@ namespace HR.Pages
             "WorkInterests", "SelfAssessment", "TripAbroad",
             "ForeignCooperation", "Citizenship", "Criminal",
             "ForeignRelatives", "Recruitment", "Organ",
-            "Other", "Sacrifice", "Supplementary"
+            "Other", "Sacrifice", "Supplementary", "Interview"
         };
 
         private readonly Dictionary<string, UserControl> _sectionCache = new();
@@ -129,6 +129,7 @@ namespace HR.Pages
                 "Recruitment" => new Recruitment(),
                 "Sacrifice" => new Sacrifice(),
                 "Supplementary" => new Supplementary(),
+                "Interview" => new InterviewInfo(),
                 "TripAbroad" => new TripAbroad(),
                 _ => throw new ArgumentOutOfRangeException(nameof(key), key, "بخش ناشناخته")
             };
@@ -218,6 +219,8 @@ namespace HR.Pages
                 if (_editingId.HasValue)
                 {
                     await employeeService.UpdateAsync(entity);
+                    if (GetOrCreate("Interview") is HR.Controls.AddEmployees.InterviewInfo interviews)
+                        await interviews.PersistAsync(entity.EmployeeId);
                     NotificationService.Success(
                         "ویرایش موفق",
                         $"کارمند «{entity.FirstName} {entity.LastName}» با موفقیت به‌روز شد.");
@@ -225,6 +228,8 @@ namespace HR.Pages
                 else
                 {
                     await employeeService.CreateAsync(entity);
+                    if (GetOrCreate("Interview") is HR.Controls.AddEmployees.InterviewInfo createdInterviews)
+                        await createdInterviews.PersistAsync(entity.EmployeeId);
                     NotificationService.Success(
                         "ثبت موفق",
                         $"کارمند «{entity.FirstName} {entity.LastName}» با موفقیت ذخیره شد.");
