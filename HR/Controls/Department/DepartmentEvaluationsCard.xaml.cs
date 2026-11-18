@@ -13,9 +13,6 @@ namespace HR.Controls.Department
         public DepartmentEvaluationsCard()
         {
             InitializeComponent();
-            CompletedCount = 18;
-            InProgressCount = 10;
-            WaitingCount = 4;
             Rebuild();
         }
 

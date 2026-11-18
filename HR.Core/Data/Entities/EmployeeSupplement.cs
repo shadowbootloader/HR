@@ -16,11 +16,13 @@ namespace HR.Data.Entities
         public Guid? BankAccountId { get; set; }
         public Guid? ResumeFileId { get; set; }
         public string PersonnelCode { get; set; } = string.Empty;
-        public short DepartmentId { get; set; }
+        public short? DepartmentId { get; set; }
+        public Guid? DirectManagerEmployeeId { get; set; }
 
         // Navigation
         public Employee Employee { get; set; } = null!;
-        public Department Department { get; set; } = null!;
+        public Department? Department { get; set; }
+        public Employee? DirectManager { get; set; }
         public InsuranceType InsuranceType { get; set; } = null!;
         public CooperationType CooperationType { get; set; } = null!;
         public BankAccount? BankAccount { get; set; }

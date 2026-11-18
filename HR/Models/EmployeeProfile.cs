@@ -59,7 +59,9 @@ namespace HR.Models
         public string MilitaryImagePath { get; set; } = string.Empty;
 
         // ---------- اطلاعات شغلی ----------
+        public Guid EmployeeKey { get; set; }
         public string? DepartmentName { get; set; }
+        public Guid? DirectManagerEmployeeId { get; set; }
         public string? Position { get; set; }
         public DateTime? HireDate { get; set; }
         public EmployeeStatus Status { get; set; } = EmployeeStatus.Active;

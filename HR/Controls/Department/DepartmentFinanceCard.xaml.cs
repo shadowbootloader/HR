@@ -13,10 +13,6 @@ namespace HR.Controls.Department
         public DepartmentFinanceCard()
         {
             InitializeComponent();
-
-            // نمونه مطابق عکس
-            Budget = 1_200_000_000;
-            Spent = 804_000_000;
             Rebuild();
         }
 

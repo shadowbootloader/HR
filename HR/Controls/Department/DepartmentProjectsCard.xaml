@@ -203,6 +203,7 @@ TargetType="{x:Type TextBlock}">
             <Rectangle DockPanel.Dock="Top" Height="1" Fill="#1E293B" Margin="0,0,0,8"/>
 
             <!-- ردیف‌ها -->
+            <TextBlock Text="پروژه‌ای در پایگاه ثبت نشده است" Foreground="#94A3B8" Margin="8" HorizontalAlignment="Center"/>
             <ItemsControl x:Name="Items" FlowDirection="RightToLeft">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>

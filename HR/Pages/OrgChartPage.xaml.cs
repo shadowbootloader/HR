@@ -1,14 +1,10 @@
-using System.Text.Json;
+﻿using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Media;
 using HR.Data;
-using HR.Services.Data;
-using HR.Services.Org;
-using MaterialDesignThemes.Wpf;
+using HR.Services;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Web.WebView2.Core;
 
 namespace HR.Pages
 {
@@ -16,143 +12,172 @@ namespace HR.Pages
     {
         public event Action<Page>? NavigationRequested;
 
-        private bool _ready;
-        private string _json = "[]";
-
         public OrgChartPage()
         {
             InitializeComponent();
-            Loaded += async (_, _) => await StartAsync();
+            Loaded += async (_, _) => await ReloadAsync();
         }
 
-        private async Task StartAsync()
+        private async Task ReloadAsync()
         {
-            await ChartView.EnsureCoreWebView2Async();
-            var folder = AppDomain.CurrentDomain.BaseDirectory;
-            ChartView.CoreWebView2.SetVirtualHostNameToFolderMapping(
-                "hr.assets", folder, CoreWebView2HostResourceAccessKind.Allow);
-            ChartView.CoreWebView2.WebMessageReceived += async (_, args) => await OnChartMessageAsync(args.TryGetWebMessageAsString());
-            ChartView.CoreWebView2.NavigationCompleted += async (_, args) =>
-            {
-                if (!args.IsSuccess) return;
-                _ready = true;
-                await PushDataAsync();
-            };
-            ChartView.CoreWebView2.Navigate("https://hr.assets/Assets/orgchart/index.html");
-            await ReloadDataAsync();
-        }
-
-        private async Task ReloadDataAsync()
-        {
-            await using var db = new PersonnelDbContext();
-            var departments = await db.Departments.AsNoTracking()
-                .Select(department => new OrgDepartment
-                {
-                    Id = department.DepartmentId,
-                    Title = department.Title,
-                    ParentId = department.ParentDepartmentId,
-                    ManagerName = department.Manager == null
-                        ? null
-                        : (department.Manager.FirstName + " " + department.Manager.LastName).Trim()
-                })
-                .ToListAsync();
-
-            var members = await db.EmployeeSupplements.AsNoTracking()
-                .Select(item => new OrgMember
-                {
-                    EmployeeId = item.EmployeeId,
-                    DepartmentId = item.DepartmentId,
-                    FullName = (item.Employee.FirstName + " " + item.Employee.LastName).Trim(),
-                    Position = item.PositionTitle,
-                    IsDeleted = item.Employee.IsDeleted
-                })
-                .ToListAsync();
-
-            _json = OrgChartMapper.ToJson(OrgChartMapper.Build(
-                departments,
-                members,
-                IncludeEmployees.IsChecked == true));
-            await PushDataAsync();
-        }
-
-        private async Task PushDataAsync()
-        {
-            if (!_ready) return;
-            var argument = JsonSerializer.Serialize(_json);
-            await ChartView.ExecuteScriptAsync("loadOrg(" + argument + ")");
-        }
-
-        private async Task OnChartMessageAsync(string? message)
-        {
-            if (string.IsNullOrWhiteSpace(message)) return;
-            ChartClick? click;
             try
             {
-                click = JsonSerializer.Deserialize<ChartClick>(message, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-            }
-            catch (JsonException)
-            {
-                return;
-            }
+                await using var db = new PersonnelDbContext();
+                var departments = await db.Departments.AsNoTracking()
+                    .Select(department => new DeptRow
+                    {
+                        Id = department.DepartmentId,
+                        Title = department.Title,
+                        ParentId = department.ParentDepartmentId,
+                        LogoPath = department.LogoPath,
+                        Manager = department.Manager == null
+                            ? null
+                            : (department.Manager.FirstName + " " + department.Manager.LastName).Trim()
+                    })
+                    .ToListAsync();
 
-            if (click == null) return;
-            if (click.Kind == "department" && short.TryParse(click.EntityId, out var departmentId))
-            {
-                var department = await new DepartmentService().GetByIdAsync(departmentId);
-                if (department == null) return;
-                NavigationRequested?.Invoke(new DepartmentDetailPage(new DepartmentModel
+                var counts = await db.EmployeeSupplements.AsNoTracking()
+                    .Where(item => item.DepartmentId != null && !item.Employee.IsDeleted)
+                    .GroupBy(item => item.DepartmentId)
+                    .Select(group => new { Id = group.Key, Count = group.Count() })
+                    .ToListAsync();
+                var headcount = counts.Where(item => item.Id != null).ToDictionary(item => item.Id!.Value, item => item.Count);
+
+                var people = IncludeEmployees.IsChecked == true
+                    ? await db.EmployeeSupplements.AsNoTracking()
+                        .Where(item => item.DepartmentId != null && !item.Employee.IsDeleted)
+                        .Select(item => new PersonRow
+                        {
+                            EmployeeId = item.EmployeeId,
+                            DepartmentId = item.DepartmentId!.Value,
+                            ManagerId = item.DirectManagerEmployeeId,
+                            Name = (item.Employee.FirstName + " " + item.Employee.LastName).Trim(),
+                            Position = item.PositionTitle
+                        })
+                        .ToListAsync()
+                    : new List<PersonRow>();
+
+                var nodes = departments.ToDictionary(item => item.Id, item => NodeFor(item, headcount));
+                var roots = new ObservableCollection<OrgNode>();
+                var byId = departments.ToDictionary(item => item.Id);
+                foreach (var department in departments.OrderBy(item => item.Title))
                 {
-                    Id = department.DepartmentId,
-                    Name = department.Title,
-                    Manager = department.Manager == null ? "—" : $"{department.Manager.FirstName} {department.Manager.LastName}".Trim(),
-                    Status = department.IsActive ? "فعال" : "غیرفعال",
-                    StatusBackground = Brushes.Transparent,
-                    StatusForeground = Brushes.White,
-                    IconKind = PackIconKind.Domain
-                }));
+                    var node = nodes[department.Id];
+                    if (department.ParentId is short parentId && parentId != department.Id && nodes.ContainsKey(parentId) && !Loops(department.Id, parentId, byId))
+                        nodes[parentId].Children.Add(node);
+                    else
+                        roots.Add(node);
+
+                    AddEmployees(node, people.Where(person => person.DepartmentId == department.Id));
+                }
+
+                OrgTree.ItemsSource = roots;
+                EmptyText.Visibility = roots.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+                OrgTree.Visibility = roots.Count == 0 ? Visibility.Collapsed : Visibility.Visible;
             }
-            else if (click.Kind == "employee" && Guid.TryParse(click.EntityId, out var employeeId))
+            catch (Exception ex)
             {
-                var employee = await new EmployeeService().GetByIdAsync(employeeId);
-                if (employee == null) return;
-                NavigationRequested?.Invoke(new EmployeOverview(new EmployeeModel
-                {
-                    Id = employee.EmployeeId,
-                    FullName = $"{employee.FirstName} {employee.LastName}".Trim(),
-                    Email = employee.Email ?? "",
-                    NationalCode = employee.NationalCode ?? "",
-                    PersonnelCode = employee.Supplement?.PersonnelCode ?? "—",
-                    Position = employee.Supplement?.PositionTitle ?? "—",
-                    Department = employee.Supplement?.Department?.Title ?? "—",
-                    Status = employee.IsDeleted ? "حذف‌شده" : "فعال",
-                    IsDeleted = employee.IsDeleted
-                }));
+                EmptyText.Text = ex.Message;
+                EmptyText.Visibility = Visibility.Visible;
             }
         }
 
-        private async void Search_Click(object sender, RoutedEventArgs e) => await RunAsync("searchOrg");
-        private async void Fit_Click(object sender, RoutedEventArgs e) => await ChartView.ExecuteScriptAsync("fitOrg()");
-        private async void Expand_Click(object sender, RoutedEventArgs e) => await ChartView.ExecuteScriptAsync("expandOrg()");
-        private async void Collapse_Click(object sender, RoutedEventArgs e) => await ChartView.ExecuteScriptAsync("collapseOrg()");
-        private async void Png_Click(object sender, RoutedEventArgs e) => await ChartView.ExecuteScriptAsync("exportPng()");
-        private async void Svg_Click(object sender, RoutedEventArgs e) => await ChartView.ExecuteScriptAsync("exportSvg()");
-        private async void IncludeEmployees_Changed(object sender, RoutedEventArgs e) => await ReloadDataAsync();
-
-        private async void SearchBox_KeyDown(object sender, KeyEventArgs e)
+        private static bool Loops(short id, short parentId, IReadOnlyDictionary<short, DeptRow> departments)
         {
-            if (e.Key == Key.Enter) await RunAsync("searchOrg");
+            var seen = new HashSet<short> { id };
+            var cursor = parentId;
+            while (departments.TryGetValue(cursor, out var row))
+            {
+                if (!seen.Add(cursor)) return true;
+                if (row.ParentId is not short next || next == cursor) return false;
+                cursor = next;
+            }
+            return false;
         }
 
-        private async Task RunAsync(string function)
+        private static void AddEmployees(OrgNode department, IEnumerable<PersonRow> people)
         {
-            if (!_ready) return;
-            await ChartView.ExecuteScriptAsync(function + "(" + JsonSerializer.Serialize(SearchBox.Text ?? "") + ")");
+            var list = people.ToList();
+            if (list.Count == 0) return;
+            var byId = list.ToDictionary(item => item.EmployeeId);
+            var nodes = list.ToDictionary(item => item.EmployeeId, item => new OrgNode
+            {
+                Title = item.Name,
+                Subtitle = string.IsNullOrWhiteSpace(item.Position) ? "کارمند" : item.Position
+            });
+            foreach (var person in list)
+            {
+                if (person.ManagerId is Guid managerId && managerId != person.EmployeeId && byId.ContainsKey(managerId) && !ManagerLoop(person.EmployeeId, managerId, byId))
+                    nodes[managerId].Children.Add(nodes[person.EmployeeId]);
+                else
+                    department.Children.Add(nodes[person.EmployeeId]);
+            }
         }
 
-        private sealed class ChartClick
+        private static bool ManagerLoop(Guid personId, Guid managerId, IReadOnlyDictionary<Guid, PersonRow> people)
         {
-            public string? Kind { get; set; }
-            public string? EntityId { get; set; }
+            var seen = new HashSet<Guid> { personId };
+            var cursor = managerId;
+            while (people.TryGetValue(cursor, out var row))
+            {
+                if (!seen.Add(cursor)) return true;
+                if (row.ManagerId is not Guid next || next == cursor) return false;
+                cursor = next;
+            }
+            return false;
+        }
+
+        private static OrgNode NodeFor(DeptRow department, IReadOnlyDictionary<short, int> headcount)
+        {
+            var count = headcount.TryGetValue(department.Id, out var value) ? value : 0;
+            var manager = string.IsNullOrWhiteSpace(department.Manager) ? "بدون مدیر" : "مدیر: " + department.Manager;
+            return new OrgNode
+            {
+                Title = department.Title,
+                Subtitle = manager + " · " + count + " نفر",
+                Logo = ImagePicker.Load(department.LogoPath)
+            };
+        }
+
+        private async void IncludeEmployees_Changed(object sender, RoutedEventArgs e)
+        {
+            if (IsLoaded) await ReloadAsync();
+        }
+
+        private void Zoom_Changed(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (ZoomTransform == null) return;
+            ZoomTransform.ScaleX = e.NewValue;
+            ZoomTransform.ScaleY = e.NewValue;
+        }
+
+        private void Back_Click(object sender, RoutedEventArgs e)
+            => NavigationRequested?.Invoke(new DepartmentsPage());
+
+        private sealed class DeptRow
+        {
+            public short Id { get; init; }
+            public string Title { get; init; } = string.Empty;
+            public short? ParentId { get; init; }
+            public string? LogoPath { get; init; }
+            public string? Manager { get; init; }
+        }
+
+        private sealed class PersonRow
+        {
+            public Guid EmployeeId { get; init; }
+            public short DepartmentId { get; init; }
+            public Guid? ManagerId { get; init; }
+            public string Name { get; init; } = string.Empty;
+            public string Position { get; init; } = string.Empty;
+        }
+
+        private sealed class OrgNode
+        {
+            public string Title { get; set; } = string.Empty;
+            public string Subtitle { get; set; } = string.Empty;
+            public ImageSource? Logo { get; set; }
+            public ObservableCollection<OrgNode> Children { get; } = new();
         }
     }
 }

@@ -63,11 +63,8 @@
                                 <ComboBoxItem Content="فعال"/>
                                 <ComboBoxItem Content="غیرفعال"/>
                             </ComboBox>
-                            <ComboBox x:Name="DepartmentHFStatusCB"  Style="{StaticResource DarkOutlinedComboBox}" Width="150"
-                                      materialDesign:HintAssist.Hint="رده حفاظتی">
-                                <ComboBoxItem Content="فعال"/>
-                                <ComboBoxItem Content="غیرفعال"/>
-                            </ComboBox>
+                            <ComboBox x:Name="DepartmentHFStatusCB"  Style="{StaticResource DarkOutlinedComboBox}" Width="170"
+                                      materialDesign:HintAssist.Hint="رده حفاظتی"/>
                             <ComboBox x:Name="ParentDepartmentCB"  Style="{StaticResource DarkOutlinedComboBox}" Width="200"
                                       materialDesign:HintAssist.Hint="دپارتمان والد"/>
                             <DatePicker x:Name="StartDateDP"  Style="{StaticResource DarkOutlinedDatePicker}" Width="160"

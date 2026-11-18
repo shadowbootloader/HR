@@ -17,35 +17,21 @@ namespace HR.Controls.Department
 
             if (ActivityItems != null)
                 ActivityItems.ItemsSource = Activities;
+            RefreshActivityEmpty();
+        }
 
+        public void SetActivities(IEnumerable<DeptActivityItem> items)
+        {
             Activities.Clear();
-            Activities.Add(new DeptActivityItem
-            {
-                Title = "جلسه هماهنگی پروژه جذب نیرو",
-                Subtitle = "با حضور مدیر دپارتمان و تیم فنی",
-                Date = "۱۴۰۴/۰۶/۲۰",
-                Time = "۱۱:۴۵",
-                IconKind = PackIconKind.Calendar
-            });
-            Activities.Add(new DeptActivityItem
-            {
-                Title = "امضای قرارداد همکاری با شرکت آتیه",
-                Subtitle = "قرارداد ۲ ساله - بخش آموزش",
-                Date = "۱۴۰۴/۰۶/۱۹",
-                Time = "۱۵:۳۰",
-                IconKind = PackIconKind.FileDocumentOutline
-            });
-            Activities.Add(new DeptActivityItem
-            {
-                Title = "برگزاری جلسه ارزیابی عملکرد",
-                Subtitle = "با حضور کلیه سرپرستان",
-                Date = "۱۴۰۴/۰۶/۱۸",
-                Time = "۱۰:۲۰",
-                IconKind = PackIconKind.AccountGroupOutline
-            });
+            foreach (var item in items)
+                Activities.Add(item);
+            RefreshActivityEmpty();
+        }
 
-            if (ActivityItems != null)
-                ActivityItems.ItemsSource = Activities;
+        private void RefreshActivityEmpty()
+        {
+            if (ActivityEmpty == null) return;
+            ActivityEmpty.Visibility = Activities.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         }
 
         public static readonly DependencyProperty ManagerNameProperty =

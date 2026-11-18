@@ -141,6 +141,16 @@ TargetType="{x:Type TextBlock}">
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
 
                     <!-- عنوان و زیرعنوان -->
+                    <Border Width="56" Height="56" CornerRadius="12" Background="#1E293B" Margin="0,0,12,0" VerticalAlignment="Center" FlowDirection="LeftToRight">
+                        <Grid>
+                            <materialDesign:PackIcon Kind="Domain" Width="28" Height="28" Foreground="#64748B" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <Ellipse x:Name="DeptLogoEllipse" Visibility="Collapsed">
+                                <Ellipse.Fill>
+                                    <ImageBrush x:Name="DeptLogoBrush" Stretch="UniformToFill" AlignmentX="Center" AlignmentY="Center"/>
+                                </Ellipse.Fill>
+                            </Ellipse>
+                        </Grid>
+                    </Border>
                     <StackPanel VerticalAlignment="Center">
                         <TextBlock x:Name="DeptTitleText"
                                Text="دپارتمان"
@@ -337,6 +347,29 @@ TargetType="{x:Type TextBlock}">
                 <!-- خط زیر تب فعال -->
                 <Rectangle Height="1" Fill="#1E293B" Margin="0,0,0,0"/>
 
+                <Border Background="#0F172A" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="12" Padding="12" Margin="0,8,0,8">
+                    <StackPanel>
+                        <TextBlock Text="کارکنان این دپارتمان" Foreground="White" FontSize="16" Margin="0,0,0,8"/>
+                        <TextBlock x:Name="MembersEmpty" Text="کارمندی به این دپارتمان وصل نشده است" Foreground="#94A3B8"/>
+                        <ItemsControl x:Name="MembersList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="140"/>
+                                            <ColumnDefinition Width="120"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{Binding FullName}" Foreground="White"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding Position}" Foreground="#94A3B8"/>
+                                        <TextBlock Grid.Column="2" Text="{Binding PersonnelCode}" Foreground="#64748B"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
                 <!-- KPIها -->
                 <UniformGrid Columns="6" FlowDirection="LeftToRight" Margin="0,0,0,5">
 
@@ -381,11 +414,8 @@ TargetType="{x:Type TextBlock}">
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <dept:DepartmentProjectsCard x:Name="ProjectsCard" Grid.Column="0"/>
-                    <dept:DepartmentContractsCard x:Name="ContractsCard" Grid.Column="4"
-                                              CompletedCount="18" ExpiringCount="4" CancelledCount="4"
-                                              ReviewingCount="5" InitialApprovalCount="3" ProblemCount="1"/>
-                    <dept:DepartmentFinanceCard x:Name="FinanceCard" UsedPercent="67" Grid.Column="2"
-                                            BudgetText="۱,۲۰۰,۰۰۰,۰۰۰" SpentText="۸۰۴,۰۰۰,۰۰۰" RemainingText="۳۹۶,۰۰۰,۰۰۰"/>
+                    <dept:DepartmentContractsCard x:Name="ContractsCard" Grid.Column="4"/>
+                    <dept:DepartmentFinanceCard x:Name="FinanceCard" Grid.Column="2"/>
                 </Grid>
 
                 <!-- ردیف دستاورد + ریسک + ارزیابی -->
@@ -404,10 +434,7 @@ TargetType="{x:Type TextBlock}">
             </StackPanel>
 
             <!-- ستون راست -->
-            <dept:DepartmentLeaderSidePanel x:Name="LeaderPanel" Grid.Column="0"
-                                        ManagerName="سارا احمدی" ManagerTitle="مدیر منابع انسانی"
-                                        DeputyName="مهدی کاظمی"
-                                        LeadershipScore="90" SatisfactionScore="88" GrowthScore="81"/>
+            <dept:DepartmentLeaderSidePanel x:Name="LeaderPanel" Grid.Column="0"/>
         </Grid>
     </ScrollViewer>
 </Page>
