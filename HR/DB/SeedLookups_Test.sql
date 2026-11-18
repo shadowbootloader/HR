@@ -8,6 +8,9 @@
     * ساختار: سطح ۱ = کشور، سطح ۲ = استان، سطح ۳ = شهر. (GeoService.CountryLevel/ProvinceLevel/CityLevel)
     * فهرست شهرها کامل نیست و فقط مراکز و شهرهای مهم هر استان را دارد؛ برای تست کافی است.
 */
+SET ANSI_NULLS ON;
+SET QUOTED_IDENTIFIER ON;
+GO
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
 GO
