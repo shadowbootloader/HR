@@ -12,6 +12,18 @@ namespace HR.Controls
     {
         public EmployeeModel? Employee => DataContext as EmployeeModel;
 
+        public event EventHandler? EmployeeChosen;
+
+        public static readonly DependencyProperty SelectionOnlyProperty =
+            DependencyProperty.Register(nameof(SelectionOnly), typeof(bool), typeof(EmployeeRowControl),
+                new PropertyMetadata(false, (sender, _) => ((EmployeeRowControl)sender).UpdateActionButtons()));
+
+        public bool SelectionOnly
+        {
+            get => (bool)GetValue(SelectionOnlyProperty);
+            set => SetValue(SelectionOnlyProperty, value);
+        }
+
         public static event Action<Page>? NavigationRequested;
         public static event Action? ListRefreshRequested;
 
@@ -34,6 +46,18 @@ namespace HR.Controls
 
         private void UpdateActionButtons()
         {
+            if (ActionsPanel == null || ChooseHint == null || RowSurface == null) return;
+            if (SelectionOnly)
+            {
+                ActionsPanel.Visibility = Visibility.Collapsed;
+                ChooseHint.Visibility = Visibility.Visible;
+                RowSurface.Cursor = System.Windows.Input.Cursors.Hand;
+                return;
+            }
+
+            ChooseHint.Visibility = Visibility.Collapsed;
+            ActionsPanel.Visibility = Visibility.Visible;
+            RowSurface.Cursor = System.Windows.Input.Cursors.Arrow;
             if (AuthSession.Current?.CanManagePeople != true)
             {
                 EditBtn.Visibility = Visibility.Collapsed;
@@ -49,6 +73,13 @@ namespace HR.Controls
             DeleteBtn.Visibility = deleted ? Visibility.Collapsed : Visibility.Visible;
             RestoreBtn.Visibility = deleted ? Visibility.Visible : Visibility.Collapsed;
             HardDeleteBtn.Visibility = deleted ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private void RowSurface_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (!SelectionOnly || Employee == null) return;
+            EmployeeChosen?.Invoke(this, EventArgs.Empty);
+            e.Handled = true;
         }
 
         private void ViewBtn_Click(object sender, RoutedEventArgs e)

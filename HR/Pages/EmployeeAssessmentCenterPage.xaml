@@ -37,14 +37,9 @@
 
         <!-- تب دسته‌ها + ابزار -->
         <DockPanel Grid.Column="0" Grid.Row="1"  LastChildFill="True">
-            <TextBox x:Name="PersonSearch" DockPanel.Dock="Top" Height="36" Margin="0,0,8,8"
-                     Background="#1E293B" Foreground="White" BorderBrush="#334155"
-                     materialDesign:HintAssist.Hint="جستجوی نام، کد پرسنلی یا دپارتمان"
-                     TextChanged="PersonSearch_TextChanged"/>
-            <ComboBox x:Name="EmployeePicker" DockPanel.Dock="Top" Height="36" Margin="0,0,8,8"
-                      DisplayMemberPath="Name" SelectionChanged="EmployeePicker_SelectionChanged"/>
-            <TextBlock x:Name="SelectPrompt" DockPanel.Dock="Top" Text="برای دیدن آزمون‌ها ابتدا یک نفر را انتخاب کنید."
-                       Foreground="#94A3B8" Margin="0,0,8,8" Visibility="Collapsed"/>
+            <Button x:Name="ChangePersonButton" DockPanel.Dock="Top" Content="تغییر نفر" Height="32" Margin="0,0,8,8"
+                    HorizontalAlignment="Right" Background="#1E293B" Foreground="White" BorderThickness="0"
+                    Visibility="Collapsed" Click="ChangePerson_Click"/>
             <Button x:Name="AssignButton" DockPanel.Dock="Top" Content="تکلیف آزمون انتخاب‌شده تا ۳۰ روز دیگر" Height="32" Margin="0,0,8,8"
                     HorizontalAlignment="Right" Background="#1E293B" Foreground="White" BorderThickness="0" Click="Assign_Click"/>
             <lvc:CartesianChart x:Name="ScoreChart" DockPanel.Dock="Top" Height="150" Margin="0,0,8,8"/>
@@ -495,6 +490,78 @@
             </DockPanel>
 
         </DockPanel>
+        <Border x:Name="PickerPanel" Grid.Column="0" Grid.Row="1" Grid.RowSpan="2" Margin="0,0,8,8"
+                Background="#0B1120" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="12" Padding="8">
+            <DockPanel LastChildFill="True" FlowDirection="RightToLeft">
+                <TextBlock DockPanel.Dock="Top" Text="برای دیدن آزمون‌ها یک نفر را از فهرست انتخاب کنید."
+                           Foreground="#94A3B8" Margin="4,0,4,8"/>
+                <Grid DockPanel.Dock="Top" Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="12"/>
+                        <ColumnDefinition Width="160"/>
+                        <ColumnDefinition Width="12"/>
+                        <ColumnDefinition Width="180"/>
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Column="0" Background="#111827" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="10" Padding="4,0">
+                        <DockPanel>
+                            <materialDesign:PackIcon DockPanel.Dock="Right" Kind="Magnify" Width="20" Height="20"
+                                                     Foreground="#64748B" VerticalAlignment="Center" Margin="8,0,4,0"/>
+                            <TextBox x:Name="PickerSearch" Height="36" FontSize="14" Foreground="White" CaretBrush="White"
+                                     BorderThickness="0" Background="Transparent" VerticalContentAlignment="Center" Padding="8,0"
+                                     materialDesign:HintAssist.Hint="جستجو بر اساس نام، سمت یا دپارتمان..."
+                                     materialDesign:HintAssist.Foreground="#64748B"
+                                     TextChanged="PickerSearch_TextChanged"/>
+                        </DockPanel>
+                    </Border>
+                    <ComboBox x:Name="PickerStatus" Grid.Column="2" Height="36" FontSize="14" Foreground="White"
+                              Style="{StaticResource DarkOutlinedComboBox}" SelectionChanged="PickerFilter_SelectionChanged">
+                        <ComboBoxItem Content="همه" IsSelected="True"/>
+                        <ComboBoxItem Content="تازه‌وارد"/>
+                        <ComboBoxItem Content="فعال"/>
+                        <ComboBoxItem Content="مرخصی"/>
+                        <ComboBoxItem Content="غیرفعال"/>
+                        <ComboBoxItem Content="حذف‌شده"/>
+                    </ComboBox>
+                    <ComboBox x:Name="PickerDepartment" Grid.Column="4" Height="36" FontSize="14" Foreground="White"
+                              Style="{StaticResource DarkOutlinedComboBox}" SelectionChanged="PickerFilter_SelectionChanged"/>
+                </Grid>
+                <Border DockPanel.Dock="Top" Padding="12,10" BorderBrush="#1E293B" BorderThickness="0,0,0,1">
+                    <Grid FlowDirection="RightToLeft">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="50"/>
+                            <ColumnDefinition Width="200"/>
+                            <ColumnDefinition Width="160"/>
+                            <ColumnDefinition Width="160"/>
+                            <ColumnDefinition Width="100"/>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="150"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="تصویر" Foreground="White" FontSize="14"/>
+                        <TextBlock Grid.Column="1" Text="نام" Foreground="White" FontSize="14" Margin="10,0,0,0"/>
+                        <TextBlock Grid.Column="2" Text="جایگاه شغلی" Foreground="White" FontSize="14" Margin="10,0,0,0"/>
+                        <TextBlock Grid.Column="3" Text="دپارتمان" Foreground="White" FontSize="14" Margin="10,0,0,0"/>
+                        <TextBlock Grid.Column="4" Text="وضعیت" Foreground="White" FontSize="14" HorizontalAlignment="Center"/>
+                        <TextBlock Grid.Column="5" Text="بهره‌وری" Foreground="White" FontSize="14" HorizontalAlignment="Center"/>
+                        <TextBlock Grid.Column="6" Text="انتخاب" Foreground="White" FontSize="14" HorizontalAlignment="Center"/>
+                    </Grid>
+                </Border>
+                <Border DockPanel.Dock="Bottom" Padding="8,6" BorderBrush="#1E293B" BorderThickness="0,1,0,0">
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
+                            <Button x:Name="PickerPrev" Content="‹" Width="34" Height="34" Margin="0,0,4,0"
+                                    Foreground="White" Background="#22FFFFFF" BorderThickness="0" Click="PickerPrev_Click"/>
+                            <Button x:Name="PickerNext" Content="›" Width="34" Height="34"
+                                    Foreground="White" Background="#22FFFFFF" BorderThickness="0" Click="PickerNext_Click"/>
+                        </StackPanel>
+                        <TextBlock x:Name="PickerPageText" Foreground="White" VerticalAlignment="Center" Margin="8,0,0,0" Text="موردی یافت نشد"/>
+                    </DockPanel>
+                </Border>
+                <ScrollViewer VerticalScrollBarVisibility="Auto" FlowDirection="RightToLeft">
+                    <StackPanel x:Name="PickerRows"/>
+                </ScrollViewer>
+            </DockPanel>
+        </Border>
         <uc:AssessmentSidePanelControl Grid.RowSpan="4" x:Name="SidePanel" Grid.Column="1" ></uc:AssessmentSidePanelControl>
         <uc:AssessmentFooterStatsControl x:Name="FooterStats" Grid.Row="3"
     OverallPercent="38"
