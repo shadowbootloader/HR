@@ -108,6 +108,15 @@ namespace HR.Pages
                 ShowProfile(snapshot);
                 ShowAttempts(history);
                 Insights.ShowFacts(OverviewFacts.Build(entity, history, DateTime.Today));
+                if (entity != null)
+                {
+                    var report = ProfileCompleteness.Score(ProfileCompleteness.FromEmployee(entity));
+                    CompletenessTitle.Text = "امتیاز تکمیل پروفایل " + report.Score + " از " + report.MaxScore;
+                    CompletenessText.Text = "تکمیل‌شده " + report.Percent + "٪ — باقی‌مانده " + report.RemainingPercent + "٪";
+                    CompletenessMissing.Text = report.Missing.Count == 0
+                        ? "بخش ناقصی نمانده است."
+                        : "ناقص: " + string.Join("، ", report.Missing);
+                }
             }
             catch (Exception ex)
             {

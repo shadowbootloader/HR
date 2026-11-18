@@ -107,6 +107,8 @@ namespace HR.Pages
                     _all.Add(MapToModel(e));
                 }
 
+                ApplyCompleteness(await new ProfileCompletenessReader().ReadAllAsync());
+
                 ApplyFilter(resetPage: true);
             }
             catch (Exception ex)
@@ -117,6 +119,16 @@ namespace HR.Pages
             finally
             {
                 _isLoading = false;
+            }
+        }
+
+        private void ApplyCompleteness(IReadOnlyDictionary<Guid, ProfileReport> reports)
+        {
+            foreach (var row in _all)
+            {
+                if (!reports.TryGetValue(row.Id, out var report)) continue;
+                row.PerformanceValue = report.Percent;
+                row.PerformanceLabel = "تکمیل " + report.Percent + "٪";
             }
         }
 
