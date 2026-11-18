@@ -121,12 +121,74 @@ namespace HR.Pages
 
                 FinanceCard.Budget = (long)(dept.AnnualBudget ?? 0);
                 FinanceCard.Spent = 0;
+                FillOverview(dept, members);
+                await LoadSummaryChartAsync();
                 ShowTab(0);
             }
             catch (Exception ex)
             {
                 NotificationService.Warning("دپارتمان", ex.Message);
             }
+        }
+
+        private void FillOverview(HR.Data.Entities.Department dept, IReadOnlyList<DepartmentMemberRow> members)
+        {
+            var office = dept.Offices.FirstOrDefault();
+            var officeText = office == null
+                ? "دفتری ثبت نشده"
+                : string.Join("، ", new[] { office.Name, office.City, office.Address }.Where(text => !string.IsNullOrWhiteSpace(text)));
+            var children = dept.Children.OrderBy(item => item.Title).Select(item => item.Title).ToList();
+            var recent = members
+                .Where(item => item.StartDate.HasValue && item.StartDate.Value.Date >= DateTime.Today.AddDays(-30))
+                .OrderByDescending(item => item.StartDate)
+                .Take(5)
+                .Select(item => item.FullName + " (" + ToPersian(item.StartDate) + ")")
+                .ToList();
+            var budget = dept.AnnualBudget is decimal amount ? amount.ToString("N0") + " ریال" : "ثبت نشده";
+            OverviewFacts.Text = string.Join("\n", new[]
+            {
+                "مدیر: " + Person(dept.Manager),
+                "جانشین: " + Person(dept.Deputy),
+                "تنخواه‌دار: " + Person(dept.CashCustodian),
+                "کارکنان: " + members.Count + " از ظرفیت " + (dept.ApprovedCapacity?.ToString() ?? "—"),
+                "رده حفاظتی: " + (string.IsNullOrWhiteSpace(dept.SecurityLevel) ? "ثبت نشده" : dept.SecurityLevel),
+                "محل: " + officeText,
+                "والد: " + (dept.Parent == null ? "ندارد" : dept.Parent.Title),
+                "زیرمجموعه: " + (children.Count == 0 ? "ندارد" : string.Join("، ", children)),
+                "بودجه سالانه: " + budget,
+                "لوگو: " + (string.IsNullOrWhiteSpace(dept.LogoPath) ? "ندارد" : "ثبت شده"),
+                "استخدام ۳۰ روز اخیر: " + (recent.Count == 0 ? "ندارد" : string.Join("، ", recent))
+            });
+
+            var issues = new List<string>();
+            if (dept.Manager == null) issues.Add("مدیر مشخص نشده است.");
+            if (dept.Deputy == null) issues.Add("جانشین مشخص نشده است.");
+            if (dept.CashCustodian == null) issues.Add("تنخواه‌دار مشخص نشده است.");
+            if (dept.ApprovedCapacity is int capacity && members.Count > capacity) issues.Add("تعداد کارکنان از ظرفیت مصوب بیشتر است.");
+            if (dept.ApprovedCapacity == null) issues.Add("ظرفیت مصوب ثبت نشده است.");
+            if (string.IsNullOrWhiteSpace(dept.LogoPath)) issues.Add("لوگو ندارد.");
+            if (dept.Parent == null && dept.Title != OrgChartLayout.HeadquartersTitle) issues.Add("دپارتمان والد ندارد.");
+            if (office == null) issues.Add("دفتر یا محل ثبت نشده است.");
+            if (string.IsNullOrWhiteSpace(dept.SecurityLevel)) issues.Add("رده حفاظتی ثبت نشده است.");
+            if (dept.AnnualBudget == null) issues.Add("بودجه سالانه ثبت نشده است.");
+            OverviewIssues.Text = issues.Count == 0 ? "ایرادی برای این دپارتمان ثبت نشد." : string.Join("\n", issues);
+            OverviewIssues.Foreground = issues.Count == 0
+                ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0x86, 0xEF, 0xAC))
+                : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0xFB, 0xBF, 0x24));
+
+            OverviewPeople.Text = members.Count == 0
+                ? "کارمندی به این دپارتمان وصل نشده است."
+                : string.Join("\n", members.Take(5).Select(item => item.FullName + " — " + (string.IsNullOrWhiteSpace(item.Position) ? "بدون سمت" : item.Position)));
+        }
+
+        private async System.Threading.Tasks.Task LoadSummaryChartAsync()
+        {
+            if (_department == null) return;
+            await using var db = new PersonnelDbContext();
+            SummaryChart.Show(OrgChartLayout.Build(
+                await OrgChartPage.LoadDepartmentsAsync(db),
+                await OrgChartPage.LoadPeopleAsync(db),
+                _department.Id));
         }
 
         private static string Person(HR.Data.Entities.Employee? employee)
@@ -194,6 +256,8 @@ namespace HR.Pages
         {
             if (SummaryPanel == null) return;
             SummaryPanel.Visibility = index == 0 ? Visibility.Visible : Visibility.Collapsed;
+            OverviewPanel.Visibility = index == 0 ? Visibility.Visible : Visibility.Collapsed;
+            LeaderPanel.Visibility = index == 0 ? Visibility.Visible : Visibility.Collapsed;
             StaffPanel.Visibility = index == 1 ? Visibility.Visible : Visibility.Collapsed;
             ChartPanel.Visibility = index == 2 ? Visibility.Visible : Visibility.Collapsed;
             WorkPanel.Visibility = index is 3 or 4 ? Visibility.Visible : Visibility.Collapsed;
