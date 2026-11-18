@@ -96,6 +96,7 @@ namespace HR.Services.Auth
             AccessGuard.RequireAdmin();
             return await _db.AppUsers
                 .Include(user => user.Roles).ThenInclude(link => link.Role)
+                .Include(user => user.Employee)
                 .OrderBy(user => user.Username)
                 .ToListAsync();
         }
