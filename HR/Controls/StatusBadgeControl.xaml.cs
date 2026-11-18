@@ -33,24 +33,22 @@ namespace HR.Controls
         private static void OnStatusChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var ctrl = (StatusBadgeControl)d;
-            string status = e.NewValue?.ToString() ?? "Active";
+            var status = e.NewValue?.ToString() ?? string.Empty;
+            var (background, foreground, border, text) = status switch
+            {
+                "فعال" or "Active" => ("#14532D", "#22C55E", "#22C55E", "فعال"),
+                "تازه‌وارد" => ("#1E3A8A", "#60A5FA", "#3B82F6", "تازه‌وارد"),
+                "مرخصی" or "On Leave" => ("#713F12", "#F59E0B", "#F59E0B", "مرخصی"),
+                "غیرفعال" => ("#1E293B", "#94A3B8", "#475569", "غیرفعال"),
+                "حذف‌شده" => ("#450A0A", "#F87171", "#F87171", "حذف‌شده"),
+                _ => ("#1E293B", "#E2E8F0", "#334155", string.IsNullOrWhiteSpace(status) ? "—" : status)
+            };
 
-            if (status == "Active")
-            {
-                ctrl.BadgeBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#14532D"));
-                ctrl.BadgeText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#22C55E"));
-                ctrl.BadgeBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#22C55E"));
-                ctrl.BadgeBorder.BorderThickness = new Thickness(1);
-                ctrl.BadgeText.Text = "Active";
-            }
-            else // On Leave
-            {
-                ctrl.BadgeBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#713F12"));
-                ctrl.BadgeText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F59E0B"));
-                ctrl.BadgeBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F59E0B"));
-                ctrl.BadgeBorder.BorderThickness = new Thickness(1);
-                ctrl.BadgeText.Text = "On Leave";
-            }
+            ctrl.BadgeBorder.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(background));
+            ctrl.BadgeText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(foreground));
+            ctrl.BadgeBorder.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(border));
+            ctrl.BadgeBorder.BorderThickness = new Thickness(1);
+            ctrl.BadgeText.Text = text;
         }
     }
 }

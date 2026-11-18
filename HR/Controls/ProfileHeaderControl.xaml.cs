@@ -52,6 +52,7 @@ namespace HR.Controls
             EmpStatus.Fill = status switch
             {
                 "فعال" => new SolidColorBrush(Color.FromRgb(0x1E, 0xD5, 0x8A)),
+                "تازه‌وارد" => new SolidColorBrush(Color.FromRgb(0x3B, 0x82, 0xF6)),
                 "مرخصی" => new SolidColorBrush(Color.FromRgb(0xF5, 0xB7, 0x31)),
                 _ => new SolidColorBrush(Color.FromRgb(0x64, 0x74, 0x8B))
             };

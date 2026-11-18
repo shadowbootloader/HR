@@ -146,7 +146,12 @@ namespace HR.Pages
         private static string StatusOf(HR.Data.Entities.Employee employee)
         {
             var onLeave = employee.Leaves?.Any(leave => LeaveService.Covers(leave, DateTime.Today)) == true;
-            return RosterStatus.Resolve(employee.IsDeleted, employee.Supplement?.EndDate, onLeave, DateTime.Today);
+            return RosterStatus.Resolve(
+                employee.IsDeleted,
+                employee.Supplement?.EndDate,
+                onLeave,
+                employee.Supplement?.StartDate,
+                DateTime.Today);
         }
 
         private static string DepartmentMark(string? title)

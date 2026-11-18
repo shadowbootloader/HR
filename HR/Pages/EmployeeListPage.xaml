@@ -244,6 +244,7 @@
                           Style="{StaticResource DarkOutlinedComboBox}"
                           SelectionChanged="StatusFilterCombo_SelectionChanged">
                             <ComboBoxItem Content="همه" IsSelected="True"/>
+                            <ComboBoxItem Content="تازه‌وارد"/>
                             <ComboBoxItem Content="فعال"/>
                             <ComboBoxItem Content="مرخصی"/>
                             <ComboBoxItem Content="غیرفعال"/>

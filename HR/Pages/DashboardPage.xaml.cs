@@ -153,7 +153,7 @@ namespace HR.Pages
         private static SKColor StatusColor(string name, int _)
             => name switch
             {
-                "تازه‌وارد" => SKColor.Parse("#3B82F6"),
+                RosterStatus.NewHire => SKColor.Parse("#3B82F6"),
                 RosterStatus.Active => SKColor.Parse("#22C55E"),
                 RosterStatus.OnLeave => SKColor.Parse("#F59E0B"),
                 RosterStatus.Inactive => SKColor.Parse("#94A3B8"),
