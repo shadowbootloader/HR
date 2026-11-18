@@ -96,7 +96,7 @@ namespace HR.Pages
             }
 
             PickerPanel.Visibility = Visibility.Collapsed;
-            ChangePersonButton.Visibility = Visibility.Visible;
+            BindSelectedPerson(_selected);
             await ReloadAssessmentsAsync();
         }
 
@@ -173,7 +173,7 @@ namespace HR.Pages
         {
             _selected = person;
             PickerPanel.Visibility = Visibility.Collapsed;
-            ChangePersonButton.Visibility = Visibility.Visible;
+            BindSelectedPerson(person);
             Hero.EmployeeName = person.FullName;
             Hero.Department = person.Department;
             await ReloadAssessmentsAsync();
@@ -190,7 +190,7 @@ namespace HR.Pages
             Hero.EmployeeName = "کارمندی انتخاب نشده";
             Hero.Role = "";
             PickerPanel.Visibility = Visibility.Visible;
-            ChangePersonButton.Visibility = Visibility.Collapsed;
+            BindSelectedPerson(null);
             RenderPicker();
             ScoreChart.Series = Array.Empty<ISeries>();
             BindSide(Array.Empty<AttemptSummary>());
@@ -224,7 +224,7 @@ namespace HR.Pages
                 return;
             }
             PickerPanel.Visibility = Visibility.Collapsed;
-            ChangePersonButton.Visibility = Visibility.Visible;
+            BindSelectedPerson(person);
             Hero.EmployeeName = person.FullName;
             Hero.Role = AuthSession.Current?.RoleLabel ?? "";
             AssignTest.ItemsSource = _definitions.ToList();
@@ -519,6 +519,34 @@ namespace HR.Pages
             if (!IsLoaded) return;
             _pageIndex = 0;
             RefreshList();
+        }
+
+        private void BindSelectedPerson(EmployeeModel? person)
+        {
+            if (person == null)
+            {
+                SelectedPersonCard.Visibility = Visibility.Collapsed;
+                ChangePersonButton.Visibility = Visibility.Collapsed;
+                SelectedNameText.Text = "کارمندی انتخاب نشده";
+                SelectedCodeText.Text = "کد پرسنلی —";
+                SelectedDepartmentText.Text = "بدون دپارتمان";
+                SelectedAvatarBrush.ImageSource = null;
+                SelectedAvatarIcon.Visibility = Visibility.Visible;
+                return;
+            }
+
+            SelectedPersonCard.Visibility = Visibility.Visible;
+            ChangePersonButton.Visibility = Visibility.Visible;
+            SelectedNameText.Text = person.FullName;
+            SelectedCodeText.Text = string.IsNullOrWhiteSpace(person.PersonnelCode) || person.PersonnelCode == "—"
+                ? "کد پرسنلی —"
+                : "کد پرسنلی " + person.PersonnelCode;
+            SelectedDepartmentText.Text = string.IsNullOrWhiteSpace(person.Department) || person.Department == "—"
+                ? "بدون دپارتمان"
+                : person.Department;
+            var image = ImagePicker.Load(person.PhotoPath);
+            SelectedAvatarBrush.ImageSource = image;
+            SelectedAvatarIcon.Visibility = image == null ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private async void Assign_Click(object sender, RoutedEventArgs e)
