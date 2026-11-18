@@ -471,6 +471,8 @@ namespace HR.Services.Data
                 .Include(e => e.Citizenships)
                 .Include(e => e.ForeignTravels)
                 .Include(e => e.ForeignRelatives)
+                .Include(e => e.ForeignCooperations)
+                .Include(e => e.Leaves)
                 .Include(e => e.RelatedPersons).ThenInclude(r => r.ForeignCooperations)
                 .Include(e => e.OrganizationCooperations)
                 .Include(e => e.OtherActivities)
@@ -500,6 +502,13 @@ namespace HR.Services.Data
 
             await new DocumentLinkService().RemoveEmployeeAsync(_db, employeeId);
 
+            var attempts = await _db.AssessmentAttempts
+                .Where(attempt => attempt.EmployeeId == employeeId)
+                .Include(attempt => attempt.Answers)
+                .ToListAsync();
+            _db.RemoveRange(attempts.SelectMany(attempt => attempt.Answers));
+            _db.RemoveRange(attempts);
+            _db.RemoveRange(employee.Leaves);
             _db.RemoveRange(employee.ForeignCooperations);
             _db.RemoveRange(employee.RelatedPersons.SelectMany(p => p.ForeignCooperations));
             _db.RemoveRange(employee.Citizenships);
