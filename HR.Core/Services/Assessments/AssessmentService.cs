@@ -156,7 +156,7 @@ namespace HR.Services.Assessments
         {
             var day = (today ?? DateTime.Today).Date;
             var rows = await _db.AssessmentAssignments.AsNoTracking()
-                .Where(item => item.EmployeeId == employeeId)
+                .Where(item => item.EmployeeId == employeeId && !item.Employee.IsDeleted)
                 .Select(item => new
                 {
                     item.DueDate,
@@ -256,7 +256,7 @@ namespace HR.Services.Assessments
         {
             var query = _db.AssessmentAttempts
                 .AsNoTracking()
-                .Where(item => item.EmployeeId == employeeId);
+                .Where(item => item.EmployeeId == employeeId && !item.Employee.IsDeleted);
             if (!includeSelfAssessment)
                 query = query.Where(item => item.Assessment.Code != SelfAssessmentCatalog.Code);
 
@@ -281,7 +281,7 @@ namespace HR.Services.Assessments
         {
             return await _db.AssessmentAttempts
                 .AsNoTracking()
-                .Where(item => item.Assessment.Code != SelfAssessmentCatalog.Code)
+                .Where(item => !item.Employee.IsDeleted && item.Assessment.Code != SelfAssessmentCatalog.Code)
                 .OrderByDescending(item => item.SubmittedAt)
                 .Take(take)
                 .Select(item => new AttemptSummary

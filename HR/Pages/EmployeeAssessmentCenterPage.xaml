@@ -521,7 +521,6 @@
                         <ComboBoxItem Content="فعال"/>
                         <ComboBoxItem Content="مرخصی"/>
                         <ComboBoxItem Content="غیرفعال"/>
-                        <ComboBoxItem Content="حذف‌شده"/>
                     </ComboBox>
                     <ComboBox x:Name="PickerDepartment" Grid.Column="4" Height="36" FontSize="14" Foreground="White"
                               Style="{StaticResource DarkOutlinedComboBox}" SelectionChanged="PickerFilter_SelectionChanged"/>

@@ -53,7 +53,7 @@ namespace HR.Pages
             try
             {
                 using var employees = new EmployeeService();
-                var rows = await employees.GetAllAsync(includeDeleted: true);
+                var rows = await employees.GetAllAsync();
                 _roster.Clear();
                 foreach (var employee in rows)
                     _roster.Add(EmployeeListPage.MapToModel(employee));
