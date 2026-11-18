@@ -2,6 +2,7 @@ using HR.Data;
 using HR.Data.Entities;
 using HR.Services.Auth;
 using HR.Services.Files;
+using HR.Services.Org;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -26,6 +27,21 @@ namespace HR.Services.Data
 
         public DepartmentService() : this(new PersonnelDbContext())
         {
+        }
+
+        public async Task<Department> EnsureHeadquartersAsync()
+        {
+            var existing = await _db.Departments
+                .FirstOrDefaultAsync(item => item.Title == OrgChartLayout.HeadquartersTitle && item.ParentDepartmentId == null);
+            if (existing != null) return existing;
+
+            existing = await _db.Departments.FirstOrDefaultAsync(item => item.Title == OrgChartLayout.HeadquartersTitle);
+            if (existing != null) return existing;
+
+            var created = new Department { Title = OrgChartLayout.HeadquartersTitle, IsActive = true };
+            _db.Departments.Add(created);
+            await _db.SaveChangesAsync();
+            return created;
         }
 
         public async Task<List<Department>> GetAllAsync(bool onlyActive = false)
@@ -255,6 +271,9 @@ namespace HR.Services.Data
                 .FirstOrDefaultAsync(d => d.DepartmentId == id);
 
             if (dept == null) return false;
+
+            if (dept.Title == OrgChartLayout.HeadquartersTitle)
+                throw new InvalidOperationException("ستاد مرکزی ریشه چارت است و قابل حذف نیست.");
 
             if (dept.Children.Any())
                 throw new InvalidOperationException("این دپارتمان زیرمجموعه دارد و قابل حذف نیست. ابتدا دپارتمان‌های فرزند را جابه‌جا یا حذف کنید.");

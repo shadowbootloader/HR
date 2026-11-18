@@ -1,6 +1,7 @@
 ﻿<Page x:Class="HR.Pages.OrgChartPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:controls="clr-namespace:HR.Controls"
       Background="#0B1120"
       FlowDirection="RightToLeft"
       FontFamily="pack://application:,,,/Fonts/#B Nazanin"
@@ -8,45 +9,11 @@
     <DockPanel>
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="12,12,12,0">
             <TextBlock Text="چارت سازمانی" FontSize="22" FontWeight="Bold" VerticalAlignment="Center"/>
-            <CheckBox x:Name="IncludeEmployees" Content="نمایش کارکنان" Margin="16,0,0,0" Foreground="White"
-                      IsChecked="False" VerticalAlignment="Center" Checked="IncludeEmployees_Changed" Unchecked="IncludeEmployees_Changed"/>
             <TextBlock Text="بزرگ‌نمایی" Margin="16,0,8,0" VerticalAlignment="Center" Foreground="#94A3B8"/>
             <Slider x:Name="Zoom" Width="140" Minimum="0.6" Maximum="1.8" Value="1" VerticalAlignment="Center" ValueChanged="Zoom_Changed"/>
             <Button Content="بازگشت به دپارتمان‌ها" Margin="16,0,0,0" Height="34" Padding="12,0"
                     Background="#1E293B" Foreground="White" BorderThickness="0" Click="Back_Click"/>
         </StackPanel>
-        <TextBlock x:Name="EmptyText" Text="دپارتمانی برای رسم چارت ثبت نشده است" Foreground="#94A3B8"
-                   FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
-        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Margin="12">
-            <TreeView x:Name="OrgTree" Background="Transparent" BorderThickness="0" Padding="8">
-                <TreeView.Resources>
-                    <Style TargetType="TreeViewItem">
-                        <Setter Property="Foreground" Value="White"/>
-                        <Setter Property="Background" Value="Transparent"/>
-                        <Setter Property="Padding" Value="2"/>
-                    </Style>
-                </TreeView.Resources>
-                <TreeView.LayoutTransform>
-                    <ScaleTransform x:Name="ZoomTransform" ScaleX="1" ScaleY="1"/>
-                </TreeView.LayoutTransform>
-                <TreeView.ItemTemplate>
-                    <HierarchicalDataTemplate ItemsSource="{Binding Children}">
-                        <Border Background="#111827" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="10" Padding="10" Margin="0,4">
-                            <StackPanel Orientation="Horizontal" FlowDirection="LeftToRight">
-                                <Ellipse Width="36" Height="36" Stroke="#334155" StrokeThickness="1" Margin="0,0,10,0">
-                                    <Ellipse.Fill>
-                                        <ImageBrush ImageSource="{Binding Logo}" Stretch="UniformToFill" AlignmentX="Center" AlignmentY="Center"/>
-                                    </Ellipse.Fill>
-                                </Ellipse>
-                                <StackPanel VerticalAlignment="Center" FlowDirection="RightToLeft">
-                                    <TextBlock Text="{Binding Title}" FontSize="16" FontWeight="SemiBold"/>
-                                    <TextBlock Text="{Binding Subtitle}" Foreground="#94A3B8" FontSize="13"/>
-                                </StackPanel>
-                            </StackPanel>
-                        </Border>
-                    </HierarchicalDataTemplate>
-                </TreeView.ItemTemplate>
-            </TreeView>
-        </ScrollViewer>
+        <controls:OrgChartBoard x:Name="Board" Margin="8"/>
     </DockPanel>
 </Page>
