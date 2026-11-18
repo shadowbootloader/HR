@@ -74,7 +74,10 @@ namespace HR.Services.Assessments
         {
             await EnsureManagerSeedAsync();
             await EnsureSelfAssessmentAsync();
-            var rows = await Query().Where(item => item.IsActive).OrderBy(item => item.Title).ToListAsync();
+            var rows = await Query()
+                .Where(item => item.IsActive && item.Code != SelfAssessmentCatalog.Code)
+                .OrderBy(item => item.Title)
+                .ToListAsync();
             return rows.Select(ToRecord).ToList();
         }
 
@@ -160,11 +163,15 @@ namespace HR.Services.Assessments
             return attempt.AttemptId;
         }
 
-        public async Task<IReadOnlyList<AttemptSummary>> HistoryAsync(Guid employeeId)
+        public async Task<IReadOnlyList<AttemptSummary>> HistoryAsync(Guid employeeId, bool includeSelfAssessment = false)
         {
-            return await _db.AssessmentAttempts
+            var query = _db.AssessmentAttempts
                 .AsNoTracking()
-                .Where(item => item.EmployeeId == employeeId)
+                .Where(item => item.EmployeeId == employeeId);
+            if (!includeSelfAssessment)
+                query = query.Where(item => item.Assessment.Code != SelfAssessmentCatalog.Code);
+
+            return await query
                 .OrderByDescending(item => item.SubmittedAt)
                 .Select(item => new AttemptSummary
                 {
@@ -184,6 +191,7 @@ namespace HR.Services.Assessments
         {
             return await _db.AssessmentAttempts
                 .AsNoTracking()
+                .Where(item => item.Assessment.Code != SelfAssessmentCatalog.Code)
                 .OrderByDescending(item => item.SubmittedAt)
                 .Take(take)
                 .Select(item => new AttemptSummary
