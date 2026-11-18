@@ -4,11 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using HR.Services.Assessments;
 using HR.Services.Data;
-using LiveChartsCore;
-using LiveChartsCore.SkiaSharpView;
-using LiveChartsCore.SkiaSharpView.Painting;
 using MaterialDesignThemes.Wpf;
-using SkiaSharp;
 
 namespace HR.Pages
 {
@@ -204,28 +200,6 @@ namespace HR.Pages
                         score + " · " + (attempt.LevelLabel ?? ""));
                 }
             }
-
-            ScoreChart.Series = new ISeries[]
-            {
-                new ColumnSeries<double>
-                {
-                    Values = history.Select(item => item.TotalScore ?? 0).Reverse().ToArray(),
-                    Fill = new SolidColorPaint(SKColor.Parse("#38BDF8")),
-                    Name = "نمره"
-                }
-            };
-            ScoreChart.XAxes = new[]
-            {
-                new Axis
-                {
-                    Labels = history.Select(item => item.Title).Reverse().ToArray(),
-                    LabelsPaint = new SolidColorPaint(SKColor.Parse("#94A3B8"))
-                }
-            };
-            ScoreChart.YAxes = new[]
-            {
-                new Axis { MinLimit = 0, MaxLimit = 100, LabelsPaint = new SolidColorPaint(SKColor.Parse("#94A3B8")) }
-            };
         }
     }
 }

@@ -146,6 +146,10 @@ namespace HR.Services.Assessments
             }
             else
             {
+                var submitted = await _db.AssessmentAttempts.AnyAsync(attempt =>
+                    attempt.EmployeeId == employeeId && attempt.AssessmentId == assessment.AssessmentId && attempt.SubmittedAt != null);
+                if (!submitted)
+                    throw new InvalidOperationException("این آزمون همین حالا برای این کارمند در انتظار است و دوباره اختصاص داده نمی‌شود.");
                 existing.DueDate = dueDate.Date;
             }
 

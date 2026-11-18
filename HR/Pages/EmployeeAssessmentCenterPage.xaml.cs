@@ -43,7 +43,11 @@ namespace HR.Pages
             SidePanel.Activities = new ObservableCollection<SideActivityItem>();
             SidePanel.XpMax = 100;
             if (AuthSession.Current?.CanManagePeople != true)
+            {
                 BtnNewTest.Visibility = Visibility.Collapsed;
+                AssignPanel.Visibility = Visibility.Collapsed;
+            }
+            AssignDue.SelectedDate = DateTime.Today.AddDays(30);
             Loaded += async (_, _) => await LoadPeopleAsync();
         }
 
@@ -223,6 +227,7 @@ namespace HR.Pages
             ChangePersonButton.Visibility = Visibility.Visible;
             Hero.EmployeeName = person.FullName;
             Hero.Role = AuthSession.Current?.RoleLabel ?? "";
+            AssignTest.ItemsSource = _definitions.ToList();
             BindRows();
             BindChart(_history);
             BindSide(_history);
@@ -520,25 +525,28 @@ namespace HR.Pages
         {
             if (_selected == null)
             {
-                MessageBox.Show("ابتدا کارمند را انتخاب کنید.");
+                MessageBox.Show("ابتدا یک نفر را از فهرست انتخاب کنید.", "اختصاص آزمون");
                 return;
             }
-            var person = _selected;
-            var code = _allRows.FirstOrDefault()?.DefinitionId;
-            if (string.IsNullOrWhiteSpace(code))
+            if (AssignTest.SelectedItem is not AssessmentRecord test || string.IsNullOrWhiteSpace(test.Code))
             {
-                MessageBox.Show("آزمونی برای تکلیف نیست.");
+                MessageBox.Show("آزمونی را برای اختصاص انتخاب کنید.", "اختصاص آزمون");
                 return;
             }
+
+            var due = AssignDue.SelectedDate?.Date ?? DateTime.Today.AddDays(30);
             try
             {
                 using var assessments = new AssessmentService();
-                await assessments.AssignAsync(person.Id, code, DateTime.Today.AddDays(30));
+                await assessments.AssignAsync(_selected.Id, test.Code, due);
+                MessageBox.Show(
+                    $"آزمون «{test.Title}» تا {due:yyyy/MM/dd} به {_selected.FullName} اختصاص داده شد و در نمای کلی او دیده می‌شود.",
+                    "اختصاص آزمون");
                 await ReloadAssessmentsAsync();
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                MessageBox.Show(ex.Message, "اختصاص آزمون");
             }
         }
 

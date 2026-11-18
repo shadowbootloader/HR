@@ -445,7 +445,7 @@ TargetType="{x:Type TextBlock}">
                 </Border>
 
                 <!-- ردیف پروژه + قرارداد + مالی -->
-                <Grid x:Name="WorkPanel" Margin="0,0,0,5" FlowDirection="LeftToRight" Visibility="Collapsed">
+                <Grid x:Name="WorkPanel" Margin="0,0,0,5" FlowDirection="RightToLeft" Visibility="Collapsed">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="1.6*"/>
                         <ColumnDefinition Width="6"/>
