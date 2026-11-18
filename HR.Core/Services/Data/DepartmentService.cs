@@ -77,6 +77,7 @@ namespace HR.Services.Data
                 throw new InvalidOperationException("نام دپارتمان الزامی است.");
 
             department.Title = department.Title.Trim();
+            ValidateFields(department);
 
             if (await ExistsTitleAsync(department.Title, department.ParentDepartmentId))
                 throw new InvalidOperationException("دپارتمان هم‌نام در همین سطح والد وجود دارد.");
@@ -119,6 +120,7 @@ namespace HR.Services.Data
                 throw new InvalidOperationException("نام دپارتمان الزامی است.");
 
             department.Title = department.Title.Trim();
+            ValidateFields(department);
 
             if (department.ParentDepartmentId == department.DepartmentId)
                 throw new InvalidOperationException("دپارتمان نمی‌تواند والد خودش باشد.");
@@ -155,18 +157,44 @@ namespace HR.Services.Data
             existing.PettyCashLimit = department.PettyCashLimit;
             existing.Description = department.Description;
 
-            // جایگزینی دفاتر
-            existing.Offices.Clear();
-            foreach (var office in department.Offices)
+            // ادغام دفاتر: ردیف‌های موجود به‌روز می‌شوند، تازه‌ها اضافه و حذف‌شده‌ها پاک می‌شوند.
+            // (پاک‌کردن همه و افزودن دوباره با همان OfficeId، دو نمونه با یک کلید در ردیابی EF می‌سازد.)
+            var incomingOffices = department.Offices.ToList();
+            var incomingOfficeIds = incomingOffices
+                .Where(o => o.OfficeId != Guid.Empty)
+                .Select(o => o.OfficeId)
+                .ToHashSet();
+
+            foreach (var removed in existing.Offices.Where(o => !incomingOfficeIds.Contains(o.OfficeId)).ToList())
             {
-                existing.Offices.Add(new DepartmentOffice
+                existing.Offices.Remove(removed);
+                _db.DepartmentOffices.Remove(removed);
+            }
+
+            foreach (var office in incomingOffices)
+            {
+                var officeName = string.IsNullOrWhiteSpace(office.Name) ? "—" : office.Name.Trim();
+                var current = office.OfficeId == Guid.Empty
+                    ? null
+                    : existing.Offices.FirstOrDefault(o => o.OfficeId == office.OfficeId);
+
+                if (current != null)
                 {
-                    OfficeId = office.OfficeId == Guid.Empty ? Guid.NewGuid() : office.OfficeId,
-                    DepartmentId = existing.DepartmentId,
-                    Name = office.Name?.Trim() ?? "—",
-                    City = office.City,
-                    Address = office.Address
-                });
+                    current.Name = officeName;
+                    current.City = office.City;
+                    current.Address = office.Address;
+                }
+                else
+                {
+                    existing.Offices.Add(new DepartmentOffice
+                    {
+                        OfficeId = office.OfficeId == Guid.Empty ? Guid.NewGuid() : office.OfficeId,
+                        DepartmentId = existing.DepartmentId,
+                        Name = officeName,
+                        City = office.City,
+                        Address = office.Address
+                    });
+                }
             }
 
             try
@@ -214,6 +242,35 @@ namespace HR.Services.Data
             _db.Departments.Remove(dept);
             await _db.SaveChangesAsync();
             return true;
+        }
+
+        /// <summary>حدود طول و مقادیر منفی را قبل از رسیدن به SQL بررسی می‌کند (پیام فارسی به‌جای خطای مبهم).</summary>
+        private static void ValidateFields(Department department)
+        {
+            if (department.Title.Length > 100)
+                throw new InvalidOperationException("نام دپارتمان نباید بیش از ۱۰۰ نویسه باشد.");
+            if (department.SecurityLevel?.Length > 50)
+                throw new InvalidOperationException("سطح حفاظتی نباید بیش از ۵۰ نویسه باشد.");
+            if (department.CostCenterCode?.Length > 50)
+                throw new InvalidOperationException("کد مرکز هزینه نباید بیش از ۵۰ نویسه باشد.");
+            if (department.Description?.Length > 500)
+                throw new InvalidOperationException("توضیحات نباید بیش از ۵۰۰ نویسه باشد.");
+            if (department.ApprovedCapacity < 0)
+                throw new InvalidOperationException("ظرفیت مصوب نمی‌تواند منفی باشد.");
+            if (department.AnnualBudget < 0)
+                throw new InvalidOperationException("بودجه سالانه نمی‌تواند منفی باشد.");
+            if (department.PettyCashLimit < 0)
+                throw new InvalidOperationException("سقف تنخواه نمی‌تواند منفی باشد.");
+
+            foreach (var office in department.Offices)
+            {
+                if (office.Name?.Trim().Length > 100)
+                    throw new InvalidOperationException("نام دفتر نباید بیش از ۱۰۰ نویسه باشد.");
+                if (office.City?.Length > 100)
+                    throw new InvalidOperationException("نام شهر دفتر نباید بیش از ۱۰۰ نویسه باشد.");
+                if (office.Address?.Length > 500)
+                    throw new InvalidOperationException("نشانی دفتر نباید بیش از ۵۰۰ نویسه باشد.");
+            }
         }
 
         /// <summary>آیا candidateId زیرمجموعه (مستقیم/غیرمستقیم) rootId است؟</summary>

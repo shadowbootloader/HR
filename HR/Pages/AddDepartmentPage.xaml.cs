@@ -17,9 +17,6 @@ namespace HR.Pages
     {
         public event Action<Page>? NavigationRequested;
 
-        private readonly IDepartmentService _departmentService = new DepartmentService();
-        private readonly IEmployeeService _employeeService = new EmployeeService();
-
         private readonly ObservableCollection<OfficeRow> _offices = new();
         private short? _editingId;
         private string? _logoPath;
@@ -36,11 +33,6 @@ namespace HR.Pages
             if (AuthSession.Current?.CanManagePeople != true)
                 SaveDepartmentBtn.IsEnabled = false;
             Loaded += async (_, _) => await InitAsync();
-            Unloaded += (_, _) =>
-            {
-                (_departmentService as IDisposable)?.Dispose();
-                (_employeeService as IDisposable)?.Dispose();
-            };
         }
 
         public AddDepartmentPage(short departmentId) : this()
@@ -53,7 +45,8 @@ namespace HR.Pages
             try
             {
                 // والدین
-                var departments = await _departmentService.GetAllAsync();
+                using var departmentService = new DepartmentService();
+                var departments = await departmentService.GetAllAsync();
                 var parentItems = departments
                     .Where(d => !_editingId.HasValue || d.DepartmentId != _editingId.Value)
                     .Select(d => new ParentItem(d.DepartmentId, d.Title))
@@ -65,7 +58,8 @@ namespace HR.Pages
                 ParentDepartmentCB.SelectedIndex = 0;
 
                 // کارکنان برای مدیر / جانشین / تنخواه‌دار
-                var employees = await _employeeService.GetAllAsync();
+                using var employeeService = new EmployeeService();
+                var employees = await employeeService.GetAllAsync();
                 var people = employees
                     .Select(e => new EmployeePick(e.EmployeeId, $"{e.FirstName} {e.LastName}".Trim()))
                     .OrderBy(x => x.Name)
@@ -98,7 +92,8 @@ namespace HR.Pages
 
         private async Task LoadForEditAsync(short id)
         {
-            var dept = await _departmentService.GetByIdAsync(id);
+            using var departmentService = new DepartmentService();
+            var dept = await departmentService.GetByIdAsync(id);
             if (dept == null)
             {
                 NotificationService.Warning("خطا", "دپارتمان یافت نشد.");
@@ -163,20 +158,30 @@ namespace HR.Pages
                 return;
             }
 
+            var capacityText = ToAsciiDigits(MaxPersonalCountTB.Text).Trim();
+            if (capacityText.Length > 0 && (!int.TryParse(capacityText, out var capacityValue) || capacityValue < 0))
+            {
+                NotificationService.Warning("خطا", "ظرفیت مصوب باید یک عدد صحیح غیرمنفی باشد.");
+                return;
+            }
+
             _isSaving = true;
             try
             {
                 var entity = BuildEntity(title);
 
+                // برای هر ذخیره یک DbContext تازه: شکست ذخیره، تلاش بعدی را خراب نمی‌کند.
+                using var departmentService = new DepartmentService();
+
                 if (_editingId.HasValue)
                 {
                     entity.DepartmentId = _editingId.Value;
-                    await _departmentService.UpdateAsync(entity);
+                    await departmentService.UpdateAsync(entity);
                     NotificationService.Success("ویرایش موفق", $"دپارتمان «{title}» به‌روز شد.");
                 }
                 else
                 {
-                    var created = await _departmentService.CreateAsync(entity);
+                    var created = await departmentService.CreateAsync(entity);
                     DepartMentID.Text = created.DepartmentId.ToString();
                     _editingId = created.DepartmentId;
                     NotificationService.Success("ثبت موفق", $"دپارتمان «{title}» ذخیره شد.");
@@ -196,8 +201,9 @@ namespace HR.Pages
         {
             short? parentId = ParentDepartmentCB.SelectedValue as short?;
 
+            // ارقام فارسی/عربی هم پذیرفته می‌شوند (قبلاً int.TryParse آن‌ها را بی‌صدا نادیده می‌گرفت).
             int? capacity = null;
-            if (int.TryParse(MaxPersonalCountTB.Text?.Trim(), out var cap))
+            if (int.TryParse(ToAsciiDigits(MaxPersonalCountTB.Text).Trim(), out var cap))
                 capacity = cap;
 
             var statusText = (DepartmentStatusCB.SelectedItem as ComboBoxItem)?.Content?.ToString();
@@ -215,7 +221,7 @@ namespace HR.Pages
                 ManagerEmployeeId = DepertmentManagerCB.SelectedValue as Guid?,
                 DeputyEmployeeId = DepartmentDeputyCB.SelectedValue as Guid?,
                 CashCustodianEmployeeId = DepartmentCashCustodian.SelectedValue as Guid?,
-                CostCenterCode = AccountingCode.Text?.Trim(),
+                CostCenterCode = string.IsNullOrWhiteSpace(AccountingCode.Text) ? null : AccountingCode.Text.Trim(),
                 AnnualBudget = ParseMoney(AnnualBudget.Text),
                 PettyCashLimit = ParseMoney(PettyCashLimit.Text)
             };
@@ -310,6 +316,19 @@ namespace HR.Pages
             }
 
             _formatting = false;
+        }
+
+        /// <summary>ارقام فارسی (۰-۹) و عربی-هندی (٠-٩) را به ارقام لاتین تبدیل می‌کند.</summary>
+        private static string ToAsciiDigits(string? text)
+        {
+            if (string.IsNullOrEmpty(text)) return string.Empty;
+
+            var chars = text.Select(c =>
+                c is >= '۰' and <= '۹' ? (char)('0' + (c - '۰')) :
+                c is >= '٠' and <= '٩' ? (char)('0' + (c - '٠')) :
+                c).ToArray();
+
+            return new string(chars);
         }
 
         private static decimal? ParseMoney(string? text)
