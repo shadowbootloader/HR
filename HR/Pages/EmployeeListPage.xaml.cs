@@ -107,7 +107,8 @@ namespace HR.Pages
                     _all.Add(MapToModel(e));
                 }
 
-                ApplyCompleteness(await new ProfileCompletenessReader().ReadAllAsync());
+                using (var completeness = new ProfileCompletenessReader())
+                    ApplyCompleteness(await completeness.ReadAllAsync());
 
                 ApplyFilter(resetPage: true);
             }

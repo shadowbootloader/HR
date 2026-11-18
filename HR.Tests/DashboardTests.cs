@@ -188,4 +188,54 @@ public class DashboardFlowTests
                 Directory.Delete(storage, recursive: true);
         }
     }
+
+    [SkippableFact]
+    public async Task MaterializedSnapshot_StaysReadable_AfterTheOwningContextIsDisposed()
+    {
+        Skip.IfNot(_sql.IsAvailable, _sql.SkipReason ?? "SQL Server آماده نیست.");
+        var previous = Environment.GetEnvironmentVariable(PersonnelConnection.EnvironmentVariable);
+        Environment.SetEnvironmentVariable(PersonnelConnection.EnvironmentVariable, _sql.PersonnelConnection);
+        try
+        {
+            var service = new DashboardService();
+            var snapshot = await service.GetAsync();
+            service.Dispose();
+
+            Assert.True(snapshot.Headcount >= 0);
+            Assert.NotNull(snapshot.Issues);
+            _ = snapshot.ByDepartment.Count;
+            _ = snapshot.ByStatus.Sum(item => item.Count);
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => service.GetAsync());
+
+            var reader = new ProfileCompletenessReader();
+            var reports = await reader.ReadAllAsync();
+            reader.Dispose();
+            foreach (var report in reports.Values)
+            {
+                Assert.InRange(report.Percent, 0, 100);
+                Assert.NotNull(report.Missing);
+            }
+
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => reader.ReadAllAsync());
+
+            await using var shared = new PersonnelDbContext(
+                new DbContextOptionsBuilder<PersonnelDbContext>()
+                    .UseSqlServer(_sql.PersonnelConnection, sql => sql.UseHierarchyId())
+                    .Options);
+            var borrowedDashboard = new DashboardService(shared);
+            var borrowedPeople = new EmployeeService(shared);
+            var borrowedDepartments = new DepartmentService(shared);
+            borrowedDashboard.Dispose();
+            borrowedPeople.Dispose();
+            borrowedDepartments.Dispose();
+            var stillAlive = await borrowedDashboard.GetAsync();
+            Assert.True(stillAlive.Headcount >= 0);
+            Assert.NotNull(await borrowedPeople.GetAllAsync());
+            Assert.NotNull(await borrowedDepartments.GetAllAsync());
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(PersonnelConnection.EnvironmentVariable, previous);
+        }
+    }
 }

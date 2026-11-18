@@ -29,7 +29,8 @@ namespace HR.Controls.AddEmployees
         public async System.Threading.Tasks.Task PersistAsync(Guid employeeId)
         {
             if (_drafts.Count == 0) return;
-            var existing = await new InterviewService().ListAsync(employeeId);
+            using var interviews = new InterviewService();
+            var existing = await interviews.ListAsync(employeeId);
             var all = existing.Select(item => new InterviewDraft
             {
                 InterviewId = item.InterviewId,
@@ -39,7 +40,7 @@ namespace HR.Controls.AddEmployees
                 TranscriptPath = item.TranscriptPath,
                 AudioPath = item.AudioPath
             }).Concat(_drafts).ToList();
-            await new InterviewService().ReplaceAsync(employeeId, all);
+            await interviews.ReplaceAsync(employeeId, all);
             _drafts.Clear();
         }
 

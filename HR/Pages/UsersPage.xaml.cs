@@ -8,7 +8,6 @@ namespace HR.Pages
 {
     public partial class UsersPage : Page
     {
-        private readonly AuthService _auth = new();
         private readonly ObservableCollection<UserRow> _rows = new();
         private readonly List<UserRow> _all = new();
         private Guid? _selectedId;
@@ -19,7 +18,6 @@ namespace HR.Pages
             InitializeComponent();
             UserGrid.ItemsSource = _rows;
             Loaded += async (_, _) => await ReloadAsync();
-            Unloaded += (_, _) => _auth.Dispose();
         }
 
         private async System.Threading.Tasks.Task ReloadAsync()
@@ -28,7 +26,8 @@ namespace HR.Pages
             _rows.Clear();
             try
             {
-                foreach (var user in await _auth.ListUsersAsync())
+                using var auth = new AuthService();
+                foreach (var user in await auth.ListUsersAsync())
                     _all.Add(UserRow.From(user));
                 ApplyFilter();
             }
@@ -75,7 +74,8 @@ namespace HR.Pages
         {
             try
             {
-                await _auth.CreateUserAsync(UsernameBox.Text, PasswordBox.Password, DisplayNameBox.Text, new[] { SelectedRole() }, null);
+                using var auth = new AuthService();
+                await auth.CreateUserAsync(UsernameBox.Text, PasswordBox.Password, DisplayNameBox.Text, new[] { SelectedRole() }, null);
                 PasswordBox.Clear();
                 StatusText.Text = "کاربر ساخته شد.";
                 await ReloadAsync();
@@ -96,7 +96,8 @@ namespace HR.Pages
 
             try
             {
-                await _auth.AssignRolesAsync(_selectedId.Value, new[] { SelectedRole() });
+                using var auth = new AuthService();
+                await auth.AssignRolesAsync(_selectedId.Value, new[] { SelectedRole() });
                 StatusText.Text = "نقش ذخیره شد.";
                 await ReloadAsync();
             }
@@ -116,7 +117,8 @@ namespace HR.Pages
 
             try
             {
-                await _auth.ResetPasswordAsync(_selectedId.Value, PasswordBox.Password);
+                using var auth = new AuthService();
+                await auth.ResetPasswordAsync(_selectedId.Value, PasswordBox.Password);
                 PasswordBox.Clear();
                 StatusText.Text = "رمز عبور بازنشانی شد.";
             }
@@ -136,7 +138,8 @@ namespace HR.Pages
 
             try
             {
-                await _auth.SetActiveAsync(_selectedId.Value, !_selectedActive);
+                using var auth = new AuthService();
+                await auth.SetActiveAsync(_selectedId.Value, !_selectedActive);
                 StatusText.Text = _selectedActive ? "کاربر غیرفعال شد." : "کاربر فعال شد.";
                 await ReloadAsync();
             }

@@ -120,12 +120,19 @@ namespace HR.Pages
                         : "ناقص: " + string.Join("، ", report.Missing);
                 }
 
-                var interviews = entity == null ? Array.Empty<HR.Data.Entities.InterviewRecord>() : await new HR.Services.Files.InterviewService().ListAsync(entity.EmployeeId);
-                _interviewAudio = interviews.Select(item => item.AudioPath).FirstOrDefault(path => !string.IsNullOrWhiteSpace(path));
-                InterviewList.Text = interviews.Count == 0
-                    ? "مصاحبه‌ای ثبت نشده است."
-                    : string.Join("\n", interviews.Select(item => $"{item.HeldOn:yyyy/MM/dd} — {item.Interviewer}" + (string.IsNullOrWhiteSpace(item.Notes) ? "" : " — " + item.Notes) + (string.IsNullOrWhiteSpace(item.TranscriptPath) ? "" : " — متن دارد") + (string.IsNullOrWhiteSpace(item.AudioPath) ? "" : " — صدا دارد")));
-                var pending = entity == null ? Array.Empty<AttemptSummary>() : await new AssessmentService().PendingAsync(entity.EmployeeId);
+                using (var interviews = new HR.Services.Files.InterviewService())
+                {
+                    var found = entity == null
+                        ? Array.Empty<HR.Data.Entities.InterviewRecord>()
+                        : await interviews.ListAsync(entity.EmployeeId);
+                    _interviewAudio = found.Select(item => item.AudioPath).FirstOrDefault(path => !string.IsNullOrWhiteSpace(path));
+                    InterviewList.Text = found.Count == 0
+                        ? "مصاحبه‌ای ثبت نشده است."
+                        : string.Join("\n", found.Select(item => $"{item.HeldOn:yyyy/MM/dd} — {item.Interviewer}" + (string.IsNullOrWhiteSpace(item.Notes) ? "" : " — " + item.Notes) + (string.IsNullOrWhiteSpace(item.TranscriptPath) ? "" : " — متن دارد") + (string.IsNullOrWhiteSpace(item.AudioPath) ? "" : " — صدا دارد")));
+                }
+                IReadOnlyList<AttemptSummary> pending;
+                using (var assigned = new AssessmentService())
+                    pending = entity == null ? Array.Empty<AttemptSummary>() : await assigned.PendingAsync(entity.EmployeeId);
                 InterviewList.Text += pending.Count == 0
                     ? "\nآزمون در انتظاری نیست."
                     : "\nآزمون‌های در انتظار:\n" + string.Join("\n", pending.Select(item => item.Title + " — موعد " + item.LevelLabel + (item.Status == "Overdue" ? " (عقب‌افتاده)" : "")));

@@ -22,8 +22,6 @@ namespace HR.Pages
     public partial class EmployeeAssessmentCenterPage : Page
     {
         public ObservableCollection<AssessmentActivityItem> Activities { get; } = new();
-        private readonly AssessmentService _assessments = new();
-        private readonly IEmployeeService _employees = new EmployeeService();
         private readonly List<AssessmentTestRow> _allRows = new();
         private readonly List<EmployeePick> _people = new();
         private List<AssessmentRecord> _definitions = new();
@@ -43,11 +41,6 @@ namespace HR.Pages
             if (AuthSession.Current?.CanManagePeople != true)
                 BtnNewTest.Visibility = Visibility.Collapsed;
             Loaded += async (_, _) => await LoadPeopleAsync();
-            Unloaded += (_, _) =>
-            {
-                _assessments.Dispose();
-                (_employees as IDisposable)?.Dispose();
-            };
         }
 
         private async System.Threading.Tasks.Task LoadPeopleAsync()
@@ -55,7 +48,8 @@ namespace HR.Pages
             _loadingPeople = true;
             _people.Clear();
             EmployeePicker.ItemsSource = null;
-            foreach (var employee in await _employees.GetAllAsync())
+            using var employees = new EmployeeService();
+            foreach (var employee in await employees.GetAllAsync())
             {
                 var name = $"{employee.FirstName} {employee.LastName}".Trim();
                 var code = employee.Supplement?.PersonnelCode ?? "";
@@ -102,16 +96,17 @@ namespace HR.Pages
 
         private async System.Threading.Tasks.Task ReloadAssessmentsAsync()
         {
+            using var assessments = new AssessmentService();
             try
             {
-                _definitions = (await _assessments.ListAsync()).ToList();
+                _definitions = (await assessments.ListAsync()).ToList();
                 var selected = EmployeePicker.SelectedItem as EmployeePick;
                 _history = selected == null
                     ? new List<AttemptSummary>()
-                    : (await _assessments.HistoryAsync(selected.Id)).ToList();
+                    : (await assessments.HistoryAsync(selected.Id)).ToList();
                 _pending = selected == null
                     ? new List<AttemptSummary>()
-                    : (await _assessments.PendingAsync(selected.Id)).ToList();
+                    : (await assessments.PendingAsync(selected.Id)).ToList();
             }
             catch (Exception ex)
             {
@@ -249,8 +244,12 @@ namespace HR.Pages
                 return;
             }
 
-            var record = _definitions.FirstOrDefault(item => item.Code == target.DefinitionId)
-                ?? await _assessments.GetByCodeAsync(target.DefinitionId);
+            var record = _definitions.FirstOrDefault(item => item.Code == target.DefinitionId);
+            if (record == null)
+            {
+                using var lookup = new AssessmentService();
+                record = await lookup.GetByCodeAsync(target.DefinitionId);
+            }
             if (record == null)
             {
                 MessageBox.Show("تعریف این آزمون پیدا نشد.");
@@ -268,7 +267,8 @@ namespace HR.Pages
             shell.Submitted += async (_, submitted) =>
             {
                 var result = submitted.Result ?? AssessmentScoringEngine.Compute(definition, submitted);
-                await _assessments.SaveAttemptAsync(new AttemptSave
+                using var assessments = new AssessmentService();
+                await assessments.SaveAttemptAsync(new AttemptSave
                 {
                     AssessmentCode = definition.Id,
                     EmployeeId = person.Id,
@@ -430,7 +430,8 @@ namespace HR.Pages
             }
             try
             {
-                await _assessments.AssignAsync(person.Id, code, DateTime.Today.AddDays(30));
+                using var assessments = new AssessmentService();
+                await assessments.AssignAsync(person.Id, code, DateTime.Today.AddDays(30));
                 await ReloadAssessmentsAsync();
             }
             catch (Exception ex)

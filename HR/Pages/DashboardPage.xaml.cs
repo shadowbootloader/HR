@@ -17,20 +17,19 @@ namespace HR.Pages
     public partial class DashboardPage : Page
     {
         private static readonly SKTypeface Font = LoadFont();
-        private readonly DashboardService _dashboard = new();
 
         public DashboardPage()
         {
             InitializeComponent();
             Loaded += async (_, _) => await LoadAsync();
-            Unloaded += (_, _) => _dashboard.Dispose();
         }
 
         private async System.Threading.Tasks.Task LoadAsync()
         {
             try
             {
-                var snapshot = await _dashboard.GetAsync();
+                using var dashboard = new DashboardService();
+                var snapshot = await dashboard.GetAsync();
                 KpiActive.Text = snapshot.ActiveRoster.ToString();
                 KpiActiveSub.Text = "بدون حذف‌شده و پایان‌همکاری";
                 KpiNew.Text = snapshot.NewHireCount.ToString();
