@@ -418,32 +418,29 @@ TargetType="{x:Type TextBlock}">
                                         SubText="ارزیابی کلی" IconKind="Dollar"/>
                 </UniformGrid>
 
-                <StackPanel x:Name="OverviewPanel" Margin="0,8,0,8">
-                    <Border Background="#111827" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="12" Padding="14" Margin="0,0,0,8">
-                        <StackPanel>
-                            <TextBlock Text="نمای یکجا" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,8"/>
-                            <TextBlock x:Name="OverviewFacts" TextWrapping="Wrap" Foreground="#E2E8F0" LineHeight="22"/>
-                        </StackPanel>
-                    </Border>
-                    <Border Background="#111827" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="12" Padding="14" Margin="0,0,0,8">
-                        <StackPanel>
-                            <TextBlock Text="ایرادهای این دپارتمان" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,8"/>
-                            <TextBlock x:Name="OverviewIssues" TextWrapping="Wrap" Foreground="#FBBF24" LineHeight="22"/>
-                        </StackPanel>
-                    </Border>
-                    <Border Background="#111827" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="12" Padding="14" Margin="0,0,0,8">
-                        <StackPanel>
-                            <TextBlock Text="پیش‌نمایش کارکنان" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,8"/>
-                            <TextBlock x:Name="OverviewPeople" TextWrapping="Wrap" Foreground="#E2E8F0" LineHeight="22"/>
-                        </StackPanel>
-                    </Border>
-                    <Border Background="#111827" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="12" Padding="14">
-                        <StackPanel>
-                            <TextBlock Text="پیش‌نمایش چارت همین واحد" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,8"/>
-                            <controls:OrgChartBoard x:Name="SummaryChart" Height="360"/>
-                        </StackPanel>
-                    </Border>
-                </StackPanel>
+                <Border x:Name="PeoplePreview" Background="#0F172A" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="12" Padding="12" Margin="0,8,0,8">
+                    <StackPanel>
+                        <TextBlock Text="کارکنان این دپارتمان" Foreground="White" FontSize="16" Margin="0,0,0,8"/>
+                        <TextBlock x:Name="PeopleEmpty" Text="کارمندی به این دپارتمان وصل نشده است" Foreground="#94A3B8"/>
+                        <ItemsControl x:Name="PeopleList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,3">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="160"/>
+                                            <ColumnDefinition Width="120"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{Binding FullName}" Foreground="White" TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding Position}" Foreground="#94A3B8" TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Grid.Column="2" Text="{Binding PersonnelCode}" Foreground="#64748B"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock x:Name="PeopleMore" Foreground="#22D3EE" Margin="0,6,0,0" Visibility="Collapsed"/>
+                    </StackPanel>
+                </Border>
 
                 <!-- ردیف پروژه + قرارداد + مالی -->
                 <Grid x:Name="WorkPanel" Margin="0,0,0,5" FlowDirection="LeftToRight" Visibility="Collapsed">

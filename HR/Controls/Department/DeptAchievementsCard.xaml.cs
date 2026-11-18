@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using MaterialDesignThemes.Wpf;
@@ -14,6 +15,14 @@ namespace HR.Controls.Department
         {
             InitializeComponent();
             Items.ItemsSource = Achievements;
+            Achievements.CollectionChanged += (_, _) => RefreshEmpty();
+            RefreshEmpty();
+        }
+
+        private void RefreshEmpty()
+        {
+            if (EmptyText == null) return;
+            EmptyText.Visibility = Achievements.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         }
     }
 

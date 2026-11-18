@@ -22,6 +22,14 @@ namespace HR.Controls.Department
         {
             InitializeComponent();
             Items.ItemsSource = Projects;
+            Projects.CollectionChanged += (_, _) => RefreshEmpty();
+            RefreshEmpty();
+        }
+
+        private void RefreshEmpty()
+        {
+            if (EmptyText == null) return;
+            EmptyText.Visibility = Projects.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         }
 
         public void ApplySeverityStyle(ProjectNeonType severity, PackIcon icon, TextBlock text)

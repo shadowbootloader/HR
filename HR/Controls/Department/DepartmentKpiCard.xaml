@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              x:Name="Root"
-             MinWidth="150" MinHeight="100">
+             MinHeight="100">
 
     <Border Background="#0F172A"
             BorderBrush="#FF005689"
@@ -40,13 +40,14 @@
 
             <TextBlock Text="{Binding ValueText, ElementName=Root}"
                        FlowDirection="RightToLeft"
-                       Foreground="White" HorizontalAlignment="Center"
-                       FontSize="24" FontWeight="Bold"
+                       Foreground="White" HorizontalAlignment="Center" TextAlignment="Center"
+                       FontSize="22" FontWeight="Bold"
+                       TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
                        Margin="0,0,0,4"/>
 
             <TextBlock Text="{Binding SubText, ElementName=Root}"
                        Foreground="{Binding Accent, ElementName=Root}"
-                       FontSize="16"
+                       FontSize="13" TextWrapping="Wrap" TextAlignment="Center"
                        FlowDirection="RightToLeft"/>
         </StackPanel>
     </Border>
