@@ -108,12 +108,11 @@
                     </TabControl.Resources>
 
                     <TabItem Header="همه"/>
-                    <TabItem Header="روانشناسی"/>
-                    <TabItem Header="شغلی"/>
+                    <TabItem Header="شخصیتی"/>
+                    <TabItem Header="رغبت شغلی"/>
                     <TabItem Header="مهارتی"/>
-                    <TabItem Header="انضباطی"/>
-                    <TabItem Header="موقعیتی"/>
-                    <TabItem Header="تولیداتی"/>
+                    <TabItem Header="خودارزیابی"/>
+                    <TabItem Header="عمومی"/>
                 </TabControl>
             </Border>
         </DockPanel>

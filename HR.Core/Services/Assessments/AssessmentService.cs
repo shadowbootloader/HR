@@ -33,6 +33,17 @@ namespace HR.Services.Assessments
             await _db.SaveChangesAsync();
         }
 
+        public static readonly IReadOnlyDictionary<string, string> CategoryByCode = new Dictionary<string, string>
+        {
+            ["big-five-short"] = "شخصیتی",
+            ["mbti-style"] = "شخصیتی",
+            ["disc-short"] = "شخصیتی",
+            ["eq-short"] = "شخصیتی",
+            ["riasec-short"] = "رغبت شغلی",
+            ["manager-eval"] = "مهارتی",
+            ["self-sliders"] = "خودارزیابی"
+        };
+
         public async Task EnsurePersonalityAsync()
         {
             foreach (var definition in PersonalityAssessmentCatalog.All())
@@ -40,6 +51,15 @@ namespace HR.Services.Assessments
                 if (await _db.Assessments.AnyAsync(item => item.Code == definition.Code))
                     continue;
                 _db.Assessments.Add(ToEntity(definition, AuthSession.ActorName));
+            }
+
+            var rows = await _db.Assessments.ToListAsync();
+            foreach (var row in rows)
+            {
+                if (CategoryByCode.TryGetValue(row.Code, out var category) && row.Category != category)
+                    row.Category = category;
+                else if (string.IsNullOrWhiteSpace(row.Category))
+                    row.Category = "عمومی";
             }
 
             await _db.SaveChangesAsync();
