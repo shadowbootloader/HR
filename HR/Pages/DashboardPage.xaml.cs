@@ -17,6 +17,7 @@ namespace HR.Pages
     public partial class DashboardPage : Page
     {
         private static readonly SKTypeface Font = LoadFont();
+        private int _loadGeneration;
 
         public DashboardPage()
         {
@@ -26,10 +27,12 @@ namespace HR.Pages
 
         private async System.Threading.Tasks.Task LoadAsync()
         {
+            var generation = System.Threading.Interlocked.Increment(ref _loadGeneration);
             try
             {
                 using var dashboard = new DashboardService();
                 var snapshot = await dashboard.GetAsync();
+                if (generation != System.Threading.Volatile.Read(ref _loadGeneration)) return;
                 KpiActive.Text = snapshot.ActiveRoster.ToString();
                 KpiActiveSub.Text = "بدون حذف‌شده و پایان‌همکاری";
                 KpiNew.Text = snapshot.NewHireCount.ToString();
@@ -56,7 +59,10 @@ namespace HR.Pages
             }
             catch (Exception ex)
             {
-                KpiActiveSub.Text = ex.Message;
+                if (generation != System.Threading.Volatile.Read(ref _loadGeneration)) return;
+                KpiActiveSub.Text = "بارگذاری ناموفق";
+                KpiActive.Text = "—";
+                System.Diagnostics.Debug.WriteLine(ex);
             }
         }
 
