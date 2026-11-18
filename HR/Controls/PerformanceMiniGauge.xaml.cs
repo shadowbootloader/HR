@@ -44,6 +44,16 @@ namespace HR.Controls
             set => SetValue(LabelProperty, value);
         }
 
+        public static readonly DependencyProperty FixedFillProperty =
+            DependencyProperty.Register(nameof(FixedFill), typeof(string), typeof(PerformanceMiniGauge),
+                new PropertyMetadata(null, OnValueChanged));
+
+        public string? FixedFill
+        {
+            get => (string?)GetValue(FixedFillProperty);
+            set => SetValue(FixedFillProperty, value);
+        }
+
         public ISeries[] Series { get; set; } = Array.Empty<ISeries>();
 
         private static void OnValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -73,14 +83,16 @@ namespace HR.Controls
         {
             // انتخاب رنگ
             SKColor fillColor;
-            if (Value >= 90)
-                fillColor = SKColor.Parse("#22C55E");      // سبز - Excellent
+            if (!string.IsNullOrWhiteSpace(FixedFill))
+                fillColor = SKColor.Parse(FixedFill);
+            else if (Value >= 90)
+                fillColor = SKColor.Parse("#22C55E");
             else if (Value >= 80)
-                fillColor = SKColor.Parse("#3B82F6");      // آبی - Very Good
+                fillColor = SKColor.Parse("#3B82F6");
             else if (Value >= 70)
-                fillColor = SKColor.Parse("#F59E0B");      // نارنجی - Good
+                fillColor = SKColor.Parse("#F59E0B");
             else
-                fillColor = SKColor.Parse("#EF4444");      // قرمز - Needs Improvement
+                fillColor = SKColor.Parse("#EF4444");
             Tracker.Fill = new SolidColorPaint(fillColor);
 
             Tracker.DataLabelsPaint = new SolidColorPaint(SKColors.White)

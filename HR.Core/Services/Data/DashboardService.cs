@@ -66,6 +66,7 @@ namespace HR.Services.Data
                 .Select(leave => leave.StartDate)
                 .ToListAsync();
             var attempts = await _db.AssessmentAttempts.AsNoTracking()
+                .Where(attempt => !attempt.Employee.IsDeleted)
                 .Select(attempt => new DashboardAttempt
                 {
                     Code = attempt.Assessment.Code,
@@ -97,7 +98,7 @@ namespace HR.Services.Data
                 })
                 .ToListAsync();
             var overdue = await _db.AssessmentAssignments.AsNoTracking()
-                .Where(item => item.DueDate < day && !item.Assessment.Attempts.Any(attempt => attempt.EmployeeId == item.EmployeeId && attempt.SubmittedAt != null))
+                .Where(item => !item.Employee.IsDeleted && item.DueDate < day && !item.Assessment.Attempts.Any(attempt => attempt.EmployeeId == item.EmployeeId && attempt.SubmittedAt != null))
                 .Select(item => new
                 {
                     item.Assessment.Title,

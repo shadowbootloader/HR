@@ -156,7 +156,7 @@ namespace HR.Services.Assessments
         {
             var day = (today ?? DateTime.Today).Date;
             var rows = await _db.AssessmentAssignments.AsNoTracking()
-                .Where(item => item.EmployeeId == employeeId)
+                .Where(item => item.EmployeeId == employeeId && !item.Employee.IsDeleted)
                 .Select(item => new
                 {
                     item.DueDate,
@@ -256,7 +256,7 @@ namespace HR.Services.Assessments
         {
             var query = _db.AssessmentAttempts
                 .AsNoTracking()
-                .Where(item => item.EmployeeId == employeeId);
+                .Where(item => item.EmployeeId == employeeId && !item.Employee.IsDeleted);
             if (!includeSelfAssessment)
                 query = query.Where(item => item.Assessment.Code != SelfAssessmentCatalog.Code);
 
@@ -277,11 +277,25 @@ namespace HR.Services.Assessments
                 .ToListAsync();
         }
 
+        public async Task<IReadOnlyDictionary<Guid, double>> ScoreAveragesAsync()
+        {
+            var rows = await _db.AssessmentAttempts.AsNoTracking()
+                .Where(item => !item.Employee.IsDeleted
+                    && item.SubmittedAt != null
+                    && item.TotalScore != null
+                    && item.Assessment.Code != SelfAssessmentCatalog.Code)
+                .Select(item => new { item.EmployeeId, item.TotalScore })
+                .ToListAsync();
+            return rows
+                .GroupBy(item => item.EmployeeId)
+                .ToDictionary(group => group.Key, group => group.Average(item => item.TotalScore!.Value));
+        }
+
         public async Task<IReadOnlyList<AttemptSummary>> RecentAsync(int take)
         {
             return await _db.AssessmentAttempts
                 .AsNoTracking()
-                .Where(item => item.Assessment.Code != SelfAssessmentCatalog.Code)
+                .Where(item => !item.Employee.IsDeleted && item.Assessment.Code != SelfAssessmentCatalog.Code)
                 .OrderByDescending(item => item.SubmittedAt)
                 .Take(take)
                 .Select(item => new AttemptSummary

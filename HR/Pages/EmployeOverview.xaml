@@ -33,13 +33,7 @@
                 <controls:QuickInsightsCard x:Name="Insights" DockPanel.Dock="Top" Height="290" VerticalAlignment="Top" >
 
                 </controls:QuickInsightsCard>
-                <Border DockPanel.Dock="Top" Background="#111827" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="10" Padding="12" Margin="0,8,8,0">
-                    <StackPanel>
-                        <TextBlock x:Name="CompletenessTitle" Text="تکمیل پروفایل" Foreground="White" FontSize="16" FontWeight="SemiBold"/>
-                        <TextBlock x:Name="CompletenessText" Foreground="#93C5FD" Margin="0,6,0,0" TextWrapping="Wrap"/>
-                        <TextBlock x:Name="CompletenessMissing" Foreground="#FBBF24" Margin="0,6,0,0" TextWrapping="Wrap"/>
-                    </StackPanel>
-                </Border>
+                <controls:ProfileCompletenessCard x:Name="CompletenessCard" DockPanel.Dock="Top" Margin="0,8,8,0"/>
                 <Border DockPanel.Dock="Top" Background="#111827" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="10" Padding="12" Margin="0,8,8,0">
                     <StackPanel>
                         <TextBlock Text="مصاحبه‌ها" Foreground="White" FontSize="16" FontWeight="SemiBold"/>

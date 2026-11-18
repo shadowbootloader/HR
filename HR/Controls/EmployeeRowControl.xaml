@@ -38,7 +38,9 @@ TargetType="{x:Type materialDesign:PackIcon}">
                 <!-- Status -->
                 <ColumnDefinition Width="150"/>
                 <!-- Performance -->
-                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="120"/>
+                <!-- Completeness -->
+                <ColumnDefinition Width="180"/>
                 <!-- Actions -->
             </Grid.ColumnDefinitions>
 
@@ -76,11 +78,12 @@ TargetType="{x:Type materialDesign:PackIcon}">
 
             <!-- Performance -->
             <uc:PerformanceMiniGauge x:Name="Performancegauge" FlowDirection="LeftToRight" Value="{Binding PerformanceValue}"  Label="{Binding PerformanceLabel}" Grid.Column="5" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
+            <uc:PerformanceMiniGauge Grid.Column="6" FlowDirection="LeftToRight" Value="{Binding CompletenessPercent}" Label="{Binding CompletenessLabel}" FixedFill="#A78BFA" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
 
             <!-- Actions -->
-            <TextBlock x:Name="ChooseHint" Grid.Column="6" Text="انتخاب" Foreground="#93C5FD" FontSize="13"
+            <TextBlock x:Name="ChooseHint" Grid.Column="7" Text="انتخاب" Foreground="#93C5FD" FontSize="13"
                        HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
-            <StackPanel x:Name="ActionsPanel" Grid.Column="6" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+            <StackPanel x:Name="ActionsPanel" Grid.Column="7" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <Button x:Name="ViewBtn" Click="ViewBtn_Click" materialDesign:ButtonAssist.CornerRadius="8" Content="👁" ToolTip="مشاهده" Width="35" Padding="0" Background="#222C3C" BorderBrush="#FF354256" BorderThickness="1.5" Foreground="White" Margin="0,0,5,0"/>
                 <!--<Button x:Name="LeaveBtn" Click="LeaveBtn_Click" materialDesign:ButtonAssist.CornerRadius="8" Content="مرخصی" ToolTip="ثبت یا پایان مرخصی" Height="32" Padding="8,0" Background="#1E3A5F" BorderBrush="#1D4ED8" BorderThickness="1.5" Foreground="White" Margin="0,0,5,0"/>-->
                 <Button x:Name="EditBtn" Click="EditBtn_Click" materialDesign:ButtonAssist.CornerRadius="8" Content="✎" ToolTip="ویرایش" Width="35" Padding="0" Background="#222C3C" BorderBrush="#FF354256" BorderThickness="1.5" Foreground="White" Margin="0,0,5,0"/>

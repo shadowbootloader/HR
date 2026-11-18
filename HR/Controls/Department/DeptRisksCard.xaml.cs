@@ -28,6 +28,14 @@ namespace HR.Controls.Department
         {
             InitializeComponent();
             Items.ItemsSource = Risks;
+            Risks.CollectionChanged += (_, _) => RefreshEmpty();
+            RefreshEmpty();
+        }
+
+        private void RefreshEmpty()
+        {
+            if (EmptyText == null) return;
+            EmptyText.Visibility = Risks.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         }
 
 

@@ -521,7 +521,6 @@
                         <ComboBoxItem Content="فعال"/>
                         <ComboBoxItem Content="مرخصی"/>
                         <ComboBoxItem Content="غیرفعال"/>
-                        <ComboBoxItem Content="حذف‌شده"/>
                     </ComboBox>
                     <ComboBox x:Name="PickerDepartment" Grid.Column="4" Height="36" FontSize="14" Foreground="White"
                               Style="{StaticResource DarkOutlinedComboBox}" SelectionChanged="PickerFilter_SelectionChanged"/>
@@ -535,6 +534,7 @@
                             <ColumnDefinition Width="160"/>
                             <ColumnDefinition Width="100"/>
                             <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="120"/>
                             <ColumnDefinition Width="150"/>
                         </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0" Text="تصویر" Foreground="White" FontSize="14"/>
@@ -543,7 +543,8 @@
                         <TextBlock Grid.Column="3" Text="دپارتمان" Foreground="White" FontSize="14" Margin="10,0,0,0"/>
                         <TextBlock Grid.Column="4" Text="وضعیت" Foreground="White" FontSize="14" HorizontalAlignment="Center"/>
                         <TextBlock Grid.Column="5" Text="بهره‌وری" Foreground="White" FontSize="14" HorizontalAlignment="Center"/>
-                        <TextBlock Grid.Column="6" Text="انتخاب" Foreground="White" FontSize="14" HorizontalAlignment="Center"/>
+                        <TextBlock Grid.Column="6" Text="تکمیل پروفایل" Foreground="#C4B5FD" FontSize="14" HorizontalAlignment="Center"/>
+                        <TextBlock Grid.Column="7" Text="انتخاب" Foreground="White" FontSize="14" HorizontalAlignment="Center"/>
                     </Grid>
                 </Border>
                 <Border DockPanel.Dock="Bottom" Padding="8,6" BorderBrush="#1E293B" BorderThickness="0,1,0,0">

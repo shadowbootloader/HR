@@ -34,6 +34,7 @@ namespace HR.Pages
                 Header.Bind("کارمندی انتخاب نشده", null, null, null);
                 Header.BindIdentity(null, null, null, null, null, null);
                 Header.BindPerformance(null, null, 0);
+                CompletenessCard.Show(null);
                 Insights.ShowFacts(("پرونده", "از فهرست کارکنان یک نفر را باز کنید."));
                 ShowAttempts(Array.Empty<AttemptSummary>());
                 return;
@@ -110,15 +111,7 @@ namespace HR.Pages
                 ShowProfile(snapshot);
                 ShowAttempts(history);
                 Insights.ShowFacts(OverviewFacts.Build(entity, history, DateTime.Today));
-                if (entity != null)
-                {
-                    var report = ProfileCompleteness.Score(ProfileCompleteness.FromEmployee(entity));
-                    CompletenessTitle.Text = "امتیاز تکمیل پروفایل " + report.Score + " از " + report.MaxScore;
-                    CompletenessText.Text = "تکمیل‌شده " + report.Percent + "٪ — باقی‌مانده " + report.RemainingPercent + "٪";
-                    CompletenessMissing.Text = report.Missing.Count == 0
-                        ? "بخش ناقصی نمانده است."
-                        : "ناقص: " + string.Join("، ", report.Missing);
-                }
+                CompletenessCard.Show(entity == null ? null : ProfileCompleteness.Score(ProfileCompleteness.FromEmployee(entity)));
 
                 using (var interviews = new HR.Services.Files.InterviewService())
                 {
