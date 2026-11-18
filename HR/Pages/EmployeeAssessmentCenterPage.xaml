@@ -40,8 +40,13 @@
             <Button x:Name="ChangePersonButton" DockPanel.Dock="Top" Content="تغییر نفر" Height="32" Margin="0,0,8,8"
                     HorizontalAlignment="Right" Background="#1E293B" Foreground="White" BorderThickness="0"
                     Visibility="Collapsed" Click="ChangePerson_Click"/>
-            <Button x:Name="AssignButton" DockPanel.Dock="Top" Content="تکلیف آزمون انتخاب‌شده تا ۳۰ روز دیگر" Height="32" Margin="0,0,8,8"
-                    HorizontalAlignment="Right" Background="#1E293B" Foreground="White" BorderThickness="0" Click="Assign_Click"/>
+            <StackPanel x:Name="AssignPanel" DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,8,8" FlowDirection="RightToLeft">
+                <ComboBox x:Name="AssignTest" Width="220" Height="32" Margin="0,0,8,0"
+                          DisplayMemberPath="Title" Background="#1E293B" Foreground="White"/>
+                <DatePicker x:Name="AssignDue" Width="140" Height="32" Margin="0,0,8,0"/>
+                <Button x:Name="AssignButton" Content="اختصاص آزمون به این نفر" Height="32" Padding="12,0"
+                        Background="#1E3A5F" Foreground="White" BorderThickness="0" Click="Assign_Click"/>
+            </StackPanel>
             <lvc:CartesianChart x:Name="ScoreChart" DockPanel.Dock="Top" Height="150" Margin="0,0,8,8"/>
             
 

@@ -138,6 +138,63 @@ public class AssignmentTests
             Assert.DoesNotContain(snapshot.RecentAttempts, item => item.Subtitle.Contains("آزمونی"));
             Assert.DoesNotContain(snapshot.Issues, item => item.Subtitle.Contains("آزمونی") || item.Title.Contains("آزمونی"));
             Assert.False((await service.ScoreAveragesAsync()).ContainsKey(id));
+            var denied = await Assert.ThrowsAsync<InvalidOperationException>(() => service.AssignAsync(id, "disc-short", DateTime.Today.AddDays(5)));
+            Assert.Contains("کارمند", denied.Message);
+        }
+        finally
+        {
+            AuthSession.SignOut();
+            Environment.SetEnvironmentVariable(FileStorageService.EnvironmentVariable, null);
+            if (Directory.Exists(storage)) Directory.Delete(storage, recursive: true);
+        }
+    }
+
+    [SkippableFact]
+    public async Task SecondPendingAssignment_OfTheSameTest_IsRejected()
+    {
+        Skip.IfNot(_sql.IsAvailable, _sql.SkipReason ?? "SQL Server آماده نیست.");
+        var storage = Path.Combine(Path.GetTempPath(), "hr-dup-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(storage);
+        Environment.SetEnvironmentVariable(FileStorageService.EnvironmentVariable, storage);
+        AuthSession.SignIn(new CurrentUser { Username = "dup", DisplayName = "تکرار", Roles = new[] { AppRoles.Hr } });
+        try
+        {
+            await using var db = new PersonnelDbContext(new DbContextOptionsBuilder<PersonnelDbContext>().UseSqlServer(_sql.PersonnelConnection, sql => sql.UseHierarchyId()).Options);
+            var insurance = await db.InsuranceTypes.Where(item => item.Title == "تامین اجتماعی").Select(item => item.InsuranceTypeId).SingleAsync();
+            var cooperation = await db.CooperationTypes.Where(item => item.Title == "تمام‌وقت").Select(item => item.CooperationTypeId).SingleAsync();
+            var id = Guid.NewGuid();
+            await new EmployeeService(db).CreateAsync(new Employee
+            {
+                EmployeeId = id,
+                FirstName = "تکرار",
+                LastName = "تکلیف",
+                FatherName = "رضا",
+                NationalCode = "1415161712",
+                BirthCertificateNumber = "53",
+                BirthDate = new DateTime(1994, 4, 4),
+                IssueDate = new DateTime(1994, 4, 5),
+                Email = "dup-" + id.ToString("N")[..4] + "@example.com",
+                InsuranceNumber = "1234567890",
+                GenderId = 2,
+                MaritalStatusId = 1,
+                Supplement = new EmployeeSupplement
+                {
+                    PositionTitle = "کارشناس",
+                    PersonnelCode = "DP-" + id.ToString("N")[..6],
+                    InsuranceTypeId = insurance,
+                    CooperationTypeId = cooperation,
+                    StartDate = new DateTime(2024, 1, 1),
+                    Salary = 0
+                }
+            });
+
+            var service = new AssessmentService(db);
+            var firstDue = DateTime.Today.AddDays(10);
+            await service.AssignAsync(id, "manager-eval", firstDue);
+            var error = await Assert.ThrowsAsync<InvalidOperationException>(() => service.AssignAsync(id, "manager-eval", DateTime.Today.AddDays(40)));
+            Assert.Contains("در انتظار", error.Message);
+            var pending = await service.PendingAsync(id);
+            Assert.Contains(pending, item => item.AssessmentCode == "manager-eval" && item.LevelLabel == firstDue.ToString("yyyy/MM/dd"));
         }
         finally
         {
