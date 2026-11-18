@@ -308,6 +308,13 @@ namespace HR.Services.Data
             if (department.PettyCashLimit < 0)
                 throw new InvalidOperationException("سقف تنخواه نمی‌تواند منفی باشد.");
 
+            var roles = new[] { department.ManagerEmployeeId, department.DeputyEmployeeId, department.CashCustodianEmployeeId }
+                .Where(id => id.HasValue)
+                .Select(id => id!.Value)
+                .ToList();
+            if (roles.Count != roles.Distinct().Count())
+                throw new InvalidOperationException("یک نفر نمی‌تواند هم‌زمان بیش از یک نقش (مدیر، جانشین یا تنخواه‌دار) داشته باشد.");
+
             foreach (var office in department.Offices)
             {
                 if (office.Name?.Trim().Length > 100)

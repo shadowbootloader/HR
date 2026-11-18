@@ -112,11 +112,11 @@
 
                     <WrapPanel>
                         <ComboBox x:Name="DepertmentManagerCB"  Style="{StaticResource DarkOutlinedComboBox}" Width="220"
-                                  materialDesign:HintAssist.Hint="مدیر دپارتمان *"/>
+                                  materialDesign:HintAssist.Hint="مدیر دپارتمان *" SelectionChanged="RoleCombo_SelectionChanged"/>
                         <ComboBox x:Name="DepartmentDeputyCB"  Style="{StaticResource DarkOutlinedComboBox}" Width="220"
-                                  materialDesign:HintAssist.Hint="جانشین مدیر"/>
+                                  materialDesign:HintAssist.Hint="جانشین مدیر" SelectionChanged="RoleCombo_SelectionChanged"/>
                         <ComboBox x:Name="DepartmentCashCustodian" Style="{StaticResource DarkOutlinedComboBox}" Width="220"
-                                  materialDesign:HintAssist.Hint="تنخواه‌دار"/>
+                                  materialDesign:HintAssist.Hint="تنخواه‌دار" SelectionChanged="RoleCombo_SelectionChanged"/>
                     </WrapPanel>
 
                     <!-- خط جدا -->

@@ -69,6 +69,10 @@ public class DepartmentRulesTests
             editable.ParentDepartmentId = parent.DepartmentId;
             editable.ManagerEmployeeId = managerId;
             editable.DeputyEmployeeId = managerId;
+            var duplicate = await Assert.ThrowsAsync<InvalidOperationException>(() => new DepartmentService(db).UpdateAsync(editable));
+            Assert.Contains("نقش", duplicate.Message);
+            editable.DeputyEmployeeId = null;
+            await new DepartmentService(db).UpdateAsync(editable);
             editable.IsActive = false;
             await new DepartmentService(db).UpdateAsync(editable);
 
@@ -79,7 +83,7 @@ public class DepartmentRulesTests
                 Assert.Equal(12, saved.ApprovedCapacity);
                 Assert.Equal(parent.DepartmentId, saved.ParentDepartmentId);
                 Assert.Equal(managerId, saved.ManagerEmployeeId);
-                Assert.Equal(managerId, saved.DeputyEmployeeId);
+                Assert.Null(saved.DeputyEmployeeId);
                 Assert.False(saved.IsActive);
             }
 
