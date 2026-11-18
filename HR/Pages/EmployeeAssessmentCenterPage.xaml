@@ -35,18 +35,54 @@
     NextMedalClick="ProfileHeroControl_NextMedalClick"/>
         <!-- ستون راست: مدال‌ها (ردیف ۰) -->
 
-        <!-- تب دسته‌ها + ابزار -->
+        <!-- تب دسته‌ها + کارت نفر انتخاب‌شده -->
         <DockPanel Grid.Column="0" Grid.Row="1"  LastChildFill="True">
-            <Button x:Name="ChangePersonButton" DockPanel.Dock="Top" Content="تغییر نفر" Height="32" Margin="0,0,8,8"
-                    HorizontalAlignment="Right" Background="#1E293B" Foreground="White" BorderThickness="0"
-                    Visibility="Collapsed" Click="ChangePerson_Click"/>
-            <StackPanel x:Name="AssignPanel" DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,8,8" FlowDirection="RightToLeft">
-                <ComboBox x:Name="AssignTest" Width="220" Height="32" Margin="0,0,8,0"
-                          DisplayMemberPath="Title" Background="#1E293B" Foreground="White"/>
-                <DatePicker x:Name="AssignDue" Width="140" Height="32" Margin="0,0,8,0"/>
-                <Button x:Name="AssignButton" Content="اختصاص آزمون به این نفر" Height="32" Padding="12,0"
-                        Background="#1E3A5F" Foreground="White" BorderThickness="0" Click="Assign_Click"/>
-            </StackPanel>
+            <Border x:Name="SelectedPersonCard" DockPanel.Dock="Top" Margin="0,0,8,8" Padding="12,8"
+                    CornerRadius="14" BorderBrush="#1E293B" BorderThickness="1" Background="#0F172A"
+                    Visibility="Collapsed">
+                <DockPanel LastChildFill="False" FlowDirection="RightToLeft">
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Grid Width="44" Height="44" Margin="0,0,12,0" FlowDirection="LeftToRight">
+                            <Ellipse Width="44" Height="44" Stroke="#3B82F6" StrokeThickness="2">
+                                <Ellipse.Fill>
+                                    <ImageBrush x:Name="SelectedAvatarBrush" Stretch="UniformToFill"/>
+                                </Ellipse.Fill>
+                            </Ellipse>
+                            <materialDesign:PackIcon x:Name="SelectedAvatarIcon" Kind="Account" Width="24" Height="24"
+                                                     Foreground="#64748B" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Grid>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock x:Name="SelectedNameText" Text="کارمندی انتخاب نشده" Foreground="White" FontSize="16" FontWeight="SemiBold"/>
+                            <TextBlock x:Name="SelectedCodeText" Text="کد پرسنلی —" Foreground="#93C5FD" FontSize="13" Margin="0,2,0,0"/>
+                            <TextBlock x:Name="SelectedDepartmentText" Text="بدون دپارتمان" Foreground="#94A3B8" FontSize="13"/>
+                        </StackPanel>
+                    </StackPanel>
+                    <Button x:Name="ChangePersonButton" DockPanel.Dock="Left" Content="تغییر نفر" Height="36" MinWidth="120"
+                            Margin="8,0,0,0" Padding="14,0" Cursor="Hand" Click="ChangePerson_Click"
+                            Background="#1E293B" Foreground="White" BorderThickness="0">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="ChangeBd" Background="{TemplateBinding Background}" CornerRadius="10"
+                                        BorderBrush="#334155" BorderThickness="1" Padding="{TemplateBinding Padding}">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <materialDesign:PackIcon Kind="AccountSwitch" Width="18" Height="18" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                        <ContentPresenter VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="ChangeBd" Property="Background" Value="#1E3A5F"/>
+                                        <Setter TargetName="ChangeBd" Property="BorderBrush" Value="#3B82F6"/>
+                                    </Trigger>
+                                    <Trigger Property="IsPressed" Value="True">
+                                        <Setter TargetName="ChangeBd" Property="Background" Value="#1D4ED8"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </DockPanel>
+            </Border>
             <lvc:CartesianChart x:Name="ScoreChart" DockPanel.Dock="Top" Height="150" Margin="0,0,8,8"/>
             
 
@@ -353,6 +389,42 @@
                         </Button.Template>
                     </Button>
                 </Grid>
+            </Border>
+            <Border x:Name="AssignPanel" DockPanel.Dock="Top" Margin="0,0,5,8" Padding="12,8"
+                    CornerRadius="14" Background="#111827" BorderBrush="#1E293B" BorderThickness="1">
+                <DockPanel FlowDirection="RightToLeft" LastChildFill="True">
+                    <TextBlock DockPanel.Dock="Right" Text="اختصاص آزمون" Foreground="White" FontSize="14" FontWeight="SemiBold"
+                               VerticalAlignment="Center" Margin="0,0,12,0"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" FlowDirection="RightToLeft">
+                        <ComboBox x:Name="AssignTest" Width="240" Height="36" Margin="0,0,8,0"
+                                  Style="{StaticResource DarkOutlinedComboBox}" DisplayMemberPath="Title"/>
+                        <DatePicker x:Name="AssignDue" Width="150" Height="36" Margin="0,0,8,0"
+                                    Style="{StaticResource DarkOutlinedDatePicker}"/>
+                        <Button x:Name="AssignButton" Content="اختصاص به این نفر" Height="36" MinWidth="150"
+                                Padding="14,0" Cursor="Hand" Click="Assign_Click"
+                                Background="#3B82F6" Foreground="White" BorderThickness="0">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="AssignBd" Background="{TemplateBinding Background}" CornerRadius="10"
+                                            Padding="{TemplateBinding Padding}">
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <materialDesign:PackIcon Kind="ClipboardAccount" Width="18" Height="18" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                            <ContentPresenter VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="AssignBd" Property="Background" Value="#2563EB"/>
+                                        </Trigger>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Setter TargetName="AssignBd" Property="Background" Value="#1D4ED8"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </StackPanel>
+                </DockPanel>
             </Border>
             <!-- هدر لیست آزمون‌ها -->
             <Border Height="42" DockPanel.Dock="Top"
