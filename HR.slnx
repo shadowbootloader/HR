@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="HR.Core/HR.Core.csproj" />
   <Project Path="HR/HR.csproj" />
 </Solution>

@@ -29,12 +29,15 @@ namespace HR.Pages
             if (Employee == null)
             {
                 Header.Bind("کارمندی انتخاب نشده", null, null, null);
+                Header.BindIdentity(null, null, null, null, null, null);
+                Header.BindPerformance(null, null, 0);
                 Insights.ShowFacts(("پرونده", "از فهرست کارکنان یک نفر را باز کنید."));
                 ShowAttempts(Array.Empty<AttemptSummary>());
                 return;
             }
 
             Header.Bind(Employee.FullName, Employee.Position, Employee.Department, Employee.Email);
+            Header.BindStatus(Employee.Status);
             Insights.ShowFacts(
                 ("کد ملی", Employee.NationalCode),
                 ("کد پرسنلی", Employee.PersonnelCode),
@@ -48,6 +51,40 @@ namespace HR.Pages
                 using var assessments = new AssessmentService();
                 var entity = await people.GetByIdAsync(Employee.Id);
                 var history = await assessments.HistoryAsync(Employee.Id);
+
+                // ---------- اطلاعات هویتی از پایگاه داده ----------
+                if (entity != null)
+                {
+                    var phone = entity.PhoneNumbers
+                        .Where(item => item.EndDate == null)
+                        .Select(item => item.Number)
+                        .FirstOrDefault()
+                        ?? entity.PhoneNumbers.Select(item => item.Number).FirstOrDefault();
+
+                    string? managerName = null;
+                    var managerId = entity.Supplement?.Department?.ManagerEmployeeId;
+                    if (managerId != null && managerId != entity.EmployeeId)
+                    {
+                        var manager = await people.GetByIdAsync(managerId.Value, includeDetails: false);
+                        if (manager != null) managerName = $"{manager.FirstName} {manager.LastName}".Trim();
+                    }
+
+                    Header.BindIdentity(
+                        entity.Supplement?.PersonnelCode,
+                        ToPersianDate(entity.BirthDate),
+                        entity.MaritalStatus?.Title,
+                        phone,
+                        ToPersianDate(entity.Supplement?.StartDate),
+                        managerName);
+                }
+
+                // ---------- عملکرد کلی: میانگین نمرهٔ آزمون‌های ثبت‌شده ----------
+                var scored = history.Where(item => item.TotalScore != null).ToList();
+                Header.BindPerformance(
+                    scored.Count == 0 ? null : scored.Average(item => item.TotalScore!.Value),
+                    scored.OrderByDescending(item => item.SubmittedAt).Select(item => item.LevelLabel).FirstOrDefault(),
+                    scored.Count);
+
                 var scores = entity?.SelfAssessment == null ? null : new SelfAssessmentScores
                 {
                     Discipline = entity.SelfAssessment.Discipline,
@@ -75,6 +112,14 @@ namespace HR.Pages
                 Evaluations.ClearItems();
                 Evaluations.AddItem("آزمون‌ها", ex.Message, PackIconKind.Alert, Brushes.Transparent, "");
             }
+        }
+
+        private static string? ToPersianDate(DateTime? date)
+        {
+            if (date == null || date.Value == default || date.Value.Year < 1700) return null;
+            var calendar = new PersianCalendar();
+            var value = date.Value;
+            return $"{calendar.GetYear(value):0000}/{calendar.GetMonth(value):00}/{calendar.GetDayOfMonth(value):00}";
         }
 
         private void ShowProfile(ProfileSnapshot snapshot)

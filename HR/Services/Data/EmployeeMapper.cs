@@ -59,7 +59,17 @@ namespace HR.Services.Data
                 IssueNode = await lookups.LocationByNameAsync(profile.IdIssuePlace),
                 ResidenceNode = await lookups.LocationByNameAsync(profile.Residence)
             };
-
+            if (entity.GenderId == 2)
+            {
+                entity.MilitaryStatusId = null;
+                entity.ExemptionTypeId = null;
+                entity.ExemptionReasonId = null;
+            }
+            else if (entity.MilitaryStatusId != 1)
+            {
+                entity.ExemptionTypeId = null;
+                entity.ExemptionReasonId = null;
+            }
             if (!string.IsNullOrWhiteSpace(profile.AddressText))
             {
                 entity.Addresses.Add(new Address

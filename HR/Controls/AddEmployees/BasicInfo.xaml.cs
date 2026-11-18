@@ -1,10 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
+using HR.Data;
 using HR.Models;
 using HR.Services;
 using HR.Services.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace HR.Controls.AddEmployees
 {
@@ -14,6 +18,8 @@ namespace HR.Controls.AddEmployees
         private string _nationalCardImage = string.Empty;
         private string _idCardImage = string.Empty;
         private string _militaryImage = string.Empty;
+        private List<HR.Data.Entities.ExemptionReason> _reasons = new();
+        private Dictionary<string, byte> _typeIdByTitle = new();
 
         public string SectionTitle => "اطلاعات شخصی";
 
@@ -28,8 +34,10 @@ namespace HR.Controls.AddEmployees
             Setup(PersonalMaritalStatusTb);
             Setup(PersonalSarbaziTb);
 
-            Setup(PersonalMoafiatStatusTb);
-            Setup(PersonalMoafiatTypeTb);
+            // کمبوهای معافیت با لیست رشته‌ای پر می‌شوند؛ DisplayMemberPath نباید روی آن‌ها بماند.
+            PersonalMoafiatStatusTb.SelectionChanged += (_, _) => { RefillReasons(); };
+            PersonalGenderList.SelectionChanged += (_, _) => UpdateMilitaryState();
+            PersonalSarbaziTb.SelectionChanged += (_, _) => UpdateMilitaryState();
 
             Loaded += BasicInfo_Loaded;
         }
@@ -41,12 +49,63 @@ namespace HR.Controls.AddEmployees
             await LookupBinder.FillAsync<MaritalStatus>(PersonalMaritalStatusTb, LookupKeys.MaritalStatus, valueOffset: 1);
             await LookupBinder.FillAsync<MilitaryStatus>(PersonalSarbaziTb, LookupKeys.MilitaryStatus, valueOffset: 1);
             await LookupBinder.FillTitlesAsync(PersonalMoafiatStatusTb, LookupKeys.ExemptionType, addEmptyItem: true);
+            await LoadExemptionMapAsync();
             await LookupBinder.FillTitlesAsync(PersonalMoafiatTypeTb, LookupKeys.ExemptionReason, addEmptyItem: true);
+            RefillReasons();
+            UpdateMilitaryState();
 
             if (FindName("PersonalReligionCombo") is ComboBox religionCombo)
                 await LookupBinder.FillTitlesAsync(religionCombo, LookupKeys.Religion, addEmptyItem: true);
             if (FindName("PersonalDenominationCombo") is ComboBox denominationCombo)
                 await LookupBinder.FillTitlesAsync(denominationCombo, LookupKeys.Denomination, addEmptyItem: true);
+        }
+
+        // ==================== نظام‌وظیفه و معافیت ====================
+
+        private async System.Threading.Tasks.Task LoadExemptionMapAsync()
+        {
+            try
+            {
+                await using var db = new PersonnelDbContext();
+                var types = await db.ExemptionTypes.AsNoTracking().ToListAsync();
+                _reasons = await db.ExemptionReasons.AsNoTracking().OrderBy(r => r.ExemptionReasonId).ToListAsync();
+                _typeIdByTitle = types.ToDictionary(t => t.Title, t => t.ExemptionTypeId);
+            }
+            catch { }
+        }
+
+        private void RefillReasons()
+        {
+            if (_reasons.Count == 0) return;
+
+            var keep = ComboText(PersonalMoafiatTypeTb);
+            var titles = new List<string> { "—" };
+            if (_typeIdByTitle.TryGetValue(ComboText(PersonalMoafiatStatusTb), out var typeId))
+                titles.AddRange(_reasons.Where(r => r.ExemptionTypeId == typeId).Select(r => r.Title));
+
+            PersonalMoafiatTypeTb.DisplayMemberPath = string.Empty;
+            PersonalMoafiatTypeTb.SelectedValuePath = string.Empty;
+            PersonalMoafiatTypeTb.ItemsSource = titles;
+            PersonalMoafiatTypeTb.SelectedItem = titles.Contains(keep) ? keep : "—";
+        }
+
+        private bool IsFemale() => PersonalGenderList.SelectedIndex == 1;
+
+        private bool IsExempt() =>
+            !IsFemale() && (LookupBinder.SelectedTitle(PersonalSarbaziTb) ?? string.Empty).Contains("معاف");
+
+        private void UpdateMilitaryState()
+        {
+            var exempt = IsExempt();
+            PersonalSarbaziTb.IsEnabled = !IsFemale();
+            PersonalMoafiatStatusTb.IsEnabled = exempt;
+            PersonalMoafiatTypeTb.IsEnabled = exempt;
+
+            if (!exempt)
+            {
+                if (PersonalMoafiatStatusTb.Items.Count > 0) PersonalMoafiatStatusTb.SelectedIndex = 0;
+                if (PersonalMoafiatTypeTb.Items.Count > 0) PersonalMoafiatTypeTb.SelectedIndex = 0;
+            }
         }
 
         private static void Setup(ComboBox combo)
@@ -160,12 +219,14 @@ namespace HR.Controls.AddEmployees
             profile.Gender = PersonalGenderList.SelectedIndex == 1 ? Gender.Female : Gender.Male;
             profile.MaritalStatus = ValueOf(PersonalMaritalStatusTb, MaritalStatus.Unspecified);
             profile.MilitaryStatus = ValueOf(PersonalSarbaziTb, MilitaryStatus.Unspecified);
-            profile.ExemptionType = ComboText(PersonalMoafiatStatusTb);
-            profile.ExemptionReason = ComboText(PersonalMoafiatTypeTb);
+            var exempt = IsExempt();
+            profile.ExemptionType = exempt ? ComboText(PersonalMoafiatStatusTb) : string.Empty;
+            profile.ExemptionReason = exempt ? ComboText(PersonalMoafiatTypeTb) : string.Empty;
             profile.Religion = ComboText(PersonalReligionCombo);
             profile.Denomination = ComboText(PersonalDenominationCombo);
             profile.MaritalStatusTitle = LookupBinder.SelectedTitle(PersonalMaritalStatusTb);
-            profile.MilitaryStatusTitle = LookupBinder.SelectedTitle(PersonalSarbaziTb);
+            profile.MilitaryStatusTitle = IsFemale() ? null : LookupBinder.SelectedTitle(PersonalSarbaziTb);
+            if (IsFemale()) profile.MilitaryStatus = MilitaryStatus.Unspecified;
             profile.Email = PersonalEmailTb.Text.Trim();
             profile.InsuranceNumber = PersonalInsuranceTb.Text.Trim();
             profile.Residence = PersonalResidenceTb.Text.Trim();

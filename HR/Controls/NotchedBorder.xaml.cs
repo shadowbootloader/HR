@@ -27,17 +27,25 @@ namespace HR.Controls
 
 
 
-        public  void FillNotchedBorder(string EmployeeID , string BirthDate , string MarageStatus , string PhoneNumber , string JoinDate , string Manager)
+        /// <summary>اطلاعات هویتی را مستقیم در TextBlockها می‌نویسد (بدون Binding).</summary>
+        public void FillNotchedBorder(string EmployeeID, string BirthDate, string MarageStatus, string PhoneNumber, string JoinDate, string Manager)
         {
-            //InitializeComponent();
-            
             EmployeeIDStr = EmployeeID;
             BirthDateStr = BirthDate;
-            MarageStatusStr= MarageStatus;
+            MarageStatusStr = MarageStatus;
             PhoneNumberStr = PhoneNumber;
             JoinDateStr = JoinDate;
             ManagerStr = Manager;
+
+            this.EmployeeID.Text = Show(EmployeeID);
+            this.BirthDate.Text = Show(BirthDate);
+            this.MarageStatus.Text = Show(MarageStatus);
+            this.PhoneNumber.Text = Show(PhoneNumber);
+            this.JoinDate.Text = Show(JoinDate);
+            this.Manager.Text = Show(Manager);
         }
+
+        private static string Show(string? value) => string.IsNullOrWhiteSpace(value) ? "—" : value;
 
         public NotchedBorder()
         {

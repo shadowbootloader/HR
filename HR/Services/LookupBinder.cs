@@ -107,7 +107,9 @@ namespace HR.Services
                 if (titles.Count == 0) return;
 
                 var previous = combo.SelectedItem as string ?? combo.Text;
-
+                combo.DisplayMemberPath = string.Empty;
+                combo.SelectedValuePath = string.Empty;
+                combo.ItemsSource = titles;
                 combo.ItemsSource = titles;
 
                 if (!string.IsNullOrWhiteSpace(previous) && titles.Contains(previous))

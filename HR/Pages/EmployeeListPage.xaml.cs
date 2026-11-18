@@ -244,21 +244,21 @@ namespace HR.Pages
 
         private void UpdatePaginationUI()
         {
-            BtnPrevious.IsEnabled = _currentPage > 1;
-            BtnPrevious.Opacity = BtnPrevious.IsEnabled ? 1 : 0.4;
+            //BtnPrevious.IsEnabled = _currentPage > 1;
+            //BtnPrevious.Opacity = BtnPrevious.IsEnabled ? 1 : 0.4;
 
-            BtnNext.IsEnabled = _currentPage < _totalPages;
-            BtnNext.Opacity = BtnNext.IsEnabled ? 1 : 0.4;
-
-            BtnCurrent.Content = _currentPage.ToString();
-            BtnPage2.Visibility = _totalPages >= 2 ? Visibility.Visible : Visibility.Collapsed;
-            BtnPage3.Visibility = _totalPages >= 3 ? Visibility.Visible : Visibility.Collapsed;
-            BtnPage2.Content = Math.Min(_totalPages, _currentPage + 1).ToString();
-            BtnPage3.Content = Math.Min(_totalPages, _currentPage + 2).ToString();
-
-            BtnLast.Visibility = _totalPages > 3 ? Visibility.Visible : Visibility.Collapsed;
-            BtnLast.Content = _totalPages.ToString();
-            TxtDots.Visibility = BtnLast.Visibility;
+            //BtnNext.IsEnabled = _currentPage < _totalPages;
+            //BtnNext.Opacity = BtnNext.IsEnabled ? 1 : 0.4;
+            //
+            //BtnCurrent.Content = _currentPage.ToString();
+            //BtnPage2.Visibility = _totalPages >= 2 ? Visibility.Visible : Visibility.Collapsed;
+            //BtnPage3.Visibility = _totalPages >= 3 ? Visibility.Visible : Visibility.Collapsed;
+            //BtnPage2.Content = Math.Min(_totalPages, _currentPage + 1).ToString();
+            //BtnPage3.Content = Math.Min(_totalPages, _currentPage + 2).ToString();
+            //
+            //BtnLast.Visibility = _totalPages > 3 ? Visibility.Visible : Visibility.Collapsed;
+            //BtnLast.Content = _totalPages.ToString();
+            //TxtDots.Visibility = BtnLast.Visibility;
         }
 
         private void GoToPage(int page)

@@ -186,9 +186,7 @@
 
                 </StackPanel>
 
-                <local:OveralPerformance MinWidth="180" Width="{Binding StepStartX , ElementName=IdentityBox}" Height="110" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="0,90,0,0">
-
-                </local:OveralPerformance>
+                <local:OveralPerformance x:Name="OverallPerformance" MinWidth="180" Width="{Binding StepStartX , ElementName=IdentityBox}" Height="110" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="0,90,0,0">
 
                 <!-- ================================================= -->
                 <!-- PERSONAL INFORMATION -->
