@@ -109,6 +109,7 @@ namespace HR.Services.Data
                     .Include(e => e.ExemptionType)
                     .Include(e => e.ExemptionReason)
                     .Include(e => e.SelfAssessment)
+                    .Include(e => e.Leaves)
                     .Include(e => e.Abilities).ThenInclude(a => a.Ability)
                     .Include(e => e.Abilities).ThenInclude(a => a.SkillLevel)
                     .Include(e => e.WorkInterests).ThenInclude(w => w.InterestLevel)
