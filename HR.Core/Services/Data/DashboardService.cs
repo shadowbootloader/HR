@@ -29,7 +29,9 @@ namespace HR.Services.Data
                 {
                     IsDeleted = employee.IsDeleted,
                     Gender = employee.Gender.Title,
-                    Department = employee.Supplement != null ? employee.Supplement.Department.Title : null,
+                    Department = employee.Supplement != null && employee.Supplement.Department != null
+                        ? employee.Supplement.Department.Title
+                        : null,
                     StartDate = employee.Supplement != null ? employee.Supplement.StartDate : null,
                     EndDate = employee.Supplement != null ? employee.Supplement.EndDate : null,
                     OnLeave = employee.Leaves.Any(leave => !leave.IsCancelled && leave.StartDate <= day && leave.EndDate >= day)

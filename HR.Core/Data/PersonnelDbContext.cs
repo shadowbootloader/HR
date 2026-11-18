@@ -239,7 +239,8 @@ namespace HR.Data
                 entity.HasIndex(e => e.EmployeeId).IsUnique();
                 entity.HasIndex(e => e.PersonnelCode).IsUnique();
 
-                entity.HasOne(e => e.Department).WithMany(d => d.Employees).HasForeignKey(e => e.DepartmentId);
+                entity.HasOne(e => e.Department).WithMany(d => d.Employees).HasForeignKey(e => e.DepartmentId).OnDelete(DeleteBehavior.NoAction);
+                entity.HasOne(e => e.DirectManager).WithMany().HasForeignKey(e => e.DirectManagerEmployeeId).OnDelete(DeleteBehavior.NoAction);
                 entity.HasOne(e => e.InsuranceType).WithMany().HasForeignKey(e => e.InsuranceTypeId);
                 entity.HasOne(e => e.CooperationType).WithMany().HasForeignKey(e => e.CooperationTypeId);
             });

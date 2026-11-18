@@ -237,12 +237,12 @@ namespace HR.Services.Data
         public async Task<Dictionary<short, int>> CountMembersAsync()
         {
             var rows = await _db.EmployeeSupplements
-                .Where(s => !s.Employee.IsDeleted)
+                .Where(s => s.DepartmentId != null && !s.Employee.IsDeleted)
                 .GroupBy(s => s.DepartmentId)
                 .Select(g => new { g.Key, Count = g.Count() })
                 .ToListAsync();
 
-            return rows.ToDictionary(x => x.Key, x => x.Count);
+            return rows.Where(x => x.Key != null).ToDictionary(x => x.Key!.Value, x => x.Count);
         }
 
         public async Task<bool> DeleteAsync(short id)

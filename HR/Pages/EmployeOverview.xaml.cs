@@ -58,7 +58,10 @@ namespace HR.Pages
                         ?? entity.PhoneNumbers.Select(item => item.Number).FirstOrDefault();
 
                     string? managerName = null;
-                    var managerId = entity.Supplement?.Department?.ManagerEmployeeId;
+                    var direct = entity.Supplement?.DirectManager;
+                    if (direct != null && direct.EmployeeId != entity.EmployeeId)
+                        managerName = $"{direct.FirstName} {direct.LastName}".Trim();
+                    var managerId = managerName == null ? entity.Supplement?.Department?.ManagerEmployeeId : null;
                     if (managerId != null && managerId != entity.EmployeeId)
                     {
                         var manager = await people.GetByIdAsync(managerId.Value, includeDetails: false);

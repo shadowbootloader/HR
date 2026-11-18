@@ -58,10 +58,11 @@ namespace HR.Pages
                 .ToListAsync();
 
             var members = await db.EmployeeSupplements.AsNoTracking()
+                .Where(item => item.DepartmentId != null)
                 .Select(item => new OrgMember
                 {
                     EmployeeId = item.EmployeeId,
-                    DepartmentId = item.DepartmentId,
+                    DepartmentId = item.DepartmentId ?? 0,
                     FullName = (item.Employee.FirstName + " " + item.Employee.LastName).Trim(),
                     Position = item.PositionTitle,
                     IsDeleted = item.Employee.IsDeleted

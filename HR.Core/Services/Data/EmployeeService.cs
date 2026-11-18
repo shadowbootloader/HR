@@ -12,6 +12,12 @@ using System.Threading.Tasks;
 
 namespace HR.Services.Data
 {
+    public sealed class DirectManagerOption
+    {
+        public Guid EmployeeId { get; init; }
+        public string Label { get; init; } = string.Empty;
+    }
+
     public class EmployeeService : IEmployeeService, IDisposable
     {
         private readonly PersonnelDbContext _db;
@@ -64,6 +70,8 @@ namespace HR.Services.Data
                     .Include(e => e.Denomination)
                     .Include(e => e.Supplement)
                         .ThenInclude(s => s!.Department)
+                    .Include(e => e.Supplement)
+                        .ThenInclude(s => s!.DirectManager)
                     .Include(e => e.Supplement)
                         .ThenInclude(s => s!.InsuranceType)
                     .Include(e => e.Supplement)
@@ -174,6 +182,21 @@ namespace HR.Services.Data
                         (e.FirstName + " " + e.LastName).Contains(term)))
                 .OrderBy(e => e.LastName)
                 .AsNoTracking()
+                .ToListAsync();
+        }
+
+        public async Task<List<DirectManagerOption>> ListDirectManagerOptionsAsync(short departmentId, Guid? excludeEmployeeId)
+        {
+            return await _db.EmployeeSupplements.AsNoTracking()
+                .Where(item => item.DepartmentId == departmentId && !item.Employee.IsDeleted)
+                .Where(item => excludeEmployeeId == null || item.EmployeeId != excludeEmployeeId)
+                .OrderBy(item => item.Employee.LastName)
+                .ThenBy(item => item.Employee.FirstName)
+                .Select(item => new DirectManagerOption
+                {
+                    EmployeeId = item.EmployeeId,
+                    Label = (item.Employee.FirstName + " " + item.Employee.LastName).Trim() + " — " + item.PersonnelCode
+                })
                 .ToListAsync();
         }
 
@@ -366,6 +389,7 @@ namespace HR.Services.Data
             employee.ExemptionType = null;
             employee.ExemptionReason = null;
             employee.Supplement?.Department = null!;
+            if (employee.Supplement != null) employee.Supplement.DirectManager = null;
             employee.Supplement?.InsuranceType = null!;
             employee.Supplement?.CooperationType = null!;
             if (employee.Supplement != null) employee.Supplement.Employee = null!;
@@ -499,6 +523,12 @@ namespace HR.Services.Data
                 if (department.DeputyEmployeeId == employeeId) department.DeputyEmployeeId = null;
                 if (department.CashCustodianEmployeeId == employeeId) department.CashCustodianEmployeeId = null;
             }
+
+            var directReports = await _db.EmployeeSupplements
+                .Where(item => item.DirectManagerEmployeeId == employeeId)
+                .ToListAsync();
+            foreach (var report in directReports)
+                report.DirectManagerEmployeeId = null;
 
             await new DocumentLinkService().RemoveEmployeeAsync(_db, employeeId);
 
@@ -759,13 +789,33 @@ namespace HR.Services.Data
 
             if (employee.Supplement != null)
             {
-                if (employee.Supplement.DepartmentId <= 0)
-                    throw new InvalidOperationException("دپارتمان را از فهرست انتخاب کنید.");
+                if (employee.Supplement.DepartmentId is short departmentId && departmentId > 0)
+                {
+                    var exists = await _db.Departments.AsNoTracking()
+                        .AnyAsync(d => d.DepartmentId == departmentId);
+                    if (!exists)
+                        throw new InvalidOperationException("دپارتمان انتخاب‌شده در پایگاه داده وجود ندارد.");
+                }
+                else
+                {
+                    employee.Supplement.DepartmentId = null;
+                    employee.Supplement.DirectManagerEmployeeId = null;
+                }
 
-                var exists = await _db.Departments.AsNoTracking()
-                    .AnyAsync(d => d.DepartmentId == employee.Supplement.DepartmentId);
-                if (!exists)
-                    throw new InvalidOperationException("دپارتمان انتخاب‌شده در پایگاه داده وجود ندارد.");
+                if (employee.Supplement.DirectManagerEmployeeId is Guid managerId)
+                {
+                    if (managerId == employee.EmployeeId)
+                        throw new InvalidOperationException("کارمند نمی‌تواند مدیر مستقیم خودش باشد.");
+                    if (employee.Supplement.DepartmentId is not short selectedDepartment)
+                        throw new InvalidOperationException("برای انتخاب مدیر مستقیم، دپارتمان را هم انتخاب کنید.");
+
+                    var sameDepartment = await _db.EmployeeSupplements.AsNoTracking()
+                        .AnyAsync(item => item.EmployeeId == managerId
+                            && item.DepartmentId == selectedDepartment
+                            && !item.Employee.IsDeleted);
+                    if (!sameDepartment)
+                        throw new InvalidOperationException("مدیر مستقیم باید از کارکنان فعال همان دپارتمان باشد.");
+                }
 
                 if (string.IsNullOrWhiteSpace(employee.Supplement.PersonnelCode))
                     throw new InvalidOperationException("کد پرسنلی الزامی است.");
