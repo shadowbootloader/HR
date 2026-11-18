@@ -109,6 +109,9 @@ namespace HR.Pages
 
         private void BtnAddDepartment_Click(object sender, RoutedEventArgs e)
             => NavigationRequested?.Invoke(new AddDepartmentPage());
+
+        private void OrgChart_Click(object sender, RoutedEventArgs e)
+            => NavigationRequested?.Invoke(new OrgChartPage());
     }
 
     public class DepartmentModel
