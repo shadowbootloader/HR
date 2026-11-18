@@ -87,6 +87,7 @@ namespace HR.Services.Assessments
         public string Category { get; set; } = string.Empty;
         public double? TotalScore { get; set; }
         public string? LevelLabel { get; set; }
+        public string? Status { get; set; }
         public DateTime? SubmittedAt { get; set; }
     }
 }

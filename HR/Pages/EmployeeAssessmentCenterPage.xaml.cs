@@ -104,17 +104,17 @@ namespace HR.Pages
             foreach (var definition in _definitions)
             {
                 var latest = _history.FirstOrDefault(item => item.AssessmentCode == definition.Code);
-                var done = latest?.SubmittedAt != null;
-                var score = (int)Math.Round(latest?.TotalScore ?? 0);
+                var state = AttemptStatus.Of(latest);
+                var done = state == "completed";
                 _allRows.Add(CreateRow(
                     definition.Title,
                     definition.Description ?? definition.Category,
                     definition.Category,
                     PackIconKind.ClipboardText,
                     "#38BDF8",
-                    done ? "completed" : "not-started",
-                    done ? score : 0,
-                    latest?.SubmittedAt?.ToString("yyyy/MM/dd") ?? "هنوز انجام نشده",
+                    state,
+                    done ? (int)Math.Round(latest!.TotalScore ?? 0) : 0,
+                    done ? $"{latest!.SubmittedAt:yyyy/MM/dd} · {latest.LevelLabel}" : string.Empty,
                     definition.Code));
             }
 
