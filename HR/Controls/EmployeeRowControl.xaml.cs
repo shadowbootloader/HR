@@ -41,12 +41,12 @@ namespace HR.Controls
                 DeleteBtn.Visibility = Visibility.Collapsed;
                 RestoreBtn.Visibility = Visibility.Collapsed;
                 HardDeleteBtn.Visibility = Visibility.Collapsed;
-                LeaveBtn.Visibility = Visibility.Collapsed;
+                //LeaveBtn.Visibility = Visibility.Collapsed;
                 return;
             }
 
             var deleted = Employee?.IsDeleted == true;
-            LeaveBtn.Visibility = deleted ? Visibility.Collapsed : Visibility.Visible;
+            //LeaveBtn.Visibility = deleted ? Visibility.Collapsed : Visibility.Visible;
             DeleteBtn.Visibility = deleted ? Visibility.Collapsed : Visibility.Visible;
             RestoreBtn.Visibility = deleted ? Visibility.Visible : Visibility.Collapsed;
             HardDeleteBtn.Visibility = deleted ? Visibility.Visible : Visibility.Collapsed;

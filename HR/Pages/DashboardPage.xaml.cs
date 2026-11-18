@@ -28,9 +28,9 @@ namespace HR.Pages
             try
             {
                 var snapshot = await _dashboard.GetAsync();
-                HeadcountText.Text = snapshot.Headcount == 0
-                    ? "هنوز کارمندی ثبت نشده است."
-                    : $"تعداد کارکنان: {snapshot.Headcount}";
+                //HeadcountText.Text = snapshot.Headcount == 0
+                //    ? "هنوز کارمندی ثبت نشده است."
+                //    : $"تعداد کارکنان: {snapshot.Headcount}";
 
                 var hires = snapshot.Hires.ToList();
                 BindHires(hires.Select(item => item.Label).ToList(), hires.Select(item => (double)item.Count).ToList());
@@ -40,7 +40,7 @@ namespace HR.Pages
             }
             catch (Exception ex)
             {
-                HeadcountText.Text = ex.Message;
+                //HeadcountText.Text = ex.Message;
             }
         }
 

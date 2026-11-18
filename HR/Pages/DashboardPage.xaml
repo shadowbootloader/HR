@@ -8,7 +8,7 @@
       Foreground="White">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="20">
-            <TextBlock x:Name="HeadcountText" Text="در حال بارگذاری..." FontSize="22" FontWeight="Bold" Margin="0,0,0,16"/>
+            <!--<TextBlock x:Name="HeadcountText" Text="در حال بارگذاری..." FontSize="22" FontWeight="Bold" Margin="0,0,0,16"/>-->
 
             <Border Background="#111827" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="12" Padding="16" Margin="0,0,0,16">
                 <StackPanel>
