@@ -125,6 +125,10 @@ namespace HR.Pages
                 InterviewList.Text = interviews.Count == 0
                     ? "مصاحبه‌ای ثبت نشده است."
                     : string.Join("\n", interviews.Select(item => $"{item.HeldOn:yyyy/MM/dd} — {item.Interviewer}" + (string.IsNullOrWhiteSpace(item.Notes) ? "" : " — " + item.Notes) + (string.IsNullOrWhiteSpace(item.TranscriptPath) ? "" : " — متن دارد") + (string.IsNullOrWhiteSpace(item.AudioPath) ? "" : " — صدا دارد")));
+                var pending = entity == null ? Array.Empty<AttemptSummary>() : await new AssessmentService().PendingAsync(entity.EmployeeId);
+                InterviewList.Text += pending.Count == 0
+                    ? "\nآزمون در انتظاری نیست."
+                    : "\nآزمون‌های در انتظار:\n" + string.Join("\n", pending.Select(item => item.Title + " — موعد " + item.LevelLabel + (item.Status == "Overdue" ? " (عقب‌افتاده)" : "")));
                 if (!string.IsNullOrWhiteSpace(_interviewAudio))
                 {
                     var full = HR.Services.Files.FileStorageService.Load().FullPath(_interviewAudio);

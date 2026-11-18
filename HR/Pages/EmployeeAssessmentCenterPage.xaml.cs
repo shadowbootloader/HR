@@ -28,6 +28,7 @@ namespace HR.Pages
         private readonly List<EmployeePick> _people = new();
         private List<AssessmentRecord> _definitions = new();
         private List<AttemptSummary> _history = new();
+        private List<AttemptSummary> _pending = new();
         private int _pageIndex;
         private const int PageSize = 6;
         private bool _loadingPeople;
@@ -82,6 +83,7 @@ namespace HR.Pages
         {
             _definitions = new();
             _history = new();
+            _pending = new();
             _allRows.Clear();
             RefreshList();
             Hero.EmployeeName = "کارمندی انتخاب نشده";
@@ -107,6 +109,9 @@ namespace HR.Pages
                 _history = selected == null
                     ? new List<AttemptSummary>()
                     : (await _assessments.HistoryAsync(selected.Id)).ToList();
+                _pending = selected == null
+                    ? new List<AttemptSummary>()
+                    : (await _assessments.PendingAsync(selected.Id)).ToList();
             }
             catch (Exception ex)
             {
@@ -135,7 +140,10 @@ namespace HR.Pages
             foreach (var definition in _definitions)
             {
                 var latest = _history.FirstOrDefault(item => item.AssessmentCode == definition.Code);
+                var pending = _pending.FirstOrDefault(item => item.AssessmentCode == definition.Code);
                 var state = AttemptStatus.Of(latest);
+                if (state == "none" && pending != null)
+                    state = pending.Status == "Overdue" ? "outlier" : "in-progress";
                 var done = state == "completed";
                 _allRows.Add(CreateRow(
                     definition.Title,
@@ -145,7 +153,7 @@ namespace HR.Pages
                     "#38BDF8",
                     state,
                     done ? (int)Math.Round(latest!.TotalScore ?? 0) : 0,
-                    done ? $"{latest!.SubmittedAt:yyyy/MM/dd} · {latest.LevelLabel}" : string.Empty,
+                    done ? $"{latest!.SubmittedAt:yyyy/MM/dd} · {latest.LevelLabel}" : pending == null ? string.Empty : "موعد " + pending.LevelLabel,
                     definition.Code));
             }
 
@@ -405,6 +413,30 @@ namespace HR.Pages
             if (!IsLoaded) return;
             _pageIndex = 0;
             RefreshList();
+        }
+
+        private async void Assign_Click(object sender, RoutedEventArgs e)
+        {
+            if (EmployeePicker.SelectedItem is not EmployeePick person)
+            {
+                MessageBox.Show("ابتدا کارمند را انتخاب کنید.");
+                return;
+            }
+            var code = _allRows.FirstOrDefault()?.DefinitionId;
+            if (string.IsNullOrWhiteSpace(code))
+            {
+                MessageBox.Show("آزمونی برای تکلیف نیست.");
+                return;
+            }
+            try
+            {
+                await _assessments.AssignAsync(person.Id, code, DateTime.Today.AddDays(30));
+                await ReloadAssessmentsAsync();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
 
         private void BtnNewTest_Click(object sender, RoutedEventArgs e)

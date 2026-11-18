@@ -45,6 +45,8 @@
                       DisplayMemberPath="Name" SelectionChanged="EmployeePicker_SelectionChanged"/>
             <TextBlock x:Name="SelectPrompt" DockPanel.Dock="Top" Text="برای دیدن آزمون‌ها ابتدا یک نفر را انتخاب کنید."
                        Foreground="#94A3B8" Margin="0,0,8,8" Visibility="Collapsed"/>
+            <Button x:Name="AssignButton" DockPanel.Dock="Top" Content="تکلیف آزمون انتخاب‌شده تا ۳۰ روز دیگر" Height="32" Margin="0,0,8,8"
+                    HorizontalAlignment="Right" Background="#1E293B" Foreground="White" BorderThickness="0" Click="Assign_Click"/>
             <lvc:CartesianChart x:Name="ScoreChart" DockPanel.Dock="Top" Height="150" Margin="0,0,8,8"/>
             
 
