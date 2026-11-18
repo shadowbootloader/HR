@@ -9,7 +9,7 @@ namespace HR.Data
         public const string EnvironmentVariable = "PERSONNEL_CONNECTION";
 
         public const string Fallback =
-            "Server=.;Database=Personnel;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true";
+            "Server=localhost;Database=Personnel;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true";
 
         public static string Resolve()
         {

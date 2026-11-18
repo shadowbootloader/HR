@@ -35,7 +35,10 @@
 
 1. متغیر محیطی `PERSONNEL_CONNECTION`
 2. `ConnectionStrings:Personnel` در `HR/appsettings.json`
-3. پیش‌فرض: `Server=.;Database=Personnel;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true`
+3. پیش‌فرض: `Server=localhost;Database=Personnel;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true`
+
+> پیش‌فرض به **instance پیش‌فرض SQL Server روی همین ماشین** (`localhost`) با Windows Authentication وصل می‌شود.
+> برای instance نام‌دار از `Server=localhost\\NAME` و برای SQL Authentication از `User Id=...;Password=...` (به‌جای `Trusted_Connection`) استفاده کنید.
 
 **مسیر ذخیره فایل‌ها** (عکس پرسنلی، مدارک، لوگوی دپارتمان) به ترتیب اولویت:
 
