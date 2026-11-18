@@ -233,21 +233,33 @@ namespace HR.Pages
 
         private void UpdatePaginationUI()
         {
-            //BtnPrevious.IsEnabled = _currentPage > 1;
-            //BtnPrevious.Opacity = BtnPrevious.IsEnabled ? 1 : 0.4;
+            // فیلتر وضعیت هنگام InitializeComponent و قبل از ساخته‌شدن دکمه‌های پایین صفحه صدا زده می‌شود.
+            if (BtnPrevious == null || BtnNext == null || BtnCurrent == null
+                || BtnPage2 == null || BtnPage3 == null || BtnLast == null || TxtDots == null)
+                return;
 
-            //BtnNext.IsEnabled = _currentPage < _totalPages;
-            //BtnNext.Opacity = BtnNext.IsEnabled ? 1 : 0.4;
-            //
-            //BtnCurrent.Content = _currentPage.ToString();
-            //BtnPage2.Visibility = _totalPages >= 2 ? Visibility.Visible : Visibility.Collapsed;
-            //BtnPage3.Visibility = _totalPages >= 3 ? Visibility.Visible : Visibility.Collapsed;
-            //BtnPage2.Content = Math.Min(_totalPages, _currentPage + 1).ToString();
-            //BtnPage3.Content = Math.Min(_totalPages, _currentPage + 2).ToString();
-            //
-            //BtnLast.Visibility = _totalPages > 3 ? Visibility.Visible : Visibility.Collapsed;
-            //BtnLast.Content = _totalPages.ToString();
-            //TxtDots.Visibility = BtnLast.Visibility;
+            BtnPrevious.IsEnabled = _currentPage > 1;
+            BtnPrevious.Opacity = BtnPrevious.IsEnabled ? 1 : 0.4;
+
+            BtnNext.IsEnabled = _currentPage < _totalPages;
+            BtnNext.Opacity = BtnNext.IsEnabled ? 1 : 0.4;
+
+            BtnCurrent.Content = _currentPage.ToString();
+            ShowPageButton(BtnPage2, _currentPage + 1);
+            ShowPageButton(BtnPage3, _currentPage + 2);
+
+            var showLast = _totalPages > _currentPage + 2;
+            BtnLast.Visibility = showLast ? Visibility.Visible : Visibility.Collapsed;
+            BtnLast.Content = _totalPages.ToString();
+            TxtDots.Visibility = BtnLast.Visibility;
+        }
+
+        private void ShowPageButton(Button button, int page)
+        {
+            var visible = page <= _totalPages;
+            button.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+            if (visible)
+                button.Content = page.ToString();
         }
 
         private void GoToPage(int page)
