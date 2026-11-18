@@ -250,17 +250,20 @@ namespace HR.Services.Data
             AccessGuard.RequirePeopleManagement();
             var dept = await _db.Departments
                 .Include(d => d.Children)
-                .Include(d => d.Employees)
+                .Include(d => d.Employees).ThenInclude(employee => employee.Employee)
                 .Include(d => d.Offices)
                 .FirstOrDefaultAsync(d => d.DepartmentId == id);
 
             if (dept == null) return false;
 
             if (dept.Children.Any())
-                throw new InvalidOperationException("این دپارتمان دارای زیرمجموعه است و قابل حذف نیست.");
+                throw new InvalidOperationException("این دپارتمان زیرمجموعه دارد و قابل حذف نیست. ابتدا دپارتمان‌های فرزند را جابه‌جا یا حذف کنید.");
+
+            if (dept.Employees.Any(row => row.Employee != null && !row.Employee.IsDeleted))
+                throw new InvalidOperationException("این دپارتمان کارمند فعال دارد و قابل حذف نیست. ابتدا کارکنان را به دپارتمان دیگری منتقل کنید.");
 
             if (dept.Employees.Any())
-                throw new InvalidOperationException("این دپارتمان دارای کارمند است و قابل حذف نیست. ابتدا کارکنان را منتقل یا حذف کنید.");
+                throw new InvalidOperationException("پرونده کارمند حذف‌شده هنوز به این دپارتمان وصل است و قابل حذف نیست.");
 
             await new DocumentLinkService().RemoveDepartmentAsync(_db, id);
             _db.Departments.Remove(dept);
