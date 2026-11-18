@@ -36,6 +36,8 @@ namespace HR.Services.Data
                     .ThenInclude(s => s!.Department)
                 .Include(e => e.SelfAssessment)
                 .Include(e => e.Leaves)
+                .Include(e => e.PersonFiles)
+                    .ThenInclude(file => file.FileType)
                 .AsQueryable();
 
             if (!includeDeleted)
@@ -162,6 +164,8 @@ namespace HR.Services.Data
                 .Include(e => e.Gender)
                 .Include(e => e.Supplement)
                     .ThenInclude(s => s!.Department)
+                .Include(e => e.PersonFiles)
+                    .ThenInclude(file => file.FileType)
                 .Where(e => !e.IsDeleted &&
                        (e.FirstName.Contains(term) ||
                         e.LastName.Contains(term) ||

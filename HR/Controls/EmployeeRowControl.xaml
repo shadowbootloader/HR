@@ -43,8 +43,15 @@ TargetType="{x:Type materialDesign:PackIcon}">
             </Grid.ColumnDefinitions>
 
             <!-- Avatar -->
-            <Border Grid.Column="0" Width="40" Height="40" CornerRadius="20" BorderBrush="#3B82F6" BorderThickness="2">
-                <materialDesign:PackIcon Kind="{Binding AvatarUrl}"  Style="{StaticResource LawnGreenNeonIcon}" HorizontalAlignment="Center" Width="35" Height="35" />
+            <Border Grid.Column="0" Width="40" Height="40" CornerRadius="20" BorderBrush="#3B82F6" BorderThickness="2" ClipToBounds="True">
+                <Grid>
+                    <materialDesign:PackIcon x:Name="AvatarIcon" Kind="Account" Style="{StaticResource LawnGreenNeonIcon}" HorizontalAlignment="Center" Width="28" Height="28" />
+                    <Image x:Name="AvatarImage" Width="40" Height="40" Stretch="UniformToFill" Visibility="Collapsed">
+                        <Image.Clip>
+                            <EllipseGeometry Center="20,20" RadiusX="20" RadiusY="20"/>
+                        </Image.Clip>
+                    </Image>
+                </Grid>
             </Border>
 
             <!-- Name + Email -->

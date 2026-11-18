@@ -39,6 +39,7 @@ namespace HR.Pages
 
             Header.Bind(Employee.FullName, Employee.Position, Employee.Department, Employee.Email);
             Header.BindStatus(Employee.Status);
+            Header.BindPhoto(Employee.PhotoPath);
 
             try
             {
@@ -63,6 +64,8 @@ namespace HR.Pages
                         var manager = await people.GetByIdAsync(managerId.Value, includeDetails: false);
                         if (manager != null) managerName = $"{manager.FirstName} {manager.LastName}".Trim();
                     }
+
+                    Header.BindPhoto(EmployeePhotos.PortraitPath(entity.PersonFiles) ?? Employee.PhotoPath);
 
                     Header.BindIdentity(
                         entity.Supplement?.PersonnelCode,

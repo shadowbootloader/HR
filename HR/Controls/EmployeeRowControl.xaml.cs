@@ -18,7 +18,19 @@ namespace HR.Controls
         public EmployeeRowControl()
         {
             InitializeComponent();
-            DataContextChanged += (_, _) => UpdateActionButtons();
+            DataContextChanged += (_, _) =>
+            {
+                UpdateActionButtons();
+                UpdateAvatar();
+            };
+        }
+
+        private void UpdateAvatar()
+        {
+            var image = ImagePicker.Load(Employee?.PhotoPath);
+            AvatarImage.Source = image;
+            AvatarImage.Visibility = image == null ? Visibility.Collapsed : Visibility.Visible;
+            AvatarIcon.Visibility = image == null ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void UpdateActionButtons()

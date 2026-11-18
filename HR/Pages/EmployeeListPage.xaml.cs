@@ -138,6 +138,7 @@ namespace HR.Pages
                 PerformanceValue = PerformanceOf(e).Value,
                 PerformanceLabel = PerformanceOf(e).Label,
                 HireDate = e.Supplement?.StartDate,
+                PhotoPath = EmployeePhotos.PortraitPath(e.PersonFiles) ?? string.Empty,
                 AvatarUrl = PackIconKind.Account
             };
         }
@@ -305,6 +306,7 @@ namespace HR.Pages
         public string Gender { get; set; } = string.Empty;
         public double PerformanceValue { get; set; }
         public string PerformanceLabel { get; set; } = string.Empty;
+        public string PhotoPath { get; set; } = string.Empty;
         public PackIconKind AvatarUrl { get; set; }
     }
 }

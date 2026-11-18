@@ -8,6 +8,7 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using HR.Services;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
@@ -29,6 +30,12 @@ namespace HR.Controls
             EmpGroup.Text = string.IsNullOrWhiteSpace(position) ? "—" : position;
             EmpFeild.Text = string.IsNullOrWhiteSpace(department) ? "—" : department;
             EmpLocation.Text = string.IsNullOrWhiteSpace(location) ? string.Empty : location;
+        }
+
+        /// <summary>عکس پرسنلی از مسیر نسبی PersonFile. اگر فایل نباشد، براش خالی می‌ماند.</summary>
+        public void BindPhoto(string? storedPath)
+        {
+            EmpImage.ImageSource = ImagePicker.Load(storedPath);
         }
 
         /// <summary>کادر «اطلاعات هویتی».</summary>

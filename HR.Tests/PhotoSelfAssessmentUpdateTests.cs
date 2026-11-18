@@ -137,6 +137,18 @@ public class PhotoSelfAssessmentUpdateTests
             var updated = await new EmployeeService(updateDb).UpdateAsync(incoming);
             Assert.Equal(80, updated.SelfAssessment!.Discipline);
             Assert.Single(updated.PersonFiles);
+
+            await using var readBack = new PersonnelDbContext(
+                new DbContextOptionsBuilder<PersonnelDbContext>()
+                    .UseSqlServer(_sql.PersonnelConnection, sql => sql.UseHierarchyId())
+                    .Options);
+            var reread = await new EmployeeService(readBack).GetByIdAsync(id);
+            var portrait = EmployeePhotos.PortraitPath(reread?.PersonFiles);
+            Assert.False(string.IsNullOrWhiteSpace(portrait));
+            Assert.True(File.Exists(new FileStorageService(storage).FullPath(portrait)));
+
+            var listed = await new EmployeeService(readBack).GetAllAsync();
+            Assert.Equal(portrait, EmployeePhotos.PortraitPath(listed.Single(item => item.EmployeeId == id).PersonFiles));
         }
         finally
         {
