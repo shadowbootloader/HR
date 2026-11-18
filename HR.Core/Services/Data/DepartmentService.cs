@@ -10,6 +10,14 @@ using System.Threading.Tasks;
 
 namespace HR.Services.Data
 {
+    public sealed class DepartmentMemberRow
+    {
+        public string FullName { get; init; } = string.Empty;
+        public string PersonnelCode { get; init; } = string.Empty;
+        public string Position { get; init; } = string.Empty;
+        public DateTime? StartDate { get; init; }
+    }
+
     public class DepartmentService : IDepartmentService, IDisposable
     {
         private readonly PersonnelDbContext _db;
@@ -208,6 +216,22 @@ namespace HR.Services.Data
                 throw new InvalidOperationException(
                     "خطا در به‌روزرسانی دپارتمان: " + (ex.GetBaseException()?.Message ?? ex.Message), ex);
             }
+        }
+
+        public async Task<List<DepartmentMemberRow>> ListMembersAsync(short departmentId)
+        {
+            return await _db.EmployeeSupplements.AsNoTracking()
+                .Where(item => item.DepartmentId == departmentId && !item.Employee.IsDeleted)
+                .OrderBy(item => item.Employee.LastName)
+                .ThenBy(item => item.Employee.FirstName)
+                .Select(item => new DepartmentMemberRow
+                {
+                    FullName = (item.Employee.FirstName + " " + item.Employee.LastName).Trim(),
+                    PersonnelCode = item.PersonnelCode,
+                    Position = item.PositionTitle,
+                    StartDate = item.StartDate
+                })
+                .ToListAsync();
         }
 
         public async Task<Dictionary<short, int>> CountMembersAsync()

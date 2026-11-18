@@ -176,6 +176,7 @@ StrokeThickness="1" Stroke="#FF005689"
 HorizontalAlignment="Stretch"
 VerticalAlignment="Bottom"/>
             <!-- ردیف‌ها -->
+            <TextBlock Text="ریسکی در پایگاه ثبت نشده است" Foreground="#94A3B8" Margin="8" HorizontalAlignment="Center"/>
             <ItemsControl x:Name="Items" FlowDirection="RightToLeft">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
