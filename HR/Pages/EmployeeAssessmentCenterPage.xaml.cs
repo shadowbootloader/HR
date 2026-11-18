@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using HR.Controls;
 using HR.Controls.Assessment;
 using HR.Models;
 using HR.Services;
@@ -22,15 +23,16 @@ namespace HR.Pages
     public partial class EmployeeAssessmentCenterPage : Page
     {
         public ObservableCollection<AssessmentActivityItem> Activities { get; } = new();
-        private readonly AssessmentService _assessments = new();
-        private readonly IEmployeeService _employees = new EmployeeService();
         private readonly List<AssessmentTestRow> _allRows = new();
-        private readonly List<EmployeePick> _people = new();
+        private readonly List<EmployeeModel> _roster = new();
+        private EmployeeModel? _selected;
         private List<AssessmentRecord> _definitions = new();
         private List<AttemptSummary> _history = new();
         private List<AttemptSummary> _pending = new();
         private int _pageIndex;
         private const int PageSize = 6;
+        private int _pickerPage = 1;
+        private const int PickerPageSize = 8;
         private bool _loadingPeople;
 
         public EmployeeAssessmentCenterPage()
@@ -43,44 +45,148 @@ namespace HR.Pages
             if (AuthSession.Current?.CanManagePeople != true)
                 BtnNewTest.Visibility = Visibility.Collapsed;
             Loaded += async (_, _) => await LoadPeopleAsync();
-            Unloaded += (_, _) =>
-            {
-                _assessments.Dispose();
-                (_employees as IDisposable)?.Dispose();
-            };
         }
 
         private async System.Threading.Tasks.Task LoadPeopleAsync()
         {
             _loadingPeople = true;
-            _people.Clear();
-            EmployeePicker.ItemsSource = null;
-            foreach (var employee in await _employees.GetAllAsync())
+            try
             {
-                var name = $"{employee.FirstName} {employee.LastName}".Trim();
-                var code = employee.Supplement?.PersonnelCode ?? "";
-                var department = employee.Supplement?.Department?.Title ?? "";
-                _people.Add(new EmployeePick(employee.EmployeeId, string.Join(" · ", new[] { name, code, department }.Where(part => !string.IsNullOrWhiteSpace(part))), $"{name} {code} {department}"));
+                using var employees = new EmployeeService();
+                var rows = await employees.GetAllAsync(includeDeleted: true);
+                _roster.Clear();
+                foreach (var employee in rows)
+                    _roster.Add(EmployeeListPage.MapToModel(employee));
+                using (var completeness = new ProfileCompletenessReader())
+                {
+                    var reports = await completeness.ReadAllAsync();
+                    foreach (var row in _roster)
+                    {
+                        if (!reports.TryGetValue(row.Id, out var report)) continue;
+                        row.PerformanceValue = report.Percent;
+                        row.PerformanceLabel = "تکمیل " + report.Percent + "٪";
+                    }
+                }
+
+                var keep = _selected?.Id;
+                var currentDepartment = PickerDepartment.SelectedItem as string;
+                var departments = _roster
+                    .Select(person => person.Department)
+                    .Where(name => !string.IsNullOrWhiteSpace(name) && name != "—")
+                    .Distinct(StringComparer.Ordinal)
+                    .OrderBy(name => name, StringComparer.Ordinal)
+                    .ToList();
+                PickerDepartment.Items.Clear();
+                PickerDepartment.Items.Add("همه");
+                foreach (var name in departments)
+                    PickerDepartment.Items.Add(name);
+                PickerDepartment.SelectedItem = currentDepartment != null && PickerDepartment.Items.Contains(currentDepartment)
+                    ? currentDepartment
+                    : "همه";
+                _selected = keep == null ? null : _roster.FirstOrDefault(person => person.Id == keep);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "فهرست پرسنل", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            finally
+            {
+                _loadingPeople = false;
             }
 
-            EmployeePicker.ItemsSource = _people;
-            EmployeePicker.SelectedItem = null;
-            _loadingPeople = false;
-            ShowNoSelection();
+            if (_selected == null)
+            {
+                ShowNoSelection();
+                return;
+            }
+
+            PickerPanel.Visibility = Visibility.Collapsed;
+            ChangePersonButton.Visibility = Visibility.Visible;
+            await ReloadAssessmentsAsync();
         }
 
-        private void PersonSearch_TextChanged(object sender, TextChangedEventArgs e)
+        private void PickerSearch_TextChanged(object sender, TextChangedEventArgs e)
         {
-            var term = PersonSearch.Text?.Trim() ?? string.Empty;
-            _loadingPeople = true;
-            EmployeePicker.ItemsSource = string.IsNullOrWhiteSpace(term)
-                ? _people.ToList()
-                : _people.Where(person => person.Search.Contains(term, StringComparison.OrdinalIgnoreCase)).ToList();
-            _loadingPeople = false;
+            if (_loadingPeople || !IsLoaded) return;
+            _pickerPage = 1;
+            RenderPicker();
+        }
+
+        private void PickerFilter_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_loadingPeople || !IsLoaded) return;
+            _pickerPage = 1;
+            RenderPicker();
+        }
+
+        private void PickerPrev_Click(object sender, RoutedEventArgs e)
+        {
+            if (_pickerPage <= 1) return;
+            _pickerPage--;
+            RenderPicker();
+        }
+
+        private void PickerNext_Click(object sender, RoutedEventArgs e)
+        {
+            _pickerPage++;
+            RenderPicker();
+        }
+
+        private void ChangePerson_Click(object sender, RoutedEventArgs e)
+        {
+            PickerPanel.Visibility = Visibility.Visible;
+            RenderPicker();
+        }
+
+        private void RenderPicker()
+        {
+            if (PickerRows == null || PickerSearch == null || PickerStatus == null || PickerDepartment == null) return;
+            var term = PickerSearch.Text?.Trim() ?? string.Empty;
+            var status = (PickerStatus.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "همه";
+            var department = PickerDepartment.SelectedItem as string ?? "همه";
+            var filtered = _roster.Where(person =>
+                (status == "همه" || person.Status == status) &&
+                (department == "همه" || person.Department == department) &&
+                (term.Length == 0 ||
+                 person.FullName.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                 (person.PersonnelCode ?? "").Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                 (person.Department ?? "").Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                 (person.Position ?? "").Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                 (person.Email ?? "").Contains(term, StringComparison.OrdinalIgnoreCase)))
+                .ToList();
+            var pages = Math.Max(1, (int)Math.Ceiling(filtered.Count / (double)PickerPageSize));
+            if (_pickerPage > pages) _pickerPage = pages;
+            if (_pickerPage < 1) _pickerPage = 1;
+            PickerRows.Children.Clear();
+            foreach (var person in filtered.Skip((_pickerPage - 1) * PickerPageSize).Take(PickerPageSize))
+            {
+                var row = new EmployeeRowControl { SelectionOnly = true, DataContext = person };
+                row.EmployeeChosen += (_, _) => SelectPerson(person);
+                PickerRows.Children.Add(row);
+            }
+
+            var from = filtered.Count == 0 ? 0 : (_pickerPage - 1) * PickerPageSize + 1;
+            var to = Math.Min(_pickerPage * PickerPageSize, filtered.Count);
+            PickerPageText.Text = filtered.Count == 0
+                ? "موردی یافت نشد"
+                : $"نمایش {from} تا {to} از {filtered.Count} کارکنان";
+            PickerPrev.IsEnabled = _pickerPage > 1;
+            PickerNext.IsEnabled = _pickerPage < pages;
+        }
+
+        private async void SelectPerson(EmployeeModel person)
+        {
+            _selected = person;
+            PickerPanel.Visibility = Visibility.Collapsed;
+            ChangePersonButton.Visibility = Visibility.Visible;
+            Hero.EmployeeName = person.FullName;
+            Hero.Department = person.Department;
+            await ReloadAssessmentsAsync();
         }
 
         private void ShowNoSelection()
         {
+            _selected = null;
             _definitions = new();
             _history = new();
             _pending = new();
@@ -88,30 +194,27 @@ namespace HR.Pages
             RefreshList();
             Hero.EmployeeName = "کارمندی انتخاب نشده";
             Hero.Role = "";
-            if (SelectPrompt != null) SelectPrompt.Visibility = Visibility.Visible;
+            PickerPanel.Visibility = Visibility.Visible;
+            ChangePersonButton.Visibility = Visibility.Collapsed;
+            RenderPicker();
             ScoreChart.Series = Array.Empty<ISeries>();
             BindSide(Array.Empty<AttemptSummary>());
             UpdateFooterStats();
         }
 
-        private async void EmployeePicker_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (_loadingPeople) return;
-            await ReloadAssessmentsAsync();
-        }
-
         private async System.Threading.Tasks.Task ReloadAssessmentsAsync()
         {
+            using var assessments = new AssessmentService();
             try
             {
-                _definitions = (await _assessments.ListAsync()).ToList();
-                var selected = EmployeePicker.SelectedItem as EmployeePick;
+                _definitions = (await assessments.ListAsync()).ToList();
+                var selected = _selected;
                 _history = selected == null
                     ? new List<AttemptSummary>()
-                    : (await _assessments.HistoryAsync(selected.Id)).ToList();
+                    : (await assessments.HistoryAsync(selected.Id)).ToList();
                 _pending = selected == null
                     ? new List<AttemptSummary>()
-                    : (await _assessments.PendingAsync(selected.Id)).ToList();
+                    : (await assessments.PendingAsync(selected.Id)).ToList();
             }
             catch (Exception ex)
             {
@@ -119,14 +222,15 @@ namespace HR.Pages
                 return;
             }
 
-            var person = EmployeePicker.SelectedItem as EmployeePick;
+            var person = _selected;
             if (person == null)
             {
                 ShowNoSelection();
                 return;
             }
-            if (SelectPrompt != null) SelectPrompt.Visibility = Visibility.Collapsed;
-            Hero.EmployeeName = person.Name;
+            PickerPanel.Visibility = Visibility.Collapsed;
+            ChangePersonButton.Visibility = Visibility.Visible;
+            Hero.EmployeeName = person.FullName;
             Hero.Role = AuthSession.Current?.RoleLabel ?? "";
             BindRows();
             BindChart(_history);
@@ -243,14 +347,19 @@ namespace HR.Pages
         private async void NewRow_RowClick(object sender, RoutedEventArgs e)
         {
             if (sender is not AssessmentTestRow target) return;
-            if (EmployeePicker.SelectedItem is not EmployeePick person)
+            if (_selected == null)
             {
                 MessageBox.Show("ابتدا کارمند را انتخاب کنید.");
                 return;
             }
+            var person = _selected;
 
-            var record = _definitions.FirstOrDefault(item => item.Code == target.DefinitionId)
-                ?? await _assessments.GetByCodeAsync(target.DefinitionId);
+            var record = _definitions.FirstOrDefault(item => item.Code == target.DefinitionId);
+            if (record == null)
+            {
+                using var lookup = new AssessmentService();
+                record = await lookup.GetByCodeAsync(target.DefinitionId);
+            }
             if (record == null)
             {
                 MessageBox.Show("تعریف این آزمون پیدا نشد.");
@@ -268,7 +377,8 @@ namespace HR.Pages
             shell.Submitted += async (_, submitted) =>
             {
                 var result = submitted.Result ?? AssessmentScoringEngine.Compute(definition, submitted);
-                await _assessments.SaveAttemptAsync(new AttemptSave
+                using var assessments = new AssessmentService();
+                await assessments.SaveAttemptAsync(new AttemptSave
                 {
                     AssessmentCode = definition.Id,
                     EmployeeId = person.Id,
@@ -417,11 +527,12 @@ namespace HR.Pages
 
         private async void Assign_Click(object sender, RoutedEventArgs e)
         {
-            if (EmployeePicker.SelectedItem is not EmployeePick person)
+            if (_selected == null)
             {
                 MessageBox.Show("ابتدا کارمند را انتخاب کنید.");
                 return;
             }
+            var person = _selected;
             var code = _allRows.FirstOrDefault()?.DefinitionId;
             if (string.IsNullOrWhiteSpace(code))
             {
@@ -430,7 +541,8 @@ namespace HR.Pages
             }
             try
             {
-                await _assessments.AssignAsync(person.Id, code, DateTime.Today.AddDays(30));
+                using var assessments = new AssessmentService();
+                await assessments.AssignAsync(person.Id, code, DateTime.Today.AddDays(30));
                 await ReloadAssessmentsAsync();
             }
             catch (Exception ex)
@@ -465,5 +577,4 @@ namespace HR.Pages
         public string Title { get; set; } = "";
     }
 
-    public sealed record EmployeePick(Guid Id, string Name, string Search);
 }

@@ -22,10 +22,15 @@ namespace HR.Services.Data
     public class DepartmentService : IDepartmentService, IDisposable
     {
         private readonly PersonnelDbContext _db;
+        private readonly bool _ownsContext;
 
-        public DepartmentService(PersonnelDbContext db) => _db = db;
+        public DepartmentService(PersonnelDbContext db, bool ownsContext = false)
+        {
+            _db = db;
+            _ownsContext = ownsContext;
+        }
 
-        public DepartmentService() : this(new PersonnelDbContext())
+        public DepartmentService() : this(new PersonnelDbContext(), ownsContext: true)
         {
         }
 
@@ -351,6 +356,9 @@ namespace HR.Services.Data
             return false;
         }
 
-        public void Dispose() => _db.Dispose();
+        public void Dispose()
+        {
+            if (_ownsContext) _db.Dispose();
+        }
     }
 }

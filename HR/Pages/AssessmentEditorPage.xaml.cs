@@ -8,14 +8,12 @@ namespace HR.Pages
     public partial class AssessmentEditorPage : Page
     {
         private readonly ObservableCollection<QuestionRecord> _questions = new();
-        private readonly AssessmentService _assessments = new();
 
         public AssessmentEditorPage()
         {
             InitializeComponent();
             QuestionList.ItemsSource = _questions;
             QuestionList.DisplayMemberPath = nameof(QuestionRecord.Text);
-            Unloaded += (_, _) => _assessments.Dispose();
         }
 
         private void AddQuestion_Click(object sender, RoutedEventArgs e)
@@ -92,7 +90,8 @@ namespace HR.Pages
         {
             try
             {
-                var saved = await _assessments.CreateAsync(new AssessmentRecord
+                using var assessments = new AssessmentService();
+                var saved = await assessments.CreateAsync(new AssessmentRecord
                 {
                     Title = TitleBox.Text,
                     Category = CategoryBox.Text,

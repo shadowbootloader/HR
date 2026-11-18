@@ -21,13 +21,15 @@ namespace HR.Services.Data
     public class EmployeeService : IEmployeeService, IDisposable
     {
         private readonly PersonnelDbContext _db;
+        private readonly bool _ownsContext;
 
-        public EmployeeService(PersonnelDbContext db)
+        public EmployeeService(PersonnelDbContext db, bool ownsContext = false)
         {
             _db = db;
+            _ownsContext = ownsContext;
         }
 
-        public EmployeeService() : this(new PersonnelDbContext())
+        public EmployeeService() : this(new PersonnelDbContext(), ownsContext: true)
         {
         }
 
@@ -874,6 +876,9 @@ namespace HR.Services.Data
             return "خطا در ذخیره در پایگاه داده: " + root;
         }
 
-        public void Dispose() => _db.Dispose();
+        public void Dispose()
+        {
+            if (_ownsContext) _db.Dispose();
+        }
     }
 }
