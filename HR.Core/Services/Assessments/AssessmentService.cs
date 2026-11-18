@@ -277,6 +277,20 @@ namespace HR.Services.Assessments
                 .ToListAsync();
         }
 
+        public async Task<IReadOnlyDictionary<Guid, double>> ScoreAveragesAsync()
+        {
+            var rows = await _db.AssessmentAttempts.AsNoTracking()
+                .Where(item => !item.Employee.IsDeleted
+                    && item.SubmittedAt != null
+                    && item.TotalScore != null
+                    && item.Assessment.Code != SelfAssessmentCatalog.Code)
+                .Select(item => new { item.EmployeeId, item.TotalScore })
+                .ToListAsync();
+            return rows
+                .GroupBy(item => item.EmployeeId)
+                .ToDictionary(group => group.Key, group => group.Average(item => item.TotalScore!.Value));
+        }
+
         public async Task<IReadOnlyList<AttemptSummary>> RecentAsync(int take)
         {
             return await _db.AssessmentAttempts

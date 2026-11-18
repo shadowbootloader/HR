@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using HR.Controls;
+using HR.Services.Assessments;
 using HR.Services.Auth;
 using HR.Services.Data;
 using MaterialDesignThemes.Wpf;
@@ -107,8 +108,7 @@ namespace HR.Pages
                     _all.Add(MapToModel(e));
                 }
 
-                using (var completeness = new ProfileCompletenessReader())
-                    ApplyCompleteness(await completeness.ReadAllAsync());
+                await ApplyRosterMetricsAsync(_all);
 
                 ApplyFilter(resetPage: true);
             }
@@ -123,13 +123,26 @@ namespace HR.Pages
             }
         }
 
-        private void ApplyCompleteness(IReadOnlyDictionary<Guid, ProfileReport> reports)
+        public static async Task ApplyRosterMetricsAsync(IList<EmployeeModel> rows)
         {
-            foreach (var row in _all)
+            using (var completeness = new ProfileCompletenessReader())
             {
-                if (!reports.TryGetValue(row.Id, out var report)) continue;
-                row.PerformanceValue = report.Percent;
-                row.PerformanceLabel = "تکمیل " + report.Percent + "٪";
+                var reports = await completeness.ReadAllAsync();
+                foreach (var row in rows)
+                {
+                    if (!reports.TryGetValue(row.Id, out var report)) continue;
+                    row.CompletenessPercent = report.Percent;
+                    row.CompletenessLabel = report.Percent + "٪";
+                }
+            }
+
+            using var assessments = new AssessmentService();
+            var scores = await assessments.ScoreAveragesAsync();
+            foreach (var row in rows)
+            {
+                if (!scores.TryGetValue(row.Id, out var average)) continue;
+                row.PerformanceValue = average;
+                row.PerformanceLabel = Math.Round(average).ToString("0") + "٪";
             }
         }
 
@@ -336,6 +349,8 @@ namespace HR.Pages
         public string Gender { get; set; } = string.Empty;
         public double PerformanceValue { get; set; }
         public string PerformanceLabel { get; set; } = string.Empty;
+        public double CompletenessPercent { get; set; }
+        public string CompletenessLabel { get; set; } = "—";
         public string PhotoPath { get; set; } = string.Empty;
         public PackIconKind AvatarUrl { get; set; }
     }

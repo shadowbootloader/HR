@@ -137,6 +137,7 @@ public class AssignmentTests
             var snapshot = await new DashboardService(db).GetAsync();
             Assert.DoesNotContain(snapshot.RecentAttempts, item => item.Subtitle.Contains("آزمونی"));
             Assert.DoesNotContain(snapshot.Issues, item => item.Subtitle.Contains("آزمونی") || item.Title.Contains("آزمونی"));
+            Assert.False((await service.ScoreAveragesAsync()).ContainsKey(id));
         }
         finally
         {

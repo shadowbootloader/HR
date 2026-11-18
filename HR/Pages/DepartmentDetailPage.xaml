@@ -360,6 +360,7 @@ TargetType="{x:Type TextBlock}">
                                 <ColumnDefinition Width="160"/>
                                 <ColumnDefinition Width="100"/>
                                 <ColumnDefinition Width="150"/>
+                                <ColumnDefinition Width="120"/>
                                 <ColumnDefinition Width="150"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0" Text="تصویر" Foreground="White"/>
@@ -368,7 +369,8 @@ TargetType="{x:Type TextBlock}">
                             <TextBlock Grid.Column="3" Text="دپارتمان" Foreground="White" Margin="10,0,0,0"/>
                             <TextBlock Grid.Column="4" Text="وضعیت" Foreground="White" HorizontalAlignment="Center"/>
                             <TextBlock Grid.Column="5" Text="بهره‌وری" Foreground="White" HorizontalAlignment="Center"/>
-                            <TextBlock Grid.Column="6" Text="عملیات" Foreground="White" HorizontalAlignment="Center"/>
+                            <TextBlock Grid.Column="6" Text="تکمیل پروفایل" Foreground="#C4B5FD" HorizontalAlignment="Center"/>
+                            <TextBlock Grid.Column="7" Text="عملیات" Foreground="White" HorizontalAlignment="Center"/>
                         </Grid>
                     </Border>
                     <TextBlock x:Name="StaffEmpty" Text="کارمندی در این دپارتمان نیست" Foreground="#94A3B8" Margin="8" Visibility="Collapsed"/>

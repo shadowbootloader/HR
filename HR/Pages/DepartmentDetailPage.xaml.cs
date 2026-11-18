@@ -289,6 +289,7 @@ namespace HR.Pages
             _staff.Clear();
             foreach (var employee in rows.Where(item => item.Supplement?.DepartmentId == _department.Id))
                 _staff.Add(EmployeeListPage.MapToModel(employee));
+            await EmployeeListPage.ApplyRosterMetricsAsync(_staff);
             _staffLoaded = true;
             EmployeeRowControl.NavigationRequested -= OnStaffNavigate;
             EmployeeRowControl.NavigationRequested += OnStaffNavigate;

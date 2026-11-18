@@ -57,16 +57,7 @@ namespace HR.Pages
                 _roster.Clear();
                 foreach (var employee in rows)
                     _roster.Add(EmployeeListPage.MapToModel(employee));
-                using (var completeness = new ProfileCompletenessReader())
-                {
-                    var reports = await completeness.ReadAllAsync();
-                    foreach (var row in _roster)
-                    {
-                        if (!reports.TryGetValue(row.Id, out var report)) continue;
-                        row.PerformanceValue = report.Percent;
-                        row.PerformanceLabel = "تکمیل " + report.Percent + "٪";
-                    }
-                }
+                await EmployeeListPage.ApplyRosterMetricsAsync(_roster);
 
                 var keep = _selected?.Id;
                 var currentDepartment = PickerDepartment.SelectedItem as string;
