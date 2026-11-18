@@ -76,7 +76,7 @@ namespace HR.Services.Data
                 {
                     AddressId = Guid.NewGuid(),
                     EmployeeId = entity.EmployeeId,
-                    Title = MapperHelpers.Required(profile.AddressTitle, "عنوان نشانی"),
+                    Title = string.IsNullOrWhiteSpace(profile.AddressTitle) ? "نشانی" : profile.AddressTitle.Trim(),
                     AddressText = profile.AddressText.Trim(),
                     PostalCode = string.IsNullOrWhiteSpace(profile.PostalCode) ? null : profile.PostalCode.Trim()
                 });

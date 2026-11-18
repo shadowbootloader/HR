@@ -138,6 +138,7 @@ namespace HR.Pages
                 PerformanceValue = PerformanceOf(e).Value,
                 PerformanceLabel = PerformanceOf(e).Label,
                 HireDate = e.Supplement?.StartDate,
+                PhotoPath = EmployeePhotos.PortraitPath(e.PersonFiles) ?? string.Empty,
                 AvatarUrl = PackIconKind.Account
             };
         }
@@ -145,7 +146,12 @@ namespace HR.Pages
         private static string StatusOf(HR.Data.Entities.Employee employee)
         {
             var onLeave = employee.Leaves?.Any(leave => LeaveService.Covers(leave, DateTime.Today)) == true;
-            return RosterStatus.Resolve(employee.IsDeleted, employee.Supplement?.EndDate, onLeave, DateTime.Today);
+            return RosterStatus.Resolve(
+                employee.IsDeleted,
+                employee.Supplement?.EndDate,
+                onLeave,
+                employee.Supplement?.StartDate,
+                DateTime.Today);
         }
 
         private static string DepartmentMark(string? title)
@@ -232,21 +238,33 @@ namespace HR.Pages
 
         private void UpdatePaginationUI()
         {
-            //BtnPrevious.IsEnabled = _currentPage > 1;
-            //BtnPrevious.Opacity = BtnPrevious.IsEnabled ? 1 : 0.4;
+            // فیلتر وضعیت هنگام InitializeComponent و قبل از ساخته‌شدن دکمه‌های پایین صفحه صدا زده می‌شود.
+            if (BtnPrevious == null || BtnNext == null || BtnCurrent == null
+                || BtnPage2 == null || BtnPage3 == null || BtnLast == null || TxtDots == null)
+                return;
 
-            //BtnNext.IsEnabled = _currentPage < _totalPages;
-            //BtnNext.Opacity = BtnNext.IsEnabled ? 1 : 0.4;
-            //
-            //BtnCurrent.Content = _currentPage.ToString();
-            //BtnPage2.Visibility = _totalPages >= 2 ? Visibility.Visible : Visibility.Collapsed;
-            //BtnPage3.Visibility = _totalPages >= 3 ? Visibility.Visible : Visibility.Collapsed;
-            //BtnPage2.Content = Math.Min(_totalPages, _currentPage + 1).ToString();
-            //BtnPage3.Content = Math.Min(_totalPages, _currentPage + 2).ToString();
-            //
-            //BtnLast.Visibility = _totalPages > 3 ? Visibility.Visible : Visibility.Collapsed;
-            //BtnLast.Content = _totalPages.ToString();
-            //TxtDots.Visibility = BtnLast.Visibility;
+            BtnPrevious.IsEnabled = _currentPage > 1;
+            BtnPrevious.Opacity = BtnPrevious.IsEnabled ? 1 : 0.4;
+
+            BtnNext.IsEnabled = _currentPage < _totalPages;
+            BtnNext.Opacity = BtnNext.IsEnabled ? 1 : 0.4;
+
+            BtnCurrent.Content = _currentPage.ToString();
+            ShowPageButton(BtnPage2, _currentPage + 1);
+            ShowPageButton(BtnPage3, _currentPage + 2);
+
+            var showLast = _totalPages > _currentPage + 2;
+            BtnLast.Visibility = showLast ? Visibility.Visible : Visibility.Collapsed;
+            BtnLast.Content = _totalPages.ToString();
+            TxtDots.Visibility = BtnLast.Visibility;
+        }
+
+        private void ShowPageButton(Button button, int page)
+        {
+            var visible = page <= _totalPages;
+            button.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+            if (visible)
+                button.Content = page.ToString();
         }
 
         private void GoToPage(int page)
@@ -305,6 +323,7 @@ namespace HR.Pages
         public string Gender { get; set; } = string.Empty;
         public double PerformanceValue { get; set; }
         public string PerformanceLabel { get; set; } = string.Empty;
+        public string PhotoPath { get; set; } = string.Empty;
         public PackIconKind AvatarUrl { get; set; }
     }
 }

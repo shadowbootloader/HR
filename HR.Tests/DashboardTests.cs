@@ -17,7 +17,7 @@ public class DashboardTests
         Assert.Equal(0, snapshot.Headcount);
         Assert.Empty(snapshot.ByDepartment);
         Assert.Empty(snapshot.ByGender);
-        Assert.Equal(4, snapshot.ByStatus.Count);
+        Assert.Equal(5, snapshot.ByStatus.Count);
         Assert.All(snapshot.ByStatus, item => Assert.Equal(0, item.Count));
         Assert.Equal(12, snapshot.Hires.Count);
         Assert.All(snapshot.Hires, item => Assert.Equal(0, item.Count));
@@ -29,7 +29,7 @@ public class DashboardTests
         var today = new DateTime(2026, 11, 17);
         var snapshot = DashboardAggregator.Build(new[]
         {
-            new DashboardPerson { Gender = "مرد", Department = "مالی", StartDate = today, EndDate = null },
+            new DashboardPerson { Gender = "مرد", Department = "مالی", StartDate = today.AddDays(-60), EndDate = null },
             new DashboardPerson { Gender = "زن", Department = "مالی", StartDate = today.AddYears(-2), OnLeave = true },
             new DashboardPerson { Gender = "مرد", Department = "مالی", StartDate = today.AddYears(-3), EndDate = today.AddDays(-1) },
             new DashboardPerson { IsDeleted = true, Gender = "زن", Department = "مالی", StartDate = today }
@@ -39,10 +39,26 @@ public class DashboardTests
         Assert.Equal(3, Assert.Single(snapshot.ByDepartment, item => item.Name == "مالی").Count);
         Assert.Equal(2, Assert.Single(snapshot.ByGender, item => item.Name == "مرد").Count);
         Assert.Equal(1, snapshot.ByStatus.Single(item => item.Name == RosterStatus.Active).Count);
+        Assert.Equal(0, snapshot.ByStatus.Single(item => item.Name == RosterStatus.NewHire).Count);
         Assert.Equal(1, snapshot.ByStatus.Single(item => item.Name == RosterStatus.OnLeave).Count);
         Assert.Equal(1, snapshot.ByStatus.Single(item => item.Name == RosterStatus.Inactive).Count);
         Assert.Equal(1, snapshot.ByStatus.Single(item => item.Name == RosterStatus.Deleted).Count);
-        Assert.Equal(1, snapshot.Hires.Single(item => item.Year == new System.Globalization.PersianCalendar().GetYear(today) && item.Month == new System.Globalization.PersianCalendar().GetMonth(today)).Count);
+        var hired = today.AddDays(-60);
+        var calendar = new System.Globalization.PersianCalendar();
+        Assert.Equal(1, snapshot.Hires.Single(item => item.Year == calendar.GetYear(hired) && item.Month == calendar.GetMonth(hired)).Count);
+    }
+
+    [Fact]
+    public void RecentStart_IsNewHire_UnlessLeaveEndedOrDeleted()
+    {
+        var today = new DateTime(2026, 11, 17);
+        Assert.Equal(RosterStatus.NewHire, RosterStatus.Resolve(false, null, false, today, today));
+        Assert.Equal(RosterStatus.NewHire, RosterStatus.Resolve(false, null, false, today.AddDays(-30), today));
+        Assert.Equal(RosterStatus.Active, RosterStatus.Resolve(false, null, false, today.AddDays(-31), today));
+        Assert.Equal(RosterStatus.OnLeave, RosterStatus.Resolve(false, null, true, today, today));
+        Assert.Equal(RosterStatus.Inactive, RosterStatus.Resolve(false, today.AddDays(-1), false, today, today));
+        Assert.Equal(RosterStatus.Deleted, RosterStatus.Resolve(true, null, false, today, today));
+        Assert.Equal(RosterStatus.Active, RosterStatus.Resolve(false, null, false, null, today));
     }
 }
 
@@ -111,6 +127,7 @@ public class DashboardFlowTests
             Assert.Contains(snapshot.ByDepartment, item => item.Name == department.Title && item.Count >= 1);
             Assert.Contains(snapshot.ByGender, item => item.Name == "زن" && item.Count >= 1);
             Assert.Contains(snapshot.Hires, item => item.Count >= 1);
+            Assert.Contains(snapshot.ByStatus, item => item.Name == RosterStatus.NewHire && item.Count >= 1);
         }
         finally
         {

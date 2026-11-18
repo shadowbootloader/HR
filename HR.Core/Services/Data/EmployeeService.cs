@@ -36,6 +36,8 @@ namespace HR.Services.Data
                     .ThenInclude(s => s!.Department)
                 .Include(e => e.SelfAssessment)
                 .Include(e => e.Leaves)
+                .Include(e => e.PersonFiles)
+                    .ThenInclude(file => file.FileType)
                 .AsQueryable();
 
             if (!includeDeleted)
@@ -162,6 +164,8 @@ namespace HR.Services.Data
                 .Include(e => e.Gender)
                 .Include(e => e.Supplement)
                     .ThenInclude(s => s!.Department)
+                .Include(e => e.PersonFiles)
+                    .ThenInclude(file => file.FileType)
                 .Where(e => !e.IsDeleted &&
                        (e.FirstName.Contains(term) ||
                         e.LastName.Contains(term) ||
@@ -467,6 +471,8 @@ namespace HR.Services.Data
                 .Include(e => e.Citizenships)
                 .Include(e => e.ForeignTravels)
                 .Include(e => e.ForeignRelatives)
+                .Include(e => e.ForeignCooperations)
+                .Include(e => e.Leaves)
                 .Include(e => e.RelatedPersons).ThenInclude(r => r.ForeignCooperations)
                 .Include(e => e.OrganizationCooperations)
                 .Include(e => e.OtherActivities)
@@ -496,6 +502,13 @@ namespace HR.Services.Data
 
             await new DocumentLinkService().RemoveEmployeeAsync(_db, employeeId);
 
+            var attempts = await _db.AssessmentAttempts
+                .Where(attempt => attempt.EmployeeId == employeeId)
+                .Include(attempt => attempt.Answers)
+                .ToListAsync();
+            _db.RemoveRange(attempts.SelectMany(attempt => attempt.Answers));
+            _db.RemoveRange(attempts);
+            _db.RemoveRange(employee.Leaves);
             _db.RemoveRange(employee.ForeignCooperations);
             _db.RemoveRange(employee.RelatedPersons.SelectMany(p => p.ForeignCooperations));
             _db.RemoveRange(employee.Citizenships);

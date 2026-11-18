@@ -8,6 +8,7 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using HR.Services;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
@@ -31,6 +32,12 @@ namespace HR.Controls
             EmpLocation.Text = string.IsNullOrWhiteSpace(location) ? string.Empty : location;
         }
 
+        /// <summary>عکس پرسنلی از مسیر نسبی PersonFile. اگر فایل نباشد، براش خالی می‌ماند.</summary>
+        public void BindPhoto(string? storedPath)
+        {
+            EmpImage.ImageSource = ImagePicker.Load(storedPath);
+        }
+
         /// <summary>کادر «اطلاعات هویتی».</summary>
         public void BindIdentity(string? personnelCode, string? birthDate, string? maritalStatus, string? phone, string? joinDate, string? manager)
             => IdentityBox.FillNotchedBorder(personnelCode ?? "", birthDate ?? "", maritalStatus ?? "", phone ?? "", joinDate ?? "", manager ?? "");
@@ -45,6 +52,7 @@ namespace HR.Controls
             EmpStatus.Fill = status switch
             {
                 "فعال" => new SolidColorBrush(Color.FromRgb(0x1E, 0xD5, 0x8A)),
+                "تازه‌وارد" => new SolidColorBrush(Color.FromRgb(0x3B, 0x82, 0xF6)),
                 "مرخصی" => new SolidColorBrush(Color.FromRgb(0xF5, 0xB7, 0x31)),
                 _ => new SolidColorBrush(Color.FromRgb(0x64, 0x74, 0x8B))
             };

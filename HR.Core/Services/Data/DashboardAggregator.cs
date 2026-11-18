@@ -38,15 +38,19 @@ namespace HR.Services.Data
     public static class RosterStatus
     {
         public const string Active = "فعال";
+        public const string NewHire = "تازه‌وارد";
         public const string Inactive = "غیرفعال";
         public const string Deleted = "حذف‌شده";
         public const string OnLeave = "مرخصی";
 
-        public static string Resolve(bool isDeleted, DateTime? endDate, bool onLeave, DateTime today)
+        /// <summary>شروع همکاری در ۳۰ روز اخیر (یا آینده) تازه وارد است، مگر حذف، پایان همکاری یا مرخصی باز.</summary>
+        public static string Resolve(bool isDeleted, DateTime? endDate, bool onLeave, DateTime? startDate, DateTime today)
         {
             if (isDeleted) return Deleted;
             if (endDate is DateTime end && end.Date < today.Date) return Inactive;
             if (onLeave) return OnLeave;
+            if (startDate is DateTime start && start.Date >= today.Date.AddDays(-30))
+                return NewHire;
             return Active;
         }
     }
@@ -65,7 +69,7 @@ namespace HR.Services.Data
         {
             var rows = people.ToList();
             var roster = rows.Where(person => !person.IsDeleted).ToList();
-            var statuses = new[] { RosterStatus.Active, RosterStatus.OnLeave, RosterStatus.Inactive, RosterStatus.Deleted };
+            var statuses = new[] { RosterStatus.NewHire, RosterStatus.Active, RosterStatus.OnLeave, RosterStatus.Inactive, RosterStatus.Deleted };
 
             return new DashboardSnapshot
             {
@@ -85,7 +89,7 @@ namespace HR.Services.Data
                     .Select(name => new NamedCount
                     {
                         Name = name,
-                        Count = rows.Count(person => RosterStatus.Resolve(person.IsDeleted, person.EndDate, person.OnLeave, today) == name)
+                        Count = rows.Count(person => RosterStatus.Resolve(person.IsDeleted, person.EndDate, person.OnLeave, person.StartDate, today) == name)
                     })
                     .ToList(),
                 Hires = HireMonths(roster.Select(person => person.StartDate).OfType<DateTime>(), today)

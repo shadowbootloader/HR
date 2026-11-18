@@ -21,22 +21,30 @@ namespace HR.Services
         public static void Preview(Image target, string? storedName)
         {
             if (target == null) return;
+            target.Source = Load(storedName);
+        }
 
+        /// <summary>BitmapImage از مسیر نسبی ذخیره‌شده. فایل نامعتبر تصویر خالی برمی‌گرداند تا فهرست نشکند.</summary>
+        public static BitmapImage? Load(string? storedName)
+        {
             var fullPath = FileStorageService.Load().FullPath(storedName);
             if (fullPath.Length == 0 || !File.Exists(fullPath) || !IsImage(fullPath))
+                return null;
+
+            try
             {
-                target.Source = null;
-                return;
+                var bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                bitmap.UriSource = new Uri(fullPath, UriKind.Absolute);
+                bitmap.EndInit();
+                bitmap.Freeze();
+                return bitmap;
             }
-
-            var bitmap = new BitmapImage();
-            bitmap.BeginInit();
-            bitmap.CacheOption = BitmapCacheOption.OnLoad;
-            bitmap.UriSource = new Uri(fullPath, UriKind.Absolute);
-            bitmap.EndInit();
-            bitmap.Freeze();
-
-            target.Source = bitmap;
+            catch (Exception ex) when (ex is IOException or NotSupportedException or System.Runtime.InteropServices.ExternalException)
+            {
+                return null;
+            }
         }
 
         private static string? Choose(FileKind kind, string filter)
