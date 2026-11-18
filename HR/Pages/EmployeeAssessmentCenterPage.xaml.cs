@@ -28,6 +28,7 @@ namespace HR.Pages
         private readonly List<EmployeePick> _people = new();
         private List<AssessmentRecord> _definitions = new();
         private List<AttemptSummary> _history = new();
+        private List<AttemptSummary> _pending = new();
         private int _pageIndex;
         private const int PageSize = 6;
         private bool _loadingPeople;
@@ -56,15 +57,41 @@ namespace HR.Pages
             EmployeePicker.ItemsSource = null;
             foreach (var employee in await _employees.GetAllAsync())
             {
-                _people.Add(new EmployeePick(employee.EmployeeId, $"{employee.FirstName} {employee.LastName}".Trim()));
+                var name = $"{employee.FirstName} {employee.LastName}".Trim();
+                var code = employee.Supplement?.PersonnelCode ?? "";
+                var department = employee.Supplement?.Department?.Title ?? "";
+                _people.Add(new EmployeePick(employee.EmployeeId, string.Join(" · ", new[] { name, code, department }.Where(part => !string.IsNullOrWhiteSpace(part))), $"{name} {code} {department}"));
             }
 
             EmployeePicker.ItemsSource = _people;
-            var linked = AuthSession.Current?.EmployeeId;
-            var selected = _people.FirstOrDefault(person => person.Id == linked) ?? _people.FirstOrDefault();
-            EmployeePicker.SelectedItem = selected;
+            EmployeePicker.SelectedItem = null;
             _loadingPeople = false;
-            await ReloadAssessmentsAsync();
+            ShowNoSelection();
+        }
+
+        private void PersonSearch_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            var term = PersonSearch.Text?.Trim() ?? string.Empty;
+            _loadingPeople = true;
+            EmployeePicker.ItemsSource = string.IsNullOrWhiteSpace(term)
+                ? _people.ToList()
+                : _people.Where(person => person.Search.Contains(term, StringComparison.OrdinalIgnoreCase)).ToList();
+            _loadingPeople = false;
+        }
+
+        private void ShowNoSelection()
+        {
+            _definitions = new();
+            _history = new();
+            _pending = new();
+            _allRows.Clear();
+            RefreshList();
+            Hero.EmployeeName = "کارمندی انتخاب نشده";
+            Hero.Role = "";
+            if (SelectPrompt != null) SelectPrompt.Visibility = Visibility.Visible;
+            ScoreChart.Series = Array.Empty<ISeries>();
+            BindSide(Array.Empty<AttemptSummary>());
+            UpdateFooterStats();
         }
 
         private async void EmployeePicker_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -82,6 +109,9 @@ namespace HR.Pages
                 _history = selected == null
                     ? new List<AttemptSummary>()
                     : (await _assessments.HistoryAsync(selected.Id)).ToList();
+                _pending = selected == null
+                    ? new List<AttemptSummary>()
+                    : (await _assessments.PendingAsync(selected.Id)).ToList();
             }
             catch (Exception ex)
             {
@@ -90,7 +120,13 @@ namespace HR.Pages
             }
 
             var person = EmployeePicker.SelectedItem as EmployeePick;
-            Hero.EmployeeName = person?.Name ?? "کارمندی انتخاب نشده";
+            if (person == null)
+            {
+                ShowNoSelection();
+                return;
+            }
+            if (SelectPrompt != null) SelectPrompt.Visibility = Visibility.Collapsed;
+            Hero.EmployeeName = person.Name;
             Hero.Role = AuthSession.Current?.RoleLabel ?? "";
             BindRows();
             BindChart(_history);
@@ -104,7 +140,10 @@ namespace HR.Pages
             foreach (var definition in _definitions)
             {
                 var latest = _history.FirstOrDefault(item => item.AssessmentCode == definition.Code);
+                var pending = _pending.FirstOrDefault(item => item.AssessmentCode == definition.Code);
                 var state = AttemptStatus.Of(latest);
+                if (state == "none" && pending != null)
+                    state = pending.Status == "Overdue" ? "outlier" : "in-progress";
                 var done = state == "completed";
                 _allRows.Add(CreateRow(
                     definition.Title,
@@ -114,7 +153,7 @@ namespace HR.Pages
                     "#38BDF8",
                     state,
                     done ? (int)Math.Round(latest!.TotalScore ?? 0) : 0,
-                    done ? $"{latest!.SubmittedAt:yyyy/MM/dd} · {latest.LevelLabel}" : string.Empty,
+                    done ? $"{latest!.SubmittedAt:yyyy/MM/dd} · {latest.LevelLabel}" : pending == null ? string.Empty : "موعد " + pending.LevelLabel,
                     definition.Code));
             }
 
@@ -376,6 +415,30 @@ namespace HR.Pages
             RefreshList();
         }
 
+        private async void Assign_Click(object sender, RoutedEventArgs e)
+        {
+            if (EmployeePicker.SelectedItem is not EmployeePick person)
+            {
+                MessageBox.Show("ابتدا کارمند را انتخاب کنید.");
+                return;
+            }
+            var code = _allRows.FirstOrDefault()?.DefinitionId;
+            if (string.IsNullOrWhiteSpace(code))
+            {
+                MessageBox.Show("آزمونی برای تکلیف نیست.");
+                return;
+            }
+            try
+            {
+                await _assessments.AssignAsync(person.Id, code, DateTime.Today.AddDays(30));
+                await ReloadAssessmentsAsync();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
         private void BtnNewTest_Click(object sender, RoutedEventArgs e)
         {
             if (AuthSession.Current?.CanManagePeople != true)
@@ -402,5 +465,5 @@ namespace HR.Pages
         public string Title { get; set; } = "";
     }
 
-    public sealed record EmployeePick(Guid Id, string Name);
+    public sealed record EmployeePick(Guid Id, string Name, string Search);
 }

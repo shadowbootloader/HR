@@ -53,6 +53,7 @@ namespace HR.Pages
                 BindList(NewList, NewEmpty, snapshot.NewHires, true);
                 BindList(LeaveList, LeaveEmpty, snapshot.OpenLeaves, true);
                 BindList(AttemptList, AttemptEmpty, snapshot.RecentAttempts, false);
+                BindIssues(snapshot.Issues);
             }
             catch (Exception ex)
             {
@@ -149,6 +150,41 @@ namespace HR.Pages
             AgeChart.XAxes = new[] { AxisLabels(rows.Select(item => item.Name).ToList()) };
             AgeChart.YAxes = new[] { ValueAxis() };
             PaintTooltip(AgeChart);
+        }
+
+        public event Action<Page>? NavigationRequested;
+
+        private void BindIssues(IReadOnlyList<DashboardListItem> items)
+        {
+            IssueList.Children.Clear();
+            IssueEmpty.Visibility = items.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+            foreach (var item in items.Take(12))
+            {
+                var button = new Button
+                {
+                    Content = item.Title + " — " + item.Subtitle,
+                    HorizontalContentAlignment = HorizontalAlignment.Right,
+                    Background = new SolidColorBrush(Color.FromRgb(0x1E, 0x29, 0x3B)),
+                    Foreground = Brushes.White,
+                    BorderThickness = new Thickness(0),
+                    Margin = new Thickness(0, 3, 0, 3),
+                    Padding = new Thickness(8, 6, 8, 6),
+                    Tag = item
+                };
+                button.Click += (_, _) => OpenIssue(item);
+                IssueList.Children.Add(button);
+            }
+        }
+
+        private void OpenIssue(DashboardListItem item)
+        {
+            if (item.EmployeeId is Guid employeeId)
+            {
+                NavigationRequested?.Invoke(new EmployeOverview(new EmployeeModel { Id = employeeId, FullName = item.Title }));
+                return;
+            }
+            if (item.DepartmentId is short departmentId)
+                NavigationRequested?.Invoke(new DepartmentDetailPage(new DepartmentModel { Id = departmentId, Name = item.Title }));
         }
 
         private static void BindList(StackPanel panel, TextBlock empty, IReadOnlyList<DashboardListItem> items, bool avatar)

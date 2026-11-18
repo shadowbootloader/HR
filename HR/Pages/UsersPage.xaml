@@ -6,38 +6,63 @@
       FontFamily="pack://application:,,,/Fonts/#B Nazanin"
       Foreground="White">
     <Grid Margin="16">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="280"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
-
-        <DockPanel Margin="0,0,12,0">
-            <TextBlock DockPanel.Dock="Top" Text="کاربران" FontSize="22" FontWeight="Bold" Margin="0,0,0,10"/>
-            <ListBox x:Name="UserList" DisplayMemberPath="Label" Background="#111827" Foreground="White"
-                     BorderBrush="#334155" SelectionChanged="UserList_SelectionChanged"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <DockPanel Margin="0,0,0,10">
+            <TextBlock DockPanel.Dock="Right" Text="کاربران سامانه" FontSize="22" FontWeight="Bold" VerticalAlignment="Center"/>
+            <TextBox x:Name="SearchBox" Width="280" Height="36" Margin="12,0,0,0" HorizontalAlignment="Left"
+                     Background="#1E293B" Foreground="White" BorderBrush="#334155"
+                     TextChanged="SearchBox_TextChanged"/>
         </DockPanel>
-
-        <StackPanel Grid.Column="1" MaxWidth="460" HorizontalAlignment="Right">
-            <TextBlock x:Name="FormTitle" Text="کاربر جدید" FontSize="22" FontWeight="Bold" Margin="0,0,0,12"/>
-            <TextBlock Text="نام کاربری"/>
-            <TextBox x:Name="UsernameBox" Height="36" Margin="0,4,0,10" Background="#1E293B" Foreground="White"/>
-            <TextBlock Text="نام نمایشی"/>
-            <TextBox x:Name="DisplayNameBox" Height="36" Margin="0,4,0,10" Background="#1E293B" Foreground="White"/>
-            <TextBlock Text="رمز عبور"/>
-            <PasswordBox x:Name="PasswordBox" Height="36" Margin="0,4,0,10" Background="#1E293B" Foreground="White"/>
-            <TextBlock Text="نقش"/>
-            <ComboBox x:Name="RoleBox" Height="36" Margin="0,4,0,10" SelectedIndex="2">
-                <ComboBoxItem Content="مدیر" Tag="Admin"/>
-                <ComboBoxItem Content="منابع انسانی" Tag="HR"/>
-                <ComboBoxItem Content="بیننده" Tag="Viewer"/>
-            </ComboBox>
-            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                <Button Content="ایجاد" Height="36" Padding="16,0" Margin="0,0,8,0" Click="Create_Click" Background="#3B82F6" Foreground="White" BorderThickness="0"/>
-                <Button Content="ذخیره نقش" Height="36" Padding="16,0" Margin="0,0,8,0" Click="SaveRole_Click" Background="#1E293B" Foreground="White" BorderThickness="0"/>
-                <Button Content="بازنشانی رمز" Height="36" Padding="16,0" Margin="0,0,8,0" Click="Reset_Click" Background="#1E293B" Foreground="White" BorderThickness="0"/>
-                <Button x:Name="ActiveButton" Content="غیرفعال‌سازی" Height="36" Padding="16,0" Click="ToggleActive_Click" Background="#7F1D1D" Foreground="White" BorderThickness="0"/>
+        <DataGrid x:Name="UserGrid" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True"
+                  Background="#111827" Foreground="White" BorderBrush="#334155" RowBackground="#0F172A"
+                  AlternatingRowBackground="#111827" HeadersVisibility="Column" FlowDirection="RightToLeft"
+                  SelectionChanged="UserGrid_SelectionChanged" CanUserAddRows="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="نام کاربری" Binding="{Binding Username}" Width="*"/>
+                <DataGridTextColumn Header="نام نمایشی" Binding="{Binding DisplayName}" Width="*"/>
+                <DataGridTextColumn Header="نقش" Binding="{Binding RoleLabel}" Width="140"/>
+                <DataGridTextColumn Header="کارمند مرتبط" Binding="{Binding EmployeeName}" Width="*"/>
+                <DataGridTextColumn Header="وضعیت" Binding="{Binding State}" Width="120"/>
+                <DataGridTextColumn Header="آخرین ورود" Binding="{Binding LastLogin}" Width="160"/>
+            </DataGrid.Columns>
+        </DataGrid>
+        <Border Grid.Row="2" Margin="0,12,0,0" Background="#111827" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="12" Padding="12">
+            <StackPanel>
+                <TextBlock x:Name="FormTitle" Text="کاربر جدید" FontSize="18" FontWeight="Bold" Margin="0,0,0,8"/>
+                <WrapPanel>
+                    <StackPanel Width="200" Margin="0,0,12,8">
+                        <TextBlock Text="نام کاربری"/>
+                        <TextBox x:Name="UsernameBox" Height="34" Margin="0,4,0,0" Background="#1E293B" Foreground="White" FlowDirection="RightToLeft"/>
+                    </StackPanel>
+                    <StackPanel Width="200" Margin="0,0,12,8">
+                        <TextBlock Text="نام نمایشی"/>
+                        <TextBox x:Name="DisplayNameBox" Height="34" Margin="0,4,0,0" Background="#1E293B" Foreground="White" FlowDirection="RightToLeft"/>
+                    </StackPanel>
+                    <StackPanel Width="180" Margin="0,0,12,8">
+                        <TextBlock Text="رمز عبور"/>
+                        <PasswordBox x:Name="PasswordBox" Height="34" Margin="0,4,0,0" Background="#1E293B" Foreground="White" FlowDirection="RightToLeft"/>
+                    </StackPanel>
+                    <StackPanel Width="160" Margin="0,0,12,8">
+                        <TextBlock Text="نقش"/>
+                        <ComboBox x:Name="RoleBox" Height="34" Margin="0,4,0,0" SelectedIndex="2" FlowDirection="RightToLeft">
+                            <ComboBoxItem Content="مدیر" Tag="Admin"/>
+                            <ComboBoxItem Content="منابع انسانی" Tag="HR"/>
+                            <ComboBoxItem Content="بیننده" Tag="Viewer"/>
+                        </ComboBox>
+                    </StackPanel>
+                </WrapPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                    <Button Content="ایجاد" Height="36" Padding="16,0" Margin="0,0,8,0" Click="Create_Click" Background="#3B82F6" Foreground="White" BorderThickness="0"/>
+                    <Button Content="ذخیره نقش" Height="36" Padding="16,0" Margin="0,0,8,0" Click="SaveRole_Click" Background="#1E293B" Foreground="White" BorderThickness="0"/>
+                    <Button Content="بازنشانی رمز" Height="36" Padding="16,0" Margin="0,0,8,0" Click="Reset_Click" Background="#1E293B" Foreground="White" BorderThickness="0"/>
+                    <Button x:Name="ActiveButton" Content="غیرفعال‌سازی" Height="36" Padding="16,0" Click="ToggleActive_Click" Background="#7F1D1D" Foreground="White" BorderThickness="0"/>
+                </StackPanel>
+                <TextBlock x:Name="StatusText" Margin="0,10,0,0" TextWrapping="Wrap" Foreground="#93C5FD"/>
             </StackPanel>
-            <TextBlock x:Name="StatusText" Margin="0,12,0,0" TextWrapping="Wrap" Foreground="#93C5FD"/>
-        </StackPanel>
+        </Border>
     </Grid>
 </Page>

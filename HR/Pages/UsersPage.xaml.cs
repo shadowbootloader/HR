@@ -10,24 +10,27 @@ namespace HR.Pages
     {
         private readonly AuthService _auth = new();
         private readonly ObservableCollection<UserRow> _rows = new();
+        private readonly List<UserRow> _all = new();
         private Guid? _selectedId;
         private bool _selectedActive = true;
 
         public UsersPage()
         {
             InitializeComponent();
-            UserList.ItemsSource = _rows;
+            UserGrid.ItemsSource = _rows;
             Loaded += async (_, _) => await ReloadAsync();
             Unloaded += (_, _) => _auth.Dispose();
         }
 
         private async System.Threading.Tasks.Task ReloadAsync()
         {
+            _all.Clear();
             _rows.Clear();
             try
             {
                 foreach (var user in await _auth.ListUsersAsync())
-                    _rows.Add(UserRow.From(user));
+                    _all.Add(UserRow.From(user));
+                ApplyFilter();
             }
             catch (Exception ex)
             {
@@ -35,9 +38,24 @@ namespace HR.Pages
             }
         }
 
-        private void UserList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e) => ApplyFilter();
+
+        private void ApplyFilter()
         {
-            if (UserList.SelectedItem is not UserRow row)
+            var term = SearchBox?.Text?.Trim() ?? string.Empty;
+            _rows.Clear();
+            foreach (var row in _all.Where(item =>
+                         string.IsNullOrWhiteSpace(term) ||
+                         item.Username.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                         item.DisplayName.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                         item.EmployeeName.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                         item.RoleLabel.Contains(term, StringComparison.OrdinalIgnoreCase)))
+                _rows.Add(row);
+        }
+
+        private void UserGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (UserGrid.SelectedItem is not UserRow row)
             {
                 _selectedId = null;
                 FormTitle.Text = "کاربر جدید";
@@ -150,20 +168,27 @@ namespace HR.Pages
             public string DisplayName { get; init; } = "";
             public string Role { get; init; } = AppRoles.Viewer;
             public bool IsActive { get; init; }
-            public string Label { get; init; } = "";
+            public string RoleLabel { get; init; } = "";
+            public string EmployeeName { get; init; } = "—";
+            public string State { get; init; } = "";
+            public string LastLogin { get; init; } = "—";
 
             public static UserRow From(AppUser user)
             {
                 var role = user.Roles.Select(link => link.Role?.Name).FirstOrDefault(name => name != null) ?? AppRoles.Viewer;
-                var state = user.IsActive ? "" : " — غیرفعال";
+                var locked = user.LockoutEndUtc is DateTime until && until > DateTime.UtcNow;
+                var employee = user.Employee == null ? "—" : $"{user.Employee.FirstName} {user.Employee.LastName}".Trim();
                 return new UserRow
                 {
                     Id = user.AppUserId,
                     Username = user.Username,
                     DisplayName = user.DisplayName ?? user.Username,
                     Role = role!,
+                    RoleLabel = AppRoles.PersianName(role!),
                     IsActive = user.IsActive,
-                    Label = $"{user.DisplayName ?? user.Username} ({AppRoles.PersianName(role!)}){state}"
+                    EmployeeName = string.IsNullOrWhiteSpace(employee) ? "—" : employee,
+                    State = !user.IsActive ? "غیرفعال" : locked ? "قفل‌شده" : "فعال",
+                    LastLogin = user.LastLoginAt?.ToLocalTime().ToString("yyyy/MM/dd HH:mm") ?? "—"
                 };
             }
         }

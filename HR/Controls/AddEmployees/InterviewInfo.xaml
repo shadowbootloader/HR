@@ -1,0 +1,18 @@
+<UserControl x:Class="HR.Controls.AddEmployees.InterviewInfo"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             FlowDirection="RightToLeft" FontFamily="pack://application:,,,/Fonts/#B Nazanin" Foreground="White">
+    <StackPanel Margin="0,12,0,0">
+        <TextBlock Text="مصاحبه" FontSize="18" FontWeight="SemiBold"/>
+        <TextBlock Text="متن (txt، docx، pdf) و صدای مصاحبه (mp3، wav، m4a)" Foreground="#94A3B8" Margin="0,0,0,8"/>
+        <WrapPanel>
+            <DatePicker x:Name="HeldOn" Width="140" Margin="0,0,8,8"/>
+            <TextBox x:Name="Interviewer" Width="160" Height="32" Margin="0,0,8,8" Background="#1E293B" Foreground="White"/>
+            <TextBox x:Name="Notes" Width="220" Height="32" Margin="0,0,8,8" Background="#1E293B" Foreground="White"/>
+            <Button Content="متن" Click="PickText_Click" Margin="0,0,8,8" Padding="10,4" Background="#1E293B" Foreground="White" BorderThickness="0"/>
+            <Button Content="صدا" Click="PickAudio_Click" Margin="0,0,8,8" Padding="10,4" Background="#1E293B" Foreground="White" BorderThickness="0"/>
+            <Button Content="افزودن" Click="Add_Click" Margin="0,0,8,8" Padding="10,4" Background="#3B82F6" Foreground="White" BorderThickness="0"/>
+        </WrapPanel>
+        <TextBlock x:Name="ListText" TextWrapping="Wrap" Foreground="#E2E8F0"/>
+    </StackPanel>
+</UserControl>

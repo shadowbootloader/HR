@@ -33,6 +33,17 @@ namespace HR.Services.Assessments
             await _db.SaveChangesAsync();
         }
 
+        public static readonly IReadOnlyDictionary<string, string> CategoryByCode = new Dictionary<string, string>
+        {
+            ["big-five-short"] = "شخصیتی",
+            ["mbti-style"] = "شخصیتی",
+            ["disc-short"] = "شخصیتی",
+            ["eq-short"] = "شخصیتی",
+            ["riasec-short"] = "رغبت شغلی",
+            ["manager-eval"] = "مهارتی",
+            ["self-sliders"] = "خودارزیابی"
+        };
+
         public async Task EnsurePersonalityAsync()
         {
             foreach (var definition in PersonalityAssessmentCatalog.All())
@@ -40,6 +51,15 @@ namespace HR.Services.Assessments
                 if (await _db.Assessments.AnyAsync(item => item.Code == definition.Code))
                     continue;
                 _db.Assessments.Add(ToEntity(definition, AuthSession.ActorName));
+            }
+
+            var rows = await _db.Assessments.ToListAsync();
+            foreach (var row in rows)
+            {
+                if (CategoryByCode.TryGetValue(row.Code, out var category) && row.Category != category)
+                    row.Category = category;
+                else if (string.IsNullOrWhiteSpace(row.Category))
+                    row.Category = "عمومی";
             }
 
             await _db.SaveChangesAsync();
@@ -99,6 +119,62 @@ namespace HR.Services.Assessments
             await EnsureManagerSeedAsync();
             var row = await Query().FirstOrDefaultAsync(item => item.Code == code);
             return row == null ? null : ToRecord(row);
+        }
+
+        public async Task AssignAsync(Guid employeeId, string assessmentCode, DateTime dueDate)
+        {
+            AccessGuard.RequirePeopleManagement();
+            await EnsureManagerSeedAsync();
+            await EnsurePersonalityAsync();
+            var assessment = await _db.Assessments.FirstOrDefaultAsync(item => item.Code == assessmentCode)
+                ?? throw new InvalidOperationException("آزمون پیدا نشد.");
+            if (!await _db.Employees.AnyAsync(item => item.EmployeeId == employeeId && !item.IsDeleted))
+                throw new InvalidOperationException("کارمند یافت نشد.");
+
+            var existing = await _db.AssessmentAssignments.FirstOrDefaultAsync(item => item.EmployeeId == employeeId && item.AssessmentId == assessment.AssessmentId);
+            if (existing == null)
+            {
+                _db.AssessmentAssignments.Add(new AssessmentAssignment
+                {
+                    AssignmentId = Guid.NewGuid(),
+                    EmployeeId = employeeId,
+                    AssessmentId = assessment.AssessmentId,
+                    DueDate = dueDate.Date,
+                    AssignedAt = DateTime.UtcNow,
+                    AssignedBy = AuthSession.ActorName
+                });
+            }
+            else
+            {
+                existing.DueDate = dueDate.Date;
+            }
+
+            await _db.SaveChangesAsync();
+        }
+
+        public async Task<IReadOnlyList<AttemptSummary>> PendingAsync(Guid employeeId, DateTime? today = null)
+        {
+            var day = (today ?? DateTime.Today).Date;
+            var rows = await _db.AssessmentAssignments.AsNoTracking()
+                .Where(item => item.EmployeeId == employeeId)
+                .Select(item => new
+                {
+                    item.DueDate,
+                    Code = item.Assessment.Code,
+                    item.Assessment.Title,
+                    Done = item.Assessment.Attempts.Any(attempt => attempt.EmployeeId == employeeId && attempt.SubmittedAt != null)
+                })
+                .ToListAsync();
+
+            return rows.Where(item => !item.Done).Select(item => new AttemptSummary
+            {
+                AssessmentCode = item.Code,
+                Title = item.Title,
+                EmployeeId = employeeId,
+                SubmittedAt = null,
+                Status = item.DueDate.Date < day ? "Overdue" : "Pending",
+                LevelLabel = item.DueDate.ToString("yyyy/MM/dd")
+            }).ToList();
         }
 
         public async Task<AssessmentRecord> CreateAsync(AssessmentRecord draft)

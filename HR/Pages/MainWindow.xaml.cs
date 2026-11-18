@@ -109,7 +109,12 @@ namespace HR.Pages
         private void ShowDashboard()
         {
             PageName.Text = "داشبورد";
-            DataPanel.Navigate(GetPage(() => new DashboardPage(), "dashboard"));
+            DataPanel.Navigate(GetPage(() =>
+            {
+                var page = new DashboardPage();
+                page.NavigationRequested += pageToOpen => Navigate(pageToOpen, "جزئیات");
+                return page;
+            }, "dashboard"));
         }
 
         private void BackBtn_Click(object sender, RoutedEventArgs e)
