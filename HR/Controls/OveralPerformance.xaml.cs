@@ -22,5 +22,24 @@ namespace HR.Controls
         {
             InitializeComponent();
         }
+        /// <summary>میانگین نمرهٔ آزمون‌ها (۰ تا ۱۰۰)، سطح آخرین آزمون و تعداد آزمون‌ها.</summary>
+        public void Show(double? averagePercent, string? levelLabel, int attemptCount)
+        {
+            if (averagePercent == null || attemptCount == 0)
+            {
+                PerformanceRing.Value = 0;
+                PerformsncePercentTB.Text = "—";
+                LevelTB.Text = "—";
+                StatusTB.Text = "بدون آزمون";
+                return;
+            }
+
+            var value = Math.Clamp(averagePercent.Value, 0, 100);
+            PerformanceRing.Value = value;
+            PerformsncePercentTB.Text = $"{value:0}%";
+            LevelTB.Text = string.IsNullOrWhiteSpace(levelLabel) ? "—" : levelLabel;
+            StatusTB.Text = $"{attemptCount} آزمون";
+        }
+
     }
 }
