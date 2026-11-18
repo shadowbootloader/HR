@@ -338,6 +338,24 @@ namespace HR.Pages
 
         // ==================== مدل‌های کمکی UI ====================
 
+        private bool _rolesAdjusting;
+
+        private void RoleCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_rolesAdjusting || sender is not ComboBox current) return;
+            var selected = SelectedEmployee(current);
+            if (selected == null) return;
+            foreach (var other in new[] { DepertmentManagerCB, DepartmentDeputyCB, DepartmentCashCustodian })
+            {
+                if (ReferenceEquals(other, current) || SelectedEmployee(other) != selected) continue;
+                _rolesAdjusting = true;
+                current.SelectedValue = Guid.Empty;
+                _rolesAdjusting = false;
+                NotificationService.Warning("نقش‌ها", "یک نفر نمی‌تواند هم‌زمان بیش از یک نقش (مدیر، جانشین یا تنخواه‌دار) داشته باشد.");
+                return;
+            }
+        }
+
         private static Guid? SelectedEmployee(ComboBox combo)
             => combo.SelectedValue is Guid id && id != Guid.Empty ? id : null;
 

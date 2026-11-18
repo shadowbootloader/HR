@@ -33,6 +33,18 @@ namespace HR.Services.Assessments
             await _db.SaveChangesAsync();
         }
 
+        public async Task EnsurePersonalityAsync()
+        {
+            foreach (var definition in PersonalityAssessmentCatalog.All())
+            {
+                if (await _db.Assessments.AnyAsync(item => item.Code == definition.Code))
+                    continue;
+                _db.Assessments.Add(ToEntity(definition, AuthSession.ActorName));
+            }
+
+            await _db.SaveChangesAsync();
+        }
+
         public async Task EnsureSelfAssessmentAsync()
         {
             if (await _db.Assessments.AnyAsync(item => item.Code == SelfAssessmentCatalog.Code))
@@ -74,6 +86,7 @@ namespace HR.Services.Assessments
         {
             await EnsureManagerSeedAsync();
             await EnsureSelfAssessmentAsync();
+            await EnsurePersonalityAsync();
             var rows = await Query()
                 .Where(item => item.IsActive && item.Code != SelfAssessmentCatalog.Code)
                 .OrderBy(item => item.Title)
@@ -182,6 +195,7 @@ namespace HR.Services.Assessments
                     Category = item.Assessment.Category,
                     TotalScore = item.TotalScore,
                     LevelLabel = item.LevelLabel,
+                    Status = item.Status,
                     SubmittedAt = item.SubmittedAt
                 })
                 .ToListAsync();
@@ -203,6 +217,7 @@ namespace HR.Services.Assessments
                     Category = item.Assessment.Category,
                     TotalScore = item.TotalScore,
                     LevelLabel = item.LevelLabel,
+                    Status = item.Status,
                     SubmittedAt = item.SubmittedAt
                 })
                 .ToListAsync();

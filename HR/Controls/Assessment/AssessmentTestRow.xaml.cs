@@ -183,6 +183,11 @@ namespace HR.Controls.Assessment
 
             switch ((Status ?? "completed").ToLowerInvariant())
             {
+                case "none":
+                    StatusBd.Visibility = Visibility.Collapsed;
+                    if (ProgFill != null) ProgFill.Width = 0;
+                    TrailIco.Kind = PackIconKind.ChevronLeft;
+                    break;
                 case "in-progress":
                     SetStatus("در حال انجام", PackIconKind.PlayCircle, ProgressBg1, ProgressBg2, ProgressFg , ProgressBorder);
                     SetProgressBar("#6EE7B7");
