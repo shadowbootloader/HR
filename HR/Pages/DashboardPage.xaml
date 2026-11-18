@@ -120,6 +120,13 @@
                     </DockPanel>
                 </Border>
             </UniformGrid>
+            <Border Style="{StaticResource Card}" Margin="0,16,0,0">
+                <StackPanel>
+                    <TextBlock Text="ایرادات پروفایل" FontSize="16" Margin="0,0,0,8"/>
+                    <TextBlock x:Name="IssueEmpty" Text="ایراد بازی برای افراد یا دپارتمان‌ها نیست" Style="{StaticResource Empty}" Visibility="Collapsed"/>
+                    <StackPanel x:Name="IssueList"/>
+                </StackPanel>
+            </Border>
         </StackPanel>
     </ScrollViewer>
 </Page>

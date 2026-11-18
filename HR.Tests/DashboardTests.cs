@@ -104,6 +104,10 @@ public class DashboardTests
         Assert.Equal("نگار", Assert.Single(snapshot.NewHires).Title);
         Assert.Contains("استحقاقی", Assert.Single(snapshot.OpenLeaves).Subtitle);
         Assert.Equal("DISC", Assert.Single(snapshot.RecentAttempts).Title);
+        Assert.Contains(ProfileIssues.Build(
+            new[] { (Guid.NewGuid(), "نگار", ProfileCompleteness.Score(new ProfileSignals())) },
+            new[] { (Id: (short)1, Name: "مالی", HasManager: false, HasDeputy: true, HasLogo: true, HasParent: true, IsHeadquarters: false, Actual: 3, Capacity: 2) },
+            new[] { ("DISC", "نگار", Guid.NewGuid(), today) }), item => item.Subtitle.Contains("بدون مدیر"));
         Assert.Equal(2, snapshot.DepartmentLoads.Single().Actual);
         Assert.Equal(1, snapshot.LeaveStarts.Single(item => item.Month == new System.Globalization.PersianCalendar().GetMonth(today)).Count);
     }

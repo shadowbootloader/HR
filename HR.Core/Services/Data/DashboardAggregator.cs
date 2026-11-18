@@ -47,6 +47,8 @@ namespace HR.Services.Data
         public string Title { get; init; } = string.Empty;
         public string Subtitle { get; init; } = string.Empty;
         public string? PhotoPath { get; init; }
+        public Guid? EmployeeId { get; init; }
+        public short? DepartmentId { get; init; }
     }
 
     public sealed class NamedCount
@@ -83,6 +85,7 @@ namespace HR.Services.Data
         public IReadOnlyList<DashboardListItem> NewHires { get; init; } = Array.Empty<DashboardListItem>();
         public IReadOnlyList<DashboardListItem> OpenLeaves { get; init; } = Array.Empty<DashboardListItem>();
         public IReadOnlyList<DashboardListItem> RecentAttempts { get; init; } = Array.Empty<DashboardListItem>();
+        public List<DashboardListItem> Issues { get; set; } = new();
     }
 
     public static class RosterStatus
