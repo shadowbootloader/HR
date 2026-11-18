@@ -182,16 +182,6 @@
          Style="{StaticResource DarkOutlinedTextBox}"
          Width="160"
          materialDesign:HintAssist.Hint="محل سکونت"/>
-                <TextBox x:Name="PersonalAddressTitleTb"
-         Style="{StaticResource DarkOutlinedTextBox}"
-         Width="120"
-         MaxLength="50"
-         materialDesign:HintAssist.Hint="عنوان نشانی"/>
-                <TextBox x:Name="PersonalAddressTb"
-         Style="{StaticResource DarkOutlinedTextBox}"
-         Width="260"
-         MaxLength="500"
-         materialDesign:HintAssist.Hint="نشانی"/>
                 <TextBox x:Name="PersonalPostalTb"
          Style="{StaticResource DarkOutlinedTextBox}"
          Width="120"

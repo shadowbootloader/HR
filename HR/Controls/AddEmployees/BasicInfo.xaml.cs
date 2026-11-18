@@ -185,8 +185,6 @@ namespace HR.Controls.AddEmployees
             PersonalEmailTb.Text = profile.Email;
             PersonalInsuranceTb.Text = profile.InsuranceNumber;
             PersonalResidenceTb.Text = profile.Residence;
-            PersonalAddressTitleTb.Text = profile.AddressTitle;
-            PersonalAddressTb.Text = profile.AddressText;
             PersonalPostalTb.Text = profile.PostalCode ?? string.Empty;
 
             _photo = profile.PhotoPath;
@@ -230,8 +228,6 @@ namespace HR.Controls.AddEmployees
             profile.Email = PersonalEmailTb.Text.Trim();
             profile.InsuranceNumber = PersonalInsuranceTb.Text.Trim();
             profile.Residence = PersonalResidenceTb.Text.Trim();
-            profile.AddressTitle = PersonalAddressTitleTb.Text.Trim();
-            profile.AddressText = PersonalAddressTb.Text.Trim();
             profile.PostalCode = string.IsNullOrWhiteSpace(PersonalPostalTb.Text) ? null : PersonalPostalTb.Text.Trim();
 
             profile.PhotoPath = _photo;
@@ -269,10 +265,6 @@ namespace HR.Controls.AddEmployees
             var insurance = PersonalInsuranceTb.Text?.Trim() ?? string.Empty;
             if (!Regex.IsMatch(insurance, @"^\d{1,10}$"))
             { message = "شماره بیمه باید عددی و حداکثر ۱۰ رقم باشد."; return false; }
-
-            var hasAddress = !string.IsNullOrWhiteSpace(PersonalAddressTb.Text);
-            if (hasAddress && string.IsNullOrWhiteSpace(PersonalAddressTitleTb.Text))
-            { message = "عنوان نشانی را وارد کنید."; return false; }
 
             var postal = PersonalPostalTb.Text?.Trim() ?? string.Empty;
             if (postal.Length > 0 && !Regex.IsMatch(postal, @"^\d{10}$"))
