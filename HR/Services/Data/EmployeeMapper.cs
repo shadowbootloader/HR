@@ -70,17 +70,10 @@ namespace HR.Services.Data
                 entity.ExemptionTypeId = null;
                 entity.ExemptionReasonId = null;
             }
-            if (!string.IsNullOrWhiteSpace(profile.AddressText))
-            {
-                entity.Addresses.Add(new Address
-                {
-                    AddressId = Guid.NewGuid(),
-                    EmployeeId = entity.EmployeeId,
-                    Title = string.IsNullOrWhiteSpace(profile.AddressTitle) ? "نشانی" : profile.AddressTitle.Trim(),
-                    AddressText = profile.AddressText.Trim(),
-                    PostalCode = string.IsNullOrWhiteSpace(profile.PostalCode) ? null : profile.PostalCode.Trim()
-                });
-            }
+            var address = EmployeeFormFields.AddressFromForm(
+                entity.EmployeeId, profile.AddressText, profile.AddressTitle, profile.PostalCode);
+            if (address != null)
+                entity.Addresses.Add(address);
 
             var supp = profile.Supplementary;
 
@@ -171,6 +164,7 @@ namespace HR.Services.Data
             {
                 profile.Supplementary = new SupplementaryInfo
                 {
+                    Post = EmployeeFormFields.PostFromTitle(entity.Supplement.PositionTitle),
                     Position = entity.Supplement.PositionTitle,
                     StartDate = entity.Supplement.StartDate,
                     EndDate = entity.Supplement.EndDate,
@@ -474,6 +468,16 @@ namespace HR.Services.Data
                 };
             }
 
+            var ownAddress = (entity.Addresses ?? Enumerable.Empty<Address>())
+                .FirstOrDefault(a => a.RelatedPersonId == null);
+            if (ownAddress != null)
+            {
+                var read = EmployeeFormFields.ReadAddress(ownAddress);
+                profile.AddressTitle = ownAddress.Title;
+                profile.AddressText = read.AddressText;
+                profile.PostalCode = read.PostalCode;
+            }
+
             return profile;
         }
 
@@ -492,9 +496,10 @@ namespace HR.Services.Data
                 .FirstOrDefault(a => a.RelatedPersonId == null);
             if (address != null)
             {
+                var read = EmployeeFormFields.ReadAddress(address);
                 profile.AddressTitle = address.Title;
-                profile.AddressText = address.AddressText;
-                profile.PostalCode = address.PostalCode;
+                profile.AddressText = read.AddressText;
+                profile.PostalCode = read.PostalCode;
             }
 
             // Citizenship countries
