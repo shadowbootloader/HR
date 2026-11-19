@@ -53,6 +53,14 @@ namespace HR.Pages
         private void OnPropertyChanged([CallerMemberName] string? name = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
+        /// <summary>با نگه‌داشتن Shift، چرخ ماوس جدول را افقی جابه‌جا می‌کند.</summary>
+        private void TableHScroll_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
+        {
+            if ((System.Windows.Input.Keyboard.Modifiers & System.Windows.Input.ModifierKeys.Shift) == 0) return;
+            TableHScroll.ScrollToHorizontalOffset(TableHScroll.HorizontalOffset - e.Delta);
+            e.Handled = true;
+        }
+
         public EmployeeListPage()
         {
             InitializeComponent();

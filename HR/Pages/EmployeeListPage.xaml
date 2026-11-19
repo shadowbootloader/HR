@@ -346,9 +346,9 @@
                 </Border>
                 <!-- هدر و ردیف‌ها با هم اسکرول افقی می‌شوند -->
                 <ScrollViewer x:Name="TableHScroll" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled"
-                              FlowDirection="RightToLeft" materialDesign:ScrollViewerAssist.IsAutoHideEnabled="True">
+                              FlowDirection="RightToLeft" PreviewMouseWheel="TableHScroll_PreviewMouseWheel">
                     <ScrollViewer.Resources>
-                        <Style TargetType="ScrollBar" BasedOn="{StaticResource NeonScrollBar}"/>
+                        <Style TargetType="ScrollBar" BasedOn="{StaticResource NeonHScrollBar}"/>
                     </ScrollViewer.Resources>
                     <Grid MinWidth="1170">
                         <Grid.RowDefinitions>

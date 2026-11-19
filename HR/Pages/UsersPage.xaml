@@ -180,21 +180,29 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <DockPanel Grid.Row="0" Margin="16,14,16,12" LastChildFill="True">
-                    <materialDesign:PackIcon DockPanel.Dock="Right" Kind="AccountMultiple" Width="26" Height="26"
-                                             Style="{StaticResource NeonIcon}" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                    <TextBlock DockPanel.Dock="Right" Text="کاربران سامانه" FontSize="22" FontWeight="Bold" VerticalAlignment="Center"/>
-                    <Border DockPanel.Dock="Right" Margin="12,0,0,0" Padding="10,2" CornerRadius="10"
-                            Background="#0C2A33" BorderBrush="#00E5D4" BorderThickness="1" VerticalAlignment="Center">
-                        <TextBlock x:Name="CountText" Text="۰" Foreground="#00E5D4" FontSize="13"/>
-                    </Border>
-                    <TextBox x:Name="SearchBox" Width="260" Height="36" HorizontalAlignment="Left"
+                <!-- ستون اول در حالت راست‌به‌چپ سمت راست است: عنوان و تعداد راست، جستجو چپ -->
+                <Grid Grid.Row="0" Margin="16,14,16,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <materialDesign:PackIcon Kind="AccountMultiple" Width="26" Height="26"
+                                                 Style="{StaticResource NeonIcon}" VerticalAlignment="Center" Margin="0,0,0,0"/>
+                        <TextBlock Text="کاربران سامانه" FontSize="22" FontWeight="Bold" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                        <Border Margin="16,0,0,0" Padding="12,3" CornerRadius="10"
+                                Background="#0C2A33" BorderBrush="#00E5D4" BorderThickness="1" VerticalAlignment="Center">
+                            <TextBlock x:Name="CountText" Text="۰" Foreground="#00E5D4" FontSize="13"/>
+                        </Border>
+                    </StackPanel>
+                    <TextBox x:Name="SearchBox" Grid.Column="2" Width="260" Height="36"
                              VerticalContentAlignment="Center" Padding="10,0" FontSize="14"
                              Background="#0B1428" Foreground="White" CaretBrush="#00E5D4"
                              BorderBrush="#334155" BorderThickness="1"
-                             materialDesign:HintAssist.Hint="جستجو در کاربران..."
+                             ToolTip="جستجو در کاربران"
                              TextChanged="SearchBox_TextChanged"/>
-                </DockPanel>
+                </Grid>
 
                 <DataGrid x:Name="UserGrid" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True"
                           Background="Transparent" Foreground="White" BorderThickness="0"
