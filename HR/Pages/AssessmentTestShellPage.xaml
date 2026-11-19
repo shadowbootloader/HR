@@ -1,7 +1,7 @@
 ﻿<Page x:Class="HR.Pages.AssessmentTestShellPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      FontFamily="B Nazanin"
+      FontFamily="pack://application:,,,/Fonts/#B Nazanin"
       FlowDirection="RightToLeft"
       Background="#050A14"
       Title="آزمون">

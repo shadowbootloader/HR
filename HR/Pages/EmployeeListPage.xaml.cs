@@ -158,6 +158,7 @@ namespace HR.Pages
                 Position = e.Supplement?.PositionTitle ?? "—",
                 Department = e.Supplement?.Department?.Title ?? "—",
                 DepartmentIcon = DepartmentMark(e.Supplement?.Department?.Title),
+                DepartmentLogoPath = e.Supplement?.Department?.LogoPath ?? string.Empty,
                 Status = StatusOf(e),
                 IsDeleted = e.IsDeleted,
                 Gender = e.Gender?.Title ?? "—",
@@ -343,6 +344,7 @@ namespace HR.Pages
         public string Position { get; set; } = string.Empty;
         public string Department { get; set; } = string.Empty;
         public string DepartmentIcon { get; set; } = string.Empty;
+        public string DepartmentLogoPath { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
         public bool IsDeleted { get; set; }
         public DateTime? HireDate { get; set; }

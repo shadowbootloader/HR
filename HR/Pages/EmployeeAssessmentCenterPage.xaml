@@ -351,7 +351,7 @@
     MinWidth="120"
     Cursor="Hand"
     Click="BtnNewTest_Click" Margin="0,0,20,0"
-    FontFamily="B Nazanin">
+    FontFamily="pack://application:,,,/Fonts/#B Nazanin">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
                                 <Border x:Name="Bd"
@@ -519,7 +519,7 @@
                         <TextBlock x:Name="TxtCount"
                  Grid.Column="0"
                  Text="۰ آزمون"
-                 FontFamily="B Nazanin"
+                 FontFamily="pack://application:,,,/Fonts/#B Nazanin"
                  FontSize="16"
                  Foreground="#8EA6C2"
                  VerticalAlignment="Center"/>
@@ -538,7 +538,7 @@
 
                             <TextBlock x:Name="TxtPage"
                    Text="۱ / ۱"
-                   FontFamily="B Nazanin"
+                   FontFamily="pack://application:,,,/Fonts/#B Nazanin"
                    FontSize="13"
                    FontWeight="SemiBold" FlowDirection="RightToLeft"
                    Foreground="#E8F4FF"
