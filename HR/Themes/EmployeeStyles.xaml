@@ -149,6 +149,54 @@
         </Setter>
 
     </Style>
+    <!-- اسکرول‌بار افقی نئونی (NeonScrollBar فقط عمودی است و عرضش ۸ ثابت است) -->
+    <Style x:Key="NeonHScrollBar"
+       TargetType="{x:Type ScrollBar}">
+        <Setter Property="Height" Value="12"/>
+        <Setter Property="MinHeight" Value="12"/>
+        <Setter Property="Background" Value="#0B1428"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ScrollBar}">
+                    <Border Background="{TemplateBinding Background}" CornerRadius="6">
+                        <Track x:Name="PART_Track" IsDirectionReversed="False">
+                            <Track.DecreaseRepeatButton>
+                                <RepeatButton Command="ScrollBar.PageLeftCommand"
+                                              Background="Transparent" BorderThickness="0" Focusable="False" Opacity="0"/>
+                            </Track.DecreaseRepeatButton>
+                            <Track.Thumb>
+                                <Thumb MinWidth="40">
+                                    <Thumb.Template>
+                                        <ControlTemplate TargetType="{x:Type Thumb}">
+                                            <Border x:Name="ThumbBorder" Height="6" Margin="0,3"
+                                                    Background="#00E5D4" CornerRadius="3">
+                                                <Border.Effect>
+                                                    <DropShadowEffect Color="#00E5D4" BlurRadius="14" ShadowDepth="0" Opacity="0.8"/>
+                                                </Border.Effect>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="ThumbBorder" Property="Background" Value="#7FFFF5"/>
+                                                </Trigger>
+                                                <Trigger Property="IsDragging" Value="True">
+                                                    <Setter TargetName="ThumbBorder" Property="Background" Value="#FFFFFF"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Thumb.Template>
+                                </Thumb>
+                            </Track.Thumb>
+                            <Track.IncreaseRepeatButton>
+                                <RepeatButton Command="ScrollBar.PageRightCommand"
+                                              Background="Transparent" BorderThickness="0" Focusable="False" Opacity="0"/>
+                            </Track.IncreaseRepeatButton>
+                        </Track>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style x:Key="DarkOutlinedTextBox"
 		TargetType="TextBox"
 		BasedOn="{StaticResource MaterialDesignOutlinedTextBox}">

@@ -53,6 +53,14 @@ namespace HR.Pages
         private void OnPropertyChanged([CallerMemberName] string? name = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
+        /// <summary>با نگه‌داشتن Shift، چرخ ماوس جدول را افقی جابه‌جا می‌کند.</summary>
+        private void TableHScroll_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
+        {
+            if ((System.Windows.Input.Keyboard.Modifiers & System.Windows.Input.ModifierKeys.Shift) == 0) return;
+            TableHScroll.ScrollToHorizontalOffset(TableHScroll.HorizontalOffset - e.Delta);
+            e.Handled = true;
+        }
+
         public EmployeeListPage()
         {
             InitializeComponent();
@@ -158,6 +166,7 @@ namespace HR.Pages
                 Position = e.Supplement?.PositionTitle ?? "—",
                 Department = e.Supplement?.Department?.Title ?? "—",
                 DepartmentIcon = DepartmentMark(e.Supplement?.Department?.Title),
+                DepartmentLogoPath = e.Supplement?.Department?.LogoPath ?? string.Empty,
                 Status = StatusOf(e),
                 IsDeleted = e.IsDeleted,
                 Gender = e.Gender?.Title ?? "—",
@@ -343,6 +352,7 @@ namespace HR.Pages
         public string Position { get; set; } = string.Empty;
         public string Department { get; set; } = string.Empty;
         public string DepartmentIcon { get; set; } = string.Empty;
+        public string DepartmentLogoPath { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
         public bool IsDeleted { get; set; }
         public DateTime? HireDate { get; set; }

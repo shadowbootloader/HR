@@ -55,6 +55,12 @@ public class AuthFlowTests
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() => new EmployeeService(people).CreateAsync(new Employee()));
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() => new DepartmentService(people).CreateAsync(new Department { Title = "ممنوع" }));
 
+        // مدیر می‌تواند کاربر را حذف کند، ولی حساب خودش را نه.
+        AuthSession.SignIn(signedIn.User);
+        await auth.DeleteUserAsync(viewer.AppUserId);
+        Assert.DoesNotContain(await auth.ListUsersAsync(), item => item.AppUserId == viewer.AppUserId);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => auth.DeleteUserAsync(signedIn.User.UserId));
+
         AuthSession.SignOut();
     }
 }

@@ -42,6 +42,16 @@ namespace HR.Controls
             var image = ImagePicker.Load(Employee?.PhotoPath);
             AvatarBrush.ImageSource = image;
             AvatarIcon.Visibility = image == null ? Visibility.Visible : Visibility.Collapsed;
+            UpdateDepartmentLogo();
+        }
+
+        /// <summary>لوگوی دپارتمان؛ اگر نبود همان نشانهٔ متنی نمایش داده می‌شود.</summary>
+        private void UpdateDepartmentLogo()
+        {
+            var logo = ImagePicker.Load(Employee?.DepartmentLogoPath);
+            DeptLogoBrush.ImageSource = logo;
+            DeptLogoBorder.Visibility = logo == null ? Visibility.Collapsed : Visibility.Visible;
+            DeptMark.Visibility = logo == null ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void UpdateActionButtons()

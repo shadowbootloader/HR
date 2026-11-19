@@ -77,6 +77,40 @@ namespace HR.Services.Auth
             await _db.SaveChangesAsync();
         }
 
+        public async Task UpdateDisplayNameAsync(Guid userId, string? displayName)
+        {
+            AccessGuard.RequireAdmin();
+            var user = await RequireUserAsync(userId);
+            var name = displayName?.Trim();
+            user.DisplayName = string.IsNullOrEmpty(name) ? null : name;
+            await _db.SaveChangesAsync();
+        }
+
+        public async Task DeleteUserAsync(Guid userId)
+        {
+            AccessGuard.RequireAdmin();
+            if (AuthSession.Current?.UserId == userId)
+                throw new InvalidOperationException("نمی‌توانید حساب خود را حذف کنید.");
+
+            var user = await _db.AppUsers.Include(item => item.Roles).ThenInclude(link => link.Role)
+                .FirstOrDefaultAsync(item => item.AppUserId == userId)
+                ?? throw new InvalidOperationException("کاربر یافت نشد.");
+
+            var isAdmin = user.Roles.Any(link => link.Role?.Name == AppRoles.Admin);
+            if (isAdmin && user.IsActive)
+            {
+                var otherAdmins = await _db.AppUsers.CountAsync(item =>
+                    item.AppUserId != userId && item.IsActive &&
+                    item.Roles.Any(link => link.Role.Name == AppRoles.Admin));
+                if (otherAdmins == 0)
+                    throw new InvalidOperationException("آخرین مدیر فعال را نمی‌توان حذف کرد.");
+            }
+
+            _db.UserRoles.RemoveRange(user.Roles);
+            _db.AppUsers.Remove(user);
+            await _db.SaveChangesAsync();
+        }
+
         public async Task AssignRolesAsync(Guid userId, IEnumerable<string> roles)
         {
             AccessGuard.RequireAdmin();

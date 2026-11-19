@@ -66,10 +66,17 @@ TargetType="{x:Type materialDesign:PackIcon}">
 
             <!-- Department -->
             <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center" Margin="5,0">
-                <Border Width="24" Height="24" CornerRadius="6" Background="#1E3A5F" Margin="0,0,8,0">
+                <Grid Width="26" Height="26" Margin="0,0,8,0" FlowDirection="LeftToRight">
+                <Border x:Name="DeptLogoBorder" CornerRadius="13" BorderBrush="#00E5D4" BorderThickness="1" Visibility="Collapsed">
+                    <Border.Background>
+                        <ImageBrush x:Name="DeptLogoBrush" Stretch="UniformToFill" AlignmentX="Center" AlignmentY="Center"/>
+                    </Border.Background>
+                </Border>
+                <Border x:Name="DeptMark" CornerRadius="6" Background="#1E3A5F">
                     <TextBlock Text="{Binding DepartmentIcon}" FontSize="11" 
                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
                 </Border>
+                </Grid>
                 <TextBlock Text="{Binding Department}" Foreground="#E2E8F0" VerticalAlignment="Center" FontSize="13"/>
             </StackPanel>
 

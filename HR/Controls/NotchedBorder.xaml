@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:materialDesign="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf" mc:Ignorable="d" x:Class="HR.Controls.NotchedBorder"
              x:Name="Root"
-             FontFamily="pack://application:,,,/Fonts/#BNazanin"
+             FontFamily="pack://application:,,,/Fonts/#B Nazanin"
              d:DesignHeight="200" d:DesignWidth="200" >
     <UserControl.Resources>
         <Style x:Key="RedNeonIcon"

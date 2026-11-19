@@ -252,29 +252,6 @@
                         </ComboBox>
                     </Grid>
                 </Border>
-                <!-- هدر ستون‌ها -->
-                <Border DockPanel.Dock="Top" Padding="12,14" BorderBrush="#1E293B" BorderThickness="0,0,0,1">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="50"/>
-                            <ColumnDefinition Width="200"/>
-                            <ColumnDefinition Width="160"/>
-                            <ColumnDefinition Width="160"/>
-                            <ColumnDefinition Width="100"/>
-                            <ColumnDefinition Width="150"/>
-                            <ColumnDefinition Width="120"/>
-                            <ColumnDefinition Width="150"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock FontSize="16" Grid.Column="0" Text="تصویر" Foreground="White" />
-                        <TextBlock FontSize="16" Grid.Column="1"  Text="نام" Foreground="White"  Margin="10,0,0,0"/>
-                        <TextBlock FontSize="16" Grid.Column="2" Margin="10,0,0,0" Text="جایگاه شغلی" Foreground="White" />
-                        <TextBlock FontSize="16" Grid.Column="3" Margin="10,0,0,0" Text="دپارتمان" Foreground="White" />
-                        <TextBlock FontSize="16" Grid.Column="4" HorizontalAlignment="Center" Margin="0,0,0,0" Text="وضعیت" Foreground="White" />
-                        <TextBlock FontSize="16" Grid.Column="5" HorizontalAlignment="Center" Margin="0,0,0,0" Text="بهره‌وری" Foreground="White" />
-                        <TextBlock FontSize="16" Grid.Column="6" HorizontalAlignment="Center" Text="تکمیل پروفایل" Foreground="#C4B5FD" />
-                        <TextBlock FontSize="16" Grid.Column="7" Margin="10,0,0,0" Text="عملیات" Foreground="White"  HorizontalAlignment="Center"/>
-                    </Grid>
-                </Border>
                 <Border DockPanel.Dock="Bottom" Padding="5" BorderBrush="#1E293B" VerticalAlignment="Bottom" BorderThickness="0,1,0,0">
                     <Grid>
                         <TextBlock Text="{Binding PaginationText}" 
@@ -367,9 +344,42 @@
                         </StackPanel>
                     </Grid>
                 </Border>
-
+                <!-- هدر و ردیف‌ها با هم اسکرول افقی می‌شوند -->
+                <ScrollViewer x:Name="TableHScroll" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled"
+                              FlowDirection="RightToLeft" PreviewMouseWheel="TableHScroll_PreviewMouseWheel">
+                    <ScrollViewer.Resources>
+                        <Style TargetType="ScrollBar" BasedOn="{StaticResource NeonHScrollBar}"/>
+                    </ScrollViewer.Resources>
+                    <Grid MinWidth="1170">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                <!-- هدر ستون‌ها -->
+                <Border Grid.Row="0" Padding="12,14" BorderBrush="#1E293B" BorderThickness="0,0,0,1">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="50"/>
+                            <ColumnDefinition Width="200"/>
+                            <ColumnDefinition Width="160"/>
+                            <ColumnDefinition Width="160"/>
+                            <ColumnDefinition Width="100"/>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="120"/>
+                            <ColumnDefinition Width="180"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock FontSize="16" Grid.Column="0" Text="تصویر" Foreground="White" />
+                        <TextBlock FontSize="16" Grid.Column="1"  Text="نام" Foreground="White"  Margin="10,0,0,0"/>
+                        <TextBlock FontSize="16" Grid.Column="2" Margin="10,0,0,0" Text="جایگاه شغلی" Foreground="White" />
+                        <TextBlock FontSize="16" Grid.Column="3" Margin="10,0,0,0" Text="دپارتمان" Foreground="White" />
+                        <TextBlock FontSize="16" Grid.Column="4" HorizontalAlignment="Center" Margin="0,0,0,0" Text="وضعیت" Foreground="White" />
+                        <TextBlock FontSize="16" Grid.Column="5" HorizontalAlignment="Center" Margin="0,0,0,0" Text="بهره‌وری" Foreground="White" />
+                        <TextBlock FontSize="16" Grid.Column="6" HorizontalAlignment="Center" Text="تکمیل پروفایل" Foreground="#C4B5FD" />
+                        <TextBlock FontSize="16" Grid.Column="7" Margin="10,0,0,0" Text="عملیات" Foreground="White"  HorizontalAlignment="Center"/>
+                    </Grid>
+                </Border>
                 <!-- لیست ردیف‌ها -->
-                <ScrollViewer VerticalScrollBarVisibility="Auto" FlowDirection="RightToLeft" materialDesign:ScrollViewerAssist.IsAutoHideEnabled="True"  MinHeight="200" DockPanel.Dock="Top" Margin="0,0,0,5">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" FlowDirection="RightToLeft" materialDesign:ScrollViewerAssist.IsAutoHideEnabled="True"  MinHeight="200" Grid.Row="1" Margin="0,0,0,5">
                     <ScrollViewer.Resources>
 
                         <Style TargetType="ScrollBar"
@@ -389,6 +399,8 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
+                </ScrollViewer>
+                    </Grid>
                 </ScrollViewer>
 
                 <!-- صفحه‌بندی -->

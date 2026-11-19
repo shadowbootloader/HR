@@ -6,7 +6,7 @@
              x:Name="Root"
              FlowDirection="RightToLeft"
              Height="95"
-             FontFamily="B Nazanin">
+             FontFamily="pack://application:,,,/Fonts/#B Nazanin">
 
     <Border CornerRadius="14"
           Padding="12,3"
